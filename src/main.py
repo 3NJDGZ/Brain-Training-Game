@@ -1,7 +1,8 @@
 import pygame
 import sys
-from screens import Intro_Screen, Register_Screen, Screen
-from screens import MANAGER, CLOCK
+# from screens import Intro_Screen, Register_Screen, Screen
+# from screens import MANAGER, CLOCK
+from screens import *
 
 pygame.init()
 
@@ -12,7 +13,8 @@ class Game:
         # Screens
         self.__intro_screen = Intro_Screen("Intro!")
         self.__register_screen = Register_Screen("Register!")
-        self.screens = [self.__intro_screen, self.__register_screen]
+        self.__login_screen = Login_Screen("Login!")
+        self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen]
         self.__current_pos = 0
         self.__current_screen = self.screens[self.__current_pos]
 
@@ -44,7 +46,8 @@ class Game:
 
                 # Functionality not yet implemented for the login button
                 if button_pressed == "Login":
-                    print("Login")
+                    self.__current_screen.remove_UI_elements()
+                    self.__current_pos += 2
                 
                 # if register button pressed remove the UI elements of the intro (current) screen and set state to register_screen
                 elif button_pressed == "Register":
@@ -68,8 +71,14 @@ class Game:
                     # if pressed, remove UI elements of register (current) screen and set state back to intro_screen
                     self.__current_screen.remove_UI_elements()
                     self.__current_pos -= 1
-        
-                    
+            
+            if not isinstance(self.__current_screen, Login_Screen):
+                self.__login_screen.remove_UI_elements()
+            else:
+                self.__current_screen.show_UI_elements()
+                if self.__current_screen.check_for_user_interaction_with_ui():
+                    self.__current_screen.remove_UI_elements()
+                    self.__current_pos -= 2
 
             self.draw_UI(self.__current_screen)
             self.update_screen()
