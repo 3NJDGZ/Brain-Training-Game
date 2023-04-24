@@ -122,6 +122,22 @@
                 "resource":"Helvetica.ttf"
             }
         }
+    },
+    "#subtitle_label":
+    {
+        "colours":
+        {
+            "dark_bg":"#7d7d7d"
+        },
+        "font":
+        {
+            "name":"helvetica",
+            "size":"20",
+            "regular_resource": {
+                "package":"Fonts",
+                "resource":"Helvetica.ttf"
+            }
+        }
     }
 
 }
