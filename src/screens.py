@@ -59,6 +59,9 @@ class Screen(ABC):
     def remove_UI_elements(self):
         pass
 
+    @abstractmethod
+    def check_for_user_interaction_with_UI(self):
+        pass
 
 class Intro_Screen(Screen):
     def __init__(self, Title: str):
@@ -68,7 +71,7 @@ class Intro_Screen(Screen):
         self.__REGISTER_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((690, HEIGHT/2+50), (200, 75)), manager=MANAGER, object_id="#register_button", text="REGISTER")
         self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((390, HEIGHT/2-100), (500, 75)), manager=MANAGER, object_id="#title_label", text="BRAIN TRAINING GAME")
 
-    def check_for_button_pressed(self):
+    def check_for_user_interaction_with_UI(self):
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#login_button":
                 return "Login"
@@ -113,7 +116,7 @@ class Register_Screen(Screen):
     def get_password(self):
         return self.__password
 
-    def check_for_user_interaction_with_ui(self):
+    def check_for_user_interaction_with_UI(self):
         ui_finished = ""
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#username_text_entry":
@@ -174,6 +177,7 @@ class Register_Screen(Screen):
             # db.close()
 
             successful_registration = True
+            mycursor.reset()
         return successful_registration
     
     def remove_UI_elements(self):
@@ -187,26 +191,6 @@ class Register_Screen(Screen):
         self.__PASSWORD_INPUT.visible = True
         self.__GO_BACK_BUTTON.visible = True
         self.__TITLE_LABEL.visible = True
-
-class Registration_Confirmation_Screen(Screen):
-    def __init__(self, Title: str):
-        super(Registration_Confirmation_Screen, self).__init__(Title)
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((380, 250), (520, 75)), manager=MANAGER, object_id="#title_label", text="REGISTRATION COMPLETE")
-        self.__SUBTITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((440, 350), (400, 75)), manager=MANAGER, object_id="#subtitle_label", text="PRESS 'SPACE' TO CONTINUE")
-
-    def check_if_user_presses_space(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            return True
-        return False 
-
-    def show_UI_elements(self):
-        self.__TITLE_LABEL.visible = True
-        self.__SUBTITLE_LABEL.visible = True
-    
-    def remove_UI_elements(self):
-        self.__TITLE_LABEL.hide()
-        self.__SUBTITLE_LABEL.hide()
 
 class Login_Screen(Screen):
     def __init__(self, Title: str):
@@ -228,21 +212,52 @@ class Login_Screen(Screen):
     def get_login_password(self):
         return self.__login_password
     
-    def check_for_user_interaction_with_ui(self):
+    def set_username(self, username: str):
+        self.__login_username = username
+    
+    def set_password(self, password: str):
+        self.__login_password = password
+    
+    def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#username_text_entry":
-                pass
+                self.set_username(event.text)
 
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#password_text_entry":
-                pass
+                self.set_password(event.text)
             
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
-                pass
+                if self.login(self.get_login_username(), self.get_login_password()):
+                    ui_finished = "TEXT_ENTRY"
+                else:
+                    print("Invalid Details")
             
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
-                return True
+                ui_finished = "BUTTON"
 
             MANAGER.process_events(event)
+        return ui_finished
+    
+    def login(self, username: str, password: str):
+
+        valid_details = False
+        # check if username and password is valid 
+        mycursor.execute(f"""
+        SELECT Username, Password
+        FROM Player;
+        """)
+
+        for combination in mycursor:
+            if combination[0] == username and combination[1] == password:
+                valid_details = True
+                break
+            else:
+                valid_details = False
+        
+        mycursor.reset()
+
+        return valid_details
 
     def show_UI_elements(self):
         self.__USERNAME_INPUT.visible = True
@@ -256,6 +271,31 @@ class Login_Screen(Screen):
         self.__GO_BACK_BUTTON.hide()
         self.__TITLE_LABEL.hide()
 
+class Confirmation_Screen(Screen):
+    def __init__(self, Title: str, subtitle: str):
+        super(Confirmation_Screen, self).__init__(Title)
+        self.__subtitle = subtitle
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((380, 250), (520, 75)), manager=MANAGER, object_id="#title_label", text=Title)
+        self.__SUBTITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((440, 350), (400, 75)), manager=MANAGER, object_id="#subtitle_label", text=self.__subtitle)
 
+    def check_for_user_interaction_with_UI(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            return True
+        return False 
 
+    def show_UI_elements(self):
+        self.__TITLE_LABEL.visible = True
+        self.__SUBTITLE_LABEL.visible = True
+    
+    def remove_UI_elements(self):
+        self.__TITLE_LABEL.hide()
+        self.__SUBTITLE_LABEL.hide()
 
+class Registration_Confirmation_Screen(Confirmation_Screen):
+    def __init__(self, Title: str, subtitle: str):
+        super(Registration_Confirmation_Screen, self).__init__(Title, subtitle)
+
+class Login_Confirmation_Screen(Confirmation_Screen):
+    def __init__(self, Title: str, subtitle: str):
+        super(Login_Confirmation_Screen, self).__init__(Title, subtitle)
