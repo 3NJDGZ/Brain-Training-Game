@@ -91,30 +91,47 @@ class Intro_Screen(Screen):
         self.__REGISTER_BUTTON.visible = True
         self.__TITLE_LABEL.visible = True
 
-class Register_Screen(Screen):
+class Get_User_Info_Screen(Screen):
     def __init__(self, Title: str):
-        super(Register_Screen, self).__init__(Title)
+        super(Get_User_Info_Screen, self).__init__(Title)
         # UI
         self.__USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)-70)), (400, 50)), manager = MANAGER, object_id="#username_text_entry")
         self.__PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)+30)), (400, 50)), manager = MANAGER, object_id="#password_text_entry")
         self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=MANAGER, object_id="#go_back_button", text="GO BACK")
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((465, 150), (350, 75)), manager=MANAGER, object_id="#title_label", text="REGISTER MENU")
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((465, 150), (350, 75)), manager=MANAGER, object_id="#title_label", text=Title)
 
         # Other
-        self.__username = ""
-        self.__password = ""
-    
+        self._username = ""
+        self._password = ""
+
+    # Getters + Setters for Protected Attributes
     def set_username(self, username):
-        self.__username = username
+        self._username = username
     
     def set_password(self, password):
-        self.__password = password
+        self._password = password
     
     def get_username(self):
-        return self.__username
+        return self._username
     
     def get_password(self):
-        return self.__password
+        return self._password
+
+    def remove_UI_elements(self):
+        self.__USERNAME_INPUT.hide()
+        self.__PASSWORD_INPUT.hide()
+        self.__GO_BACK_BUTTON.hide()
+        self.__TITLE_LABEL.hide()
+    
+    def show_UI_elements(self):
+        self.__USERNAME_INPUT.visible = True
+        self.__PASSWORD_INPUT.visible = True
+        self.__GO_BACK_BUTTON.visible = True
+        self.__TITLE_LABEL.visible = True
+
+class Register_Screen(Get_User_Info_Screen):
+    def __init__(self, Title: str):
+        super(Register_Screen, self).__init__(Title)
 
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
@@ -179,45 +196,11 @@ class Register_Screen(Screen):
             successful_registration = True
             mycursor.reset()
         return successful_registration
-    
-    def remove_UI_elements(self):
-        self.__USERNAME_INPUT.hide()
-        self.__PASSWORD_INPUT.hide()
-        self.__GO_BACK_BUTTON.hide()
-        self.__TITLE_LABEL.hide()
-    
-    def show_UI_elements(self):
-        self.__USERNAME_INPUT.visible = True
-        self.__PASSWORD_INPUT.visible = True
-        self.__GO_BACK_BUTTON.visible = True
-        self.__TITLE_LABEL.visible = True
 
-class Login_Screen(Screen):
+class Login_Screen(Get_User_Info_Screen):
     def __init__(self, Title: str):
         super(Login_Screen, self).__init__(Title)
 
-        # UI
-        self.__USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)-70)), (400, 50)), manager = MANAGER, object_id="#username_text_entry")
-        self.__PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)+30)), (400, 50)), manager = MANAGER, object_id="#password_text_entry")
-        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=MANAGER, object_id="#go_back_button", text="GO BACK")
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((490, 150), (300, 75)), manager=MANAGER, object_id="#title_label", text="LOGIN MENU")
-
-        # Other
-        self.__login_username = ""
-        self.__login_password = ""
-
-    def get_login_username(self):
-        return self.__login_username
-    
-    def get_login_password(self):
-        return self.__login_password
-    
-    def set_username(self, username: str):
-        self.__login_username = username
-    
-    def set_password(self, password: str):
-        self.__login_password = password
-    
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
         for event in pygame.event.get():
@@ -228,7 +211,7 @@ class Login_Screen(Screen):
                 self.set_password(event.text)
             
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
-                if self.login(self.get_login_username(), self.get_login_password()):
+                if self.login(self.get_username(), self.get_password()):
                     ui_finished = "TEXT_ENTRY"
                 else:
                     print("Invalid Details")
@@ -258,18 +241,6 @@ class Login_Screen(Screen):
         mycursor.reset()
 
         return valid_details
-
-    def show_UI_elements(self):
-        self.__USERNAME_INPUT.visible = True
-        self.__PASSWORD_INPUT.visible = True
-        self.__GO_BACK_BUTTON.visible = True
-        self.__TITLE_LABEL.visible = True
-    
-    def remove_UI_elements(self):
-        self.__USERNAME_INPUT.hide()
-        self.__PASSWORD_INPUT.hide()
-        self.__GO_BACK_BUTTON.hide()
-        self.__TITLE_LABEL.hide()
 
 class Confirmation_Screen(Screen):
     def __init__(self, Title: str, subtitle: str):

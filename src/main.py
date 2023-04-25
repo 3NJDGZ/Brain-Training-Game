@@ -10,8 +10,8 @@ class Game:
 
         # Screens
         self.__intro_screen = Intro_Screen("Intro!")
-        self.__register_screen = Register_Screen("Register!")
-        self.__login_screen = Login_Screen("Login!")
+        self.__register_screen = Register_Screen("REGISTER MENU")
+        self.__login_screen = Login_Screen("LOGIN MENU")
         self.__registration_confirmation_screen = Registration_Confirmation_Screen("REGISTRATION SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen, self.__registration_confirmation_screen, self.__login_confirmation_screen]
