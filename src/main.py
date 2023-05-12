@@ -14,7 +14,8 @@ class Game:
         self.__login_screen = Login_Screen("LOGIN MENU")
         self.__registration_confirmation_screen = Registration_Confirmation_Screen("REGISTRATION SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
-        self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen, self.__registration_confirmation_screen, self.__login_confirmation_screen]
+        self.__skill_selection_screen = Skill_Selection_Screen("SKILLS TO INPUT: SPEED, ATTENTION, MEMORY, PROBLEM SOLVING.")
+        self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen, self.__registration_confirmation_screen, self.__login_confirmation_screen, self.__skill_selection_screen]
         self.__current_pos = 0
         self.__current_screen = self.screens[self.__current_pos]
 
@@ -44,13 +45,17 @@ class Game:
             self.check_if_screen_is_intro()
             self.check_if_screen_is_register()
             self.check_if_screen_is_login()
+            self.check_if_screen_is_skill_screens()
 
             self.check_if_screen_is_registration_confirmation()
             self.check_if_screen_is_login_confirmation()
 
+            MANAGER.process_events(event)
+
             self.draw_UI(self.__current_screen)
             self.update_screen()
 
+    # State Transition Functions 
     def check_if_screen_is_registration_confirmation(self):
         if not isinstance(self.__current_screen, Registration_Confirmation_Screen):
             self.__registration_confirmation_screen.remove_UI_elements()
@@ -83,7 +88,7 @@ class Game:
             elif ui_interacted == "TEXT_ENTRY":
                 # if the player has finished and entered their username and password to be registered, move current screen to login screen
                 self.__current_screen.remove_UI_elements()
-                self.__current_pos += 2
+                self.__current_pos += 4
 
     def check_if_screen_is_login(self):
         if not isinstance(self.__current_screen, Login_Screen):
@@ -111,6 +116,14 @@ class Game:
             elif button_pressed == "Register":
                 self.__current_screen.remove_UI_elements()
                 self.__current_pos += 1
+
+    def check_if_screen_is_skill_screens(self):
+        if not isinstance(self.__current_screen, Skill_Selection_Screen):
+            self.__skill_selection_screen.remove_UI_elements()
+        else:
+            self.__current_screen.show_UI_elements()
+            self.__current_screen.check_for_user_interaction_with_UI()
+
 
     def check_screen_state(self):
         return self.__current_pos

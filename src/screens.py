@@ -270,3 +270,56 @@ class Registration_Confirmation_Screen(Confirmation_Screen):
 class Login_Confirmation_Screen(Confirmation_Screen):
     def __init__(self, Title: str, subtitle: str):
         super(Login_Confirmation_Screen, self).__init__(Title, subtitle)
+
+class Skill_Selection_Screen(Screen):
+    def __init__(self, Title: str):
+        super(Skill_Selection_Screen, self).__init__(Title)
+
+        # UI
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((190, 100), (900, 75)), manager=MANAGER, object_id="#subtitle_label", text=Title)
+        self.__TEXT_ENTRY_OPTION_ONE = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)-70)), (400, 50)), manager = MANAGER, object_id="#option_one_text_entry", placeholder_text="Input PRIMARY Skill of Focus")
+        self.__TEXT_ENTRY_OPTION_TWO = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, 390), (400, 50)), manager = MANAGER, object_id="#option_two_text_entry", placeholder_text="Input SECONDARY Skill of Focus")
+        self.__TEXT_ENTRY_OPTION_THREE = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, 490), (400, 50)), manager = MANAGER, object_id="#option_three_text_entry", placeholder_text="Input THIRD Skill of Focus")
+        self.__TEXT_ENTRY_OPTION_FOUR = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, 590), (400, 50)), manager = MANAGER, object_id="#option_four_text_entry", placeholder_text="Input LAST Skill of Focus")
+    
+    def check_text(self, text_to_be_checked):
+        options = ["memory", "speed", "attention", "problem solving"]
+        if text_to_be_checked in options:
+            print(text_to_be_checked)
+            return text_to_be_checked
+
+    def check_for_user_interaction_with_UI(self):
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_one_text_entry":
+                input_string = event.text
+                input_string = input_string.lower()
+                self.check_text(input_string)
+            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_two_text_entry":
+                input_string = event.text
+                input_string = input_string.lower()
+                self.check_text(input_string)
+            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_three_text_entry":
+                input_string = event.text
+                input_string = input_string.lower()
+                self.check_text(input_string)
+            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_four_text_entry":
+                input_string = event.text
+                input_string = input_string.lower()
+                self.check_text(input_string)
+            MANAGER.process_events(event)
+    
+    def remove_UI_elements(self):
+        self.__TITLE_LABEL.hide()
+        self.__TEXT_ENTRY_OPTION_ONE.hide()
+        self.__TEXT_ENTRY_OPTION_TWO.hide()
+        self.__TEXT_ENTRY_OPTION_THREE.hide()
+        self.__TEXT_ENTRY_OPTION_FOUR.hide()
+    
+    def show_UI_elements(self):
+        self.__TITLE_LABEL.visible = True
+        self.__TEXT_ENTRY_OPTION_ONE.visible = True
+        self.__TEXT_ENTRY_OPTION_TWO.visible = True
+        self.__TEXT_ENTRY_OPTION_THREE.visible = True
+        self.__TEXT_ENTRY_OPTION_FOUR.visible = True
+    
+
