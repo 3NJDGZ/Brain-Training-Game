@@ -1,5 +1,7 @@
 import pygame
 import pygame_gui
+from pygame_gui import *
+from pygame_gui.core import ObjectID
 import mysql.connector
 from abc import ABC, abstractmethod
 
@@ -67,9 +69,9 @@ class Intro_Screen(Screen):
     def __init__(self, Title: str):
         super(Intro_Screen, self).__init__(Title)
         # UI
-        self.__LOGIN_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((390, HEIGHT/2+50), (200, 75)), manager=MANAGER, object_id="#login_button", text="LOGIN")
-        self.__REGISTER_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((690, HEIGHT/2+50), (200, 75)), manager=MANAGER, object_id="#register_button", text="REGISTER")
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((390, HEIGHT/2-100), (500, 75)), manager=MANAGER, object_id="#title_label", text="BRAIN TRAINING GAME")
+        self.__LOGIN_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((390, HEIGHT/2+50), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#login_button"), text="LOGIN")
+        self.__REGISTER_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((690, HEIGHT/2+50), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#register_button"), text="REGISTER")
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((390, HEIGHT/2-100), (500, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="BRAIN TRAINING GAME")
 
     def check_for_user_interaction_with_UI(self):
         for event in pygame.event.get():
@@ -87,18 +89,18 @@ class Intro_Screen(Screen):
         self.__TITLE_LABEL.hide()
     
     def show_UI_elements(self):
-        self.__LOGIN_BUTTON.visible = True
-        self.__REGISTER_BUTTON.visible = True
-        self.__TITLE_LABEL.visible = True
+        self.__LOGIN_BUTTON.show()
+        self.__REGISTER_BUTTON.show()
+        self.__TITLE_LABEL.show()
 
 class Get_User_Info_Screen(Screen):
     def __init__(self, Title: str):
         super(Get_User_Info_Screen, self).__init__(Title)
         # UI
-        self.__USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)-70)), (400, 50)), manager = MANAGER, object_id="#username_text_entry")
-        self.__PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)+30)), (400, 50)), manager = MANAGER, object_id="#password_text_entry")
-        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=MANAGER, object_id="#go_back_button", text="GO BACK")
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((465, 150), (350, 75)), manager=MANAGER, object_id="#title_label", text=Title)
+        self.__USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)-70)), (400, 50)), manager = MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#username_text_entry"))
+        self.__PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)+30)), (400, 50)), manager = MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#password_text_entry"))
+        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((465, 150), (350, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text=Title)
 
         # Other
         self._username = ""
@@ -124,10 +126,10 @@ class Get_User_Info_Screen(Screen):
         self.__TITLE_LABEL.hide()
     
     def show_UI_elements(self):
-        self.__USERNAME_INPUT.visible = True
-        self.__PASSWORD_INPUT.visible = True
-        self.__GO_BACK_BUTTON.visible = True
-        self.__TITLE_LABEL.visible = True
+        self.__USERNAME_INPUT.show()
+        self.__PASSWORD_INPUT.show()
+        self.__GO_BACK_BUTTON.show()
+        self.__TITLE_LABEL.show()
 
 class Register_Screen(Get_User_Info_Screen):
     def __init__(self, Title: str):
@@ -189,6 +191,14 @@ class Register_Screen(Get_User_Info_Screen):
             ({current_player_id}, 4, 0)
             """)
 
+            mycursor.execute("""
+            SELECT * 
+            FROM Player;
+            """)
+
+            for record in mycursor:
+                print(record)
+
             # Commit Changes to DB
             # db.commit()
             # db.close()
@@ -205,9 +215,11 @@ class Login_Screen(Get_User_Info_Screen):
         ui_finished = ""
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#username_text_entry":
+                print(event.text)
                 self.set_username(event.text)
 
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#password_text_entry":
+                print(event.text)
                 self.set_password(event.text)
             
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
@@ -246,8 +258,8 @@ class Confirmation_Screen(Screen):
     def __init__(self, Title: str, subtitle: str):
         super(Confirmation_Screen, self).__init__(Title)
         self.__subtitle = subtitle
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((380, 250), (520, 75)), manager=MANAGER, object_id="#title_label", text=Title)
-        self.__SUBTITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((440, 350), (400, 75)), manager=MANAGER, object_id="#subtitle_label", text=self.__subtitle)
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((380, 250), (520, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text=Title)
+        self.__SUBTITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((440, 350), (400, 75)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#subtitle_label"), text=self.__subtitle)
 
     def check_for_user_interaction_with_UI(self):
         keys = pygame.key.get_pressed()
@@ -256,8 +268,8 @@ class Confirmation_Screen(Screen):
         return False 
 
     def show_UI_elements(self):
-        self.__TITLE_LABEL.visible = True
-        self.__SUBTITLE_LABEL.visible = True
+        self.__TITLE_LABEL.show()
+        self.__SUBTITLE_LABEL.show()
     
     def remove_UI_elements(self):
         self.__TITLE_LABEL.hide()
@@ -276,50 +288,88 @@ class Skill_Selection_Screen(Screen):
         super(Skill_Selection_Screen, self).__init__(Title)
 
         # UI
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((190, 100), (900, 75)), manager=MANAGER, object_id="#subtitle_label", text=Title)
-        self.__TEXT_ENTRY_OPTION_ONE = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, ((HEIGHT/2)-70)), (400, 50)), manager = MANAGER, object_id="#option_one_text_entry", placeholder_text="Input PRIMARY Skill of Focus")
-        self.__TEXT_ENTRY_OPTION_TWO = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, 390), (400, 50)), manager = MANAGER, object_id="#option_two_text_entry", placeholder_text="Input SECONDARY Skill of Focus")
-        self.__TEXT_ENTRY_OPTION_THREE = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, 490), (400, 50)), manager = MANAGER, object_id="#option_three_text_entry", placeholder_text="Input THIRD Skill of Focus")
-        self.__TEXT_ENTRY_OPTION_FOUR = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((440, 590), (400, 50)), manager = MANAGER, object_id="#option_four_text_entry", placeholder_text="Input LAST Skill of Focus")
-    
-    def check_text(self, text_to_be_checked):
-        options = ["memory", "speed", "attention", "problem solving"]
-        if text_to_be_checked in options:
-            print(text_to_be_checked)
-            return text_to_be_checked
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((190, 100), (900, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels", object_id="#title_label"), text=Title)
+        
+        # Labels for each Slider
+        self.__SPEED_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 203), (100, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#speed_subtitle_label"), text="SPEED")
+        self.__ATTENTION_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 303), (150, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#attention_subtitle_label"), text="ATTENTION")
+        self.__MEMORY_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 403), (130, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#memory_subtitle_label"), text="MEMORY")
+        self.__PROBLEM_SOLVING_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 503), (250, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#problem_solving_subtitle_label"), text="PROBLEM SOLVING")
+
+        # Sliders for each Category
+        self.__HORIZONTAL_SLIDER_OPTION_ONE = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 200), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider1"))
+        self.__HORIZONTAL_SLIDER_OPTION_TWO = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 300), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider2"))
+        self.__HORIZONTAL_SLIDER_OPTION_THREE = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 400), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider3"))
+        self.__HORIZONTAL_SLIDER_OPTION_FOUR = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 500), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider4"))
+        self.__CONFIRM_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((540, 600), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#confirm_button"), text="CONFIRM")
+
+    # Get values from each Horiztonal Slider
+    def get_value_from_slider(self):
+        speed_value = self.__HORIZONTAL_SLIDER_OPTION_ONE.get_current_value()
+        attention_value = self.__HORIZONTAL_SLIDER_OPTION_TWO.get_current_value()
+        memory_value = self.__HORIZONTAL_SLIDER_OPTION_THREE.get_current_value()
+        problem_solving_value = self.__HORIZONTAL_SLIDER_OPTION_FOUR.get_current_value()
+        array_of_values = [speed_value, attention_value, memory_value, problem_solving_value]
+        return array_of_values
 
     def check_for_user_interaction_with_UI(self):
         for event in pygame.event.get():
-            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_one_text_entry":
-                input_string = event.text
-                input_string = input_string.lower()
-                self.check_text(input_string)
-            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_two_text_entry":
-                input_string = event.text
-                input_string = input_string.lower()
-                self.check_text(input_string)
-            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_three_text_entry":
-                input_string = event.text
-                input_string = input_string.lower()
-                self.check_text(input_string)
-            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#option_four_text_entry":
-                input_string = event.text
-                input_string = input_string.lower()
-                self.check_text(input_string)
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#confirm_button":
+                values = self.get_value_from_slider()
+                weight_values = self.calculate_weighted_values_for_player(values[0], values[1], values[2], values[3])
+                self.register_weights_onto_DB(weight_values)
+
+
             MANAGER.process_events(event)
+    
+    def calculate_weighted_values_for_player(self, speed_value: int, attention_value: int, memory_value: int, problem_solving_value: int):
+        total_value = speed_value + attention_value + memory_value + problem_solving_value
+        
+        weight_speed_value = speed_value / total_value
+        weight_attention_value = attention_value / total_value
+        weight_memory_value = memory_value / total_value
+        weight_problem_solving_value = problem_solving_value / total_value
+
+        return (weight_speed_value, weight_attention_value, weight_memory_value, weight_problem_solving_value)
+
+    def register_weights_onto_DB(self, *weights):
+
+        # Retrieve most recently added record
+        mycursor.execute("""
+        SELECT * 
+        FROM Player
+        ORDER BY PlayerID DESC;
+        """)
+
+        for record in mycursor: # store in the variable record
+            print(record)
+            break
+        player_id = record[0]
+        print(player_id)
+
     
     def remove_UI_elements(self):
         self.__TITLE_LABEL.hide()
-        self.__TEXT_ENTRY_OPTION_ONE.hide()
-        self.__TEXT_ENTRY_OPTION_TWO.hide()
-        self.__TEXT_ENTRY_OPTION_THREE.hide()
-        self.__TEXT_ENTRY_OPTION_FOUR.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_ONE.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_TWO.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_THREE.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_FOUR.hide()
+        self.__CONFIRM_BUTTON.hide()
+        self.__SPEED_LABEL.hide()
+        self.__ATTENTION_LABEL.hide()
+        self.__MEMORY_LABEL.hide()
+        self.__PROBLEM_SOLVING_LABEL.hide()
     
     def show_UI_elements(self):
-        self.__TITLE_LABEL.visible = True
-        self.__TEXT_ENTRY_OPTION_ONE.visible = True
-        self.__TEXT_ENTRY_OPTION_TWO.visible = True
-        self.__TEXT_ENTRY_OPTION_THREE.visible = True
-        self.__TEXT_ENTRY_OPTION_FOUR.visible = True
+        self.__TITLE_LABEL.show()
+        self.__HORIZONTAL_SLIDER_OPTION_ONE.show()
+        self.__HORIZONTAL_SLIDER_OPTION_TWO.show()
+        self.__HORIZONTAL_SLIDER_OPTION_THREE.show()
+        self.__HORIZONTAL_SLIDER_OPTION_FOUR.show()
+        self.__CONFIRM_BUTTON.show()
+        self.__SPEED_LABEL.show()
+        self.__ATTENTION_LABEL.show()
+        self.__MEMORY_LABEL.show()
+        self.__PROBLEM_SOLVING_LABEL.show()
     
 

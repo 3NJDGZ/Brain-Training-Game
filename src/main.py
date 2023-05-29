@@ -3,7 +3,6 @@ import sys
 from screens import *
 
 pygame.init()
-
 class Game:
     def __init__(self):
         self.__UI_REFRESH_RATE = CLOCK.tick(60)/10000
@@ -14,7 +13,7 @@ class Game:
         self.__login_screen = Login_Screen("LOGIN MENU")
         self.__registration_confirmation_screen = Registration_Confirmation_Screen("REGISTRATION SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
-        self.__skill_selection_screen = Skill_Selection_Screen("SKILLS TO INPUT: SPEED, ATTENTION, MEMORY, PROBLEM SOLVING.")
+        self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen, self.__registration_confirmation_screen, self.__login_confirmation_screen, self.__skill_selection_screen]
         self.__current_pos = 0
         self.__current_screen = self.screens[self.__current_pos]
@@ -123,8 +122,8 @@ class Game:
         else:
             self.__current_screen.show_UI_elements()
             self.__current_screen.check_for_user_interaction_with_UI()
-
-
+            # print(self.__current_screen.get_value_from_slider())
+            
     def check_screen_state(self):
         return self.__current_pos
 

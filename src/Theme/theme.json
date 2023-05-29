@@ -25,7 +25,7 @@
             "unfilled_bar":"#CCCCCC"
         }
     },
-    "#username_text_entry":
+    "@text_entry_lines":
     {
         "colours":
         {
@@ -42,95 +42,7 @@
             "padding": "6,4"
         }
     },
-    "#password_text_entry":
-    {
-        "colours":
-        {
-            "dark_bg":"#7d7d7d",
-            "normal_text":"#ffffff",
-            "normal_border": "#DDDDDD" 
-        },
-        "misc":
-        {
-            "shape": "rounded_rectangle",
-            "shape_corner_radius": 5,
-            "border_width": "1",
-            "shadow_width": "3",
-            "padding": "6,4"
-        }
-    },
-    "#option_one_text_entry":
-    {
-        "colours":
-        {
-            "dark_bg":"#88adf7",
-            "normal_text":"#ffffff",
-            "normal_border": "#DDDDDD" 
-        },
-        "misc":
-        {
-            "shape": "rounded_rectangle",
-            "shape_corner_radius": 5,
-            "border_width": "1",
-            "shadow_width": "3",
-            "padding": "6,4"
-        }
-    },
-    "#option_two_text_entry":
-    {
-        "colours":
-        {
-            "dark_bg":"#6094fc",
-            "normal_text":"#ffffff",
-            "normal_border": "#DDDDDD" 
-        },
-        "misc":
-        {
-            "shape": "rounded_rectangle",
-            "shape_corner_radius": 5,
-            "border_width": "1",
-            "shadow_width": "3",
-            "padding": "6,4"
-        }
-    },
-
-    "#option_three_text_entry":
-    {
-        "colours":
-        {
-            "dark_bg":"#4280fc",
-            "normal_text":"#ffffff",
-            "normal_border": "#DDDDDD" 
-        },
-        "misc":
-        {
-            "shape": "rounded_rectangle",
-            "shape_corner_radius": 5,
-            "border_width": "1",
-            "shadow_width": "3",
-            "padding": "6,4"
-        }
-    },
-
-    "#option_four_text_entry":
-    {
-        "colours":
-        {
-            "dark_bg":"#2068f7",
-            "normal_text":"#ffffff",
-            "normal_border": "#DDDDDD" 
-        },
-        "misc":
-        {
-            "shape": "rounded_rectangle",
-            "shape_corner_radius": 5,
-            "border_width": "1",
-            "shadow_width": "3",
-            "padding": "6,4"
-        }
-    },
-
-    "#login_button":
+    "@buttons":
     {
         "colours":
         {
@@ -146,103 +58,7 @@
             }
         }
     },
-    "#register_button":
-    {
-        "colours":
-        {
-            "normal_bg":"#7d7d7d"
-        },
-        "font":
-        {
-            "name":"helvetica",
-            "size":"30",
-            "regular_resource": {
-                "package":"Fonts",
-                "resource":"Helvetica.ttf"
-            }
-        }
-    },
-    "#go_back_button":
-    {
-        "colours":
-        {
-            "normal_bg":"#7d7d7d"
-        },
-        "font":
-        {
-            "name":"helvetica",
-            "size":"30",
-            "regular_resource": {
-                "package":"Fonts",
-                "resource":"Helvetica.ttf"
-            }
-        } 
-    },
-    "#memory_button":
-    {
-        "colours":
-        {
-            "normal_bg":"#7d7d7d"
-        },
-        "font":
-        {
-            "name":"helvetica",
-            "size":"30",
-            "regular_resource": {
-                "package":"Fonts",
-                "resource":"Helvetica.ttf"
-            }
-        } 
-    },
-    "#attention_button":
-    {
-        "colours":
-        {
-            "normal_bg":"#7d7d7d"
-        },
-        "font":
-        {
-            "name":"helvetica",
-            "size":"30",
-            "regular_resource": {
-                "package":"Fonts",
-                "resource":"Helvetica.ttf"
-            }
-        } 
-    },
-    "#speed_button":
-    {
-        "colours":
-        {
-            "normal_bg":"#7d7d7d"
-        },
-        "font":
-        {
-            "name":"helvetica",
-            "size":"30",
-            "regular_resource": {
-                "package":"Fonts",
-                "resource":"Helvetica.ttf"
-            }
-        } 
-    },
-    "#PS_button":
-    {
-        "colours":
-        {
-            "normal_bg":"#7d7d7d"
-        },
-        "font":
-        {
-            "name":"helvetica",
-            "size":"30",
-            "regular_resource": {
-                "package":"Fonts",
-                "resource":"Helvetica.ttf"
-            }
-        } 
-    },
-    "#title_label":
+    "@title_labels":
     {
         "colours":
         {
@@ -258,7 +74,7 @@
             }
         }
     },
-    "#subtitle_label":
+    "@subtitle_labels":
     {
         "colours":
         {
@@ -272,6 +88,30 @@
                 "package":"Fonts",
                 "resource":"Helvetica.ttf"
             }
+        }
+    },
+    "@horizontal_sliders":
+    {
+        "colours":
+        {
+            "dark_bg":"#7d7d7d",
+            "hovered_bg":"#00c8ff",
+            "normal_border":"#ffffff"
+        },
+        "misc":
+        {
+            "shape":"rounded_rectangle",
+            "shape_corner_radius":"20",
+            "border_width":"5"
+        }
+    },
+    "@horizontal_sliders.@arrow_button":
+    {
+        "misc":
+        {
+            "shape":"rounded_rectangle",
+            "shape_corner_radius":"5",
+            "border_width":"2"
         }
     }
 

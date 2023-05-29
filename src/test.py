@@ -1,47 +1,38 @@
-import pygame
-import pygame_gui
+def calculate_weights(importance1, importance2, importance3, importance4):
+    total_importance = importance1 + importance2 + importance3 + importance4
 
-pygame.init()
+    weight1 = importance1 / total_importance
+    weight2 = importance2 / total_importance
+    weight3 = importance3 / total_importance
+    weight4 = importance4 / total_importance
 
-# Set up the display surface
-DISPLAY_SURFACE = pygame.display.set_mode((640, 480))
-pygame.display.set_caption("Drop-down menu")
+    weight_sum = weight1 + weight2 + weight3 + weight4
+    # if weight_sum != 1:
+    #     weight1 /= weight_sum
+    #     weight2 /= weight_sum
+    #     weight3 /= weight_sum
+    #     weight4 /= weight_sum
 
-# Create the UI manager
-UI_MANAGER = pygame_gui.UIManager((640, 480))
+    return weight1, weight2, weight3, weight4
 
-# Create the drop-down menu
-options = ["Option 1", "Option 2", "Option 3"]
-dropdown_menu = pygame_gui.elements.UIDropDownMenu(
-    options_list=options,
-    starting_option=options[0],
-    relative_rect=pygame.Rect(50, 50, 200, 30),
-    manager=UI_MANAGER,
-)
+# Mock data
+importance1 = 745
+importance2 = 286
+importance3 = 125
+importance4 = 340
 
-# Run the game loop
-clock = pygame.time.Clock()
-running = True
-while running:
-    # Handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+# Calculate weights
+weight1, weight2, weight3, weight4 = calculate_weights(importance1, importance2, importance3, importance4)
 
-        # Pass events to the UI manager
-        UI_MANAGER.process_events(event)
+# Print the results
+print("Importance Values:")
+print("Input 1:", importance1)
+print("Input 2:", importance2)
+print("Input 3:", importance3)
+print("Input 4:", importance4)
 
-    # Update the UI manager
-    UI_MANAGER.update(clock.tick(60) / 1000.0)
-
-    # Get the selected option
-    selected_option = dropdown_menu.selected_option
-    print(selected_option)
-
-    # Draw the UI manager
-    DISPLAY_SURFACE.fill((255, 255, 255))
-    UI_MANAGER.draw_ui(DISPLAY_SURFACE)
-
-    pygame.display.update()
-
-pygame.quit()
+print("\nWeight Values:")
+print("Input 1 Weight:", weight1)
+print("Input 2 Weight:", weight2)
+print("Input 3 Weight:", weight3)
+print("Input 4 Weight:", weight4)
