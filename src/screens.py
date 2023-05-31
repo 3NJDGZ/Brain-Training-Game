@@ -1,8 +1,7 @@
 import pygame
-import pygame_gui
-from pygame_gui import *
-from pygame_gui.core import ObjectID
 import mysql.connector
+import pygame_gui
+from pygame_gui.core import ObjectID
 from abc import ABC, abstractmethod
 
 pygame.init()
@@ -16,27 +15,6 @@ pygame.display.set_caption("Brain Training Game")
 
 # Pygame_GUI
 MANAGER = pygame_gui.UIManager((WIDTH, HEIGHT), 'src/Theme/theme.json')
-
-# Connect to host root server on computer 
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="password",
-    database="MainDB"
-)
-# Setup cursor to execute SQL commands on DB
-mycursor = db.cursor()
-
-# Reset auto increment of PlayerID in Player Entity
-def reset_auto_increment(x: int):
-    mycursor.execute(f"""
-    ALTER TABLE Player 
-    AUTO_INCREMENT = {x};
-    """)
-    db.commit()
-    db.close()
-
-# reset_auto_increment(5)
 
 class Screen(ABC):
     def __init__(self, Title: str):
@@ -52,6 +30,17 @@ class Screen(ABC):
 
     def _fill_with_colour(self):
         self._WIN.fill((self._screen_colour))
+    
+    # Create connection to the MySQL DB
+    def create_connection(self):
+        # Connect to host root server on computer 
+        db = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            passwd="password",
+            database="MainDB"
+        )
+        return db
     
     @abstractmethod
     def show_UI_elements(self):
@@ -156,6 +145,11 @@ class Register_Screen(Get_User_Info_Screen):
             MANAGER.process_events(event)
     
     def register(self, username, password):
+
+        # Create connection + create cursor
+        db = self.create_connection()
+        mycursor = db.cursor()
+
         successful_registration = False
         if len(username) > 0 and len(password) > 0:
             mycursor.execute(f"""
@@ -200,11 +194,12 @@ class Register_Screen(Get_User_Info_Screen):
                 print(record)
 
             # Commit Changes to DB
-            # db.commit()
-            # db.close()
+            db.commit()
+            db.close()
 
             successful_registration = True
             mycursor.reset()
+            mycursor.close()
         return successful_registration
 
 class Login_Screen(Get_User_Info_Screen):
@@ -236,6 +231,10 @@ class Login_Screen(Get_User_Info_Screen):
     
     def login(self, username: str, password: str):
 
+        # Create connection + create cursor
+        db = self.create_connection()
+        mycursor = db.cursor()
+
         valid_details = False
         # check if username and password is valid 
         mycursor.execute(f"""
@@ -251,6 +250,7 @@ class Login_Screen(Get_User_Info_Screen):
                 valid_details = False
         
         mycursor.reset()
+        mycursor.close()
 
         return valid_details
 
@@ -291,25 +291,25 @@ class Skill_Selection_Screen(Screen):
         self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((190, 100), (900, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels", object_id="#title_label"), text=Title)
         
         # Labels for each Slider
-        self.__SPEED_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 203), (100, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#speed_subtitle_label"), text="SPEED")
+        self.__SPEED_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 403), (100, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#speed_subtitle_label"), text="SPEED")
         self.__ATTENTION_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 303), (150, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#attention_subtitle_label"), text="ATTENTION")
-        self.__MEMORY_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 403), (130, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#memory_subtitle_label"), text="MEMORY")
+        self.__MEMORY_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 203), (130, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#memory_subtitle_label"), text="MEMORY")
         self.__PROBLEM_SOLVING_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1000, 503), (250, 40)), manager=MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#problem_solving_subtitle_label"), text="PROBLEM SOLVING")
 
         # Sliders for each Category
-        self.__HORIZONTAL_SLIDER_OPTION_ONE = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 200), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider1"))
-        self.__HORIZONTAL_SLIDER_OPTION_TWO = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 300), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider2"))
-        self.__HORIZONTAL_SLIDER_OPTION_THREE = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 400), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider3"))
-        self.__HORIZONTAL_SLIDER_OPTION_FOUR = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 500), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider4"))
+        self.__HORIZONTAL_SLIDER_OPTION_ONE_MEMORY = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 200), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider1_memory"))
+        self.__HORIZONTAL_SLIDER_OPTION_TWO_ATTENTION = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 300), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider2_attention"))
+        self.__HORIZONTAL_SLIDER_OPTION_THREE_SPEED = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 400), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider3_speed"))
+        self.__HORIZONTAL_SLIDER_OPTION_FOUR_PROBLEM_SOLVING = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((290, 500), (700, 50)), manager=MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider4_problem_solving"))
         self.__CONFIRM_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((540, 600), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#confirm_button"), text="CONFIRM")
 
     # Get values from each Horiztonal Slider
     def get_value_from_slider(self):
-        speed_value = self.__HORIZONTAL_SLIDER_OPTION_ONE.get_current_value()
-        attention_value = self.__HORIZONTAL_SLIDER_OPTION_TWO.get_current_value()
-        memory_value = self.__HORIZONTAL_SLIDER_OPTION_THREE.get_current_value()
-        problem_solving_value = self.__HORIZONTAL_SLIDER_OPTION_FOUR.get_current_value()
-        array_of_values = [speed_value, attention_value, memory_value, problem_solving_value]
+        memory_value = self.__HORIZONTAL_SLIDER_OPTION_ONE_MEMORY.get_current_value()
+        attention_value = self.__HORIZONTAL_SLIDER_OPTION_TWO_ATTENTION.get_current_value()
+        speed_value = self.__HORIZONTAL_SLIDER_OPTION_THREE_SPEED.get_current_value()
+        problem_solving_value = self.__HORIZONTAL_SLIDER_OPTION_FOUR_PROBLEM_SOLVING.get_current_value()
+        array_of_values = [memory_value, attention_value, speed_value, problem_solving_value] # in order of the cognitive areas entity within the database
         return array_of_values
 
     def check_for_user_interaction_with_UI(self):
@@ -318,11 +318,11 @@ class Skill_Selection_Screen(Screen):
                 values = self.get_value_from_slider()
                 weight_values = self.calculate_weighted_values_for_player(values[0], values[1], values[2], values[3])
                 self.register_weights_onto_DB(weight_values)
-
+                return True
 
             MANAGER.process_events(event)
     
-    def calculate_weighted_values_for_player(self, speed_value: int, attention_value: int, memory_value: int, problem_solving_value: int):
+    def calculate_weighted_values_for_player(self, memory_value: int, attention_value: int, speed_value: int, problem_solving_value: int):
         total_value = speed_value + attention_value + memory_value + problem_solving_value
         
         weight_speed_value = speed_value / total_value
@@ -330,30 +330,82 @@ class Skill_Selection_Screen(Screen):
         weight_memory_value = memory_value / total_value
         weight_problem_solving_value = problem_solving_value / total_value
 
-        return (weight_speed_value, weight_attention_value, weight_memory_value, weight_problem_solving_value)
+        return (weight_memory_value, weight_attention_value, weight_speed_value, weight_problem_solving_value)
 
-    def register_weights_onto_DB(self, *weights):
+    def register_weights_onto_DB(self, weights):
 
-        # Retrieve most recently added record
+        # Create connection + create cursor
+        db = self.create_connection()
+        mycursor = db.cursor()
+        
+        # Get Player_ID
         mycursor.execute("""
         SELECT * 
         FROM Player
-        ORDER BY PlayerID DESC;
+        ORDER BY PlayerID DESC
         """)
 
-        for record in mycursor: # store in the variable record
-            print(record)
+        records = mycursor.fetchall()
+        for record in records:
+            player_id = record[0]
             break
-        player_id = record[0]
+            
         print(player_id)
 
+        # Cogntiive Area ID 1 (Memory)
+        mycursor.execute(f"""
+        UPDATE Weights
+        SET WeightValue = {weights[0]}
+        WHERE CognitiveAreaID = 1
+        AND PlayerID = {player_id};
+        """)
+
+        # Cognitive Area ID 2 (Attention)
+        mycursor.execute(f"""
+        UPDATE Weights
+        SET WeightValue = {weights[1]}
+        WHERE CognitiveAreaID = 2
+        AND PlayerID = {player_id};
+        """)
+
+        # Cognitive Area ID 3 (Speed)
+        mycursor.execute(f"""
+        UPDATE Weights
+        SET WeightValue = {weights[2]}
+        WHERE CognitiveAreaID = 3
+        AND PlayerID = {player_id};
+        """)
+
+        # Cognitive Area ID 4 (Problem Solving)
+        mycursor.execute(f"""
+        UPDATE Weights
+        SET WeightValue = {weights[3]}
+        WHERE CognitiveAreaID = 4
+        AND PlayerID = {player_id};
+        """)
+    
+        # Printing if the values have been recorded 
+        mycursor.execute("""
+        SELECT *
+        FROM Weights;
+        """)
+        print("\n")
+        for x in mycursor:
+            print(x)
+        
+        # Commit Changes to DB
+        db.commit()
+        db.close()
+
+        mycursor.reset()
+        mycursor.close()
     
     def remove_UI_elements(self):
         self.__TITLE_LABEL.hide()
-        self.__HORIZONTAL_SLIDER_OPTION_ONE.hide()
-        self.__HORIZONTAL_SLIDER_OPTION_TWO.hide()
-        self.__HORIZONTAL_SLIDER_OPTION_THREE.hide()
-        self.__HORIZONTAL_SLIDER_OPTION_FOUR.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_ONE_MEMORY.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_TWO_ATTENTION.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_THREE_SPEED.hide()
+        self.__HORIZONTAL_SLIDER_OPTION_FOUR_PROBLEM_SOLVING.hide()
         self.__CONFIRM_BUTTON.hide()
         self.__SPEED_LABEL.hide()
         self.__ATTENTION_LABEL.hide()
@@ -362,10 +414,10 @@ class Skill_Selection_Screen(Screen):
     
     def show_UI_elements(self):
         self.__TITLE_LABEL.show()
-        self.__HORIZONTAL_SLIDER_OPTION_ONE.show()
-        self.__HORIZONTAL_SLIDER_OPTION_TWO.show()
-        self.__HORIZONTAL_SLIDER_OPTION_THREE.show()
-        self.__HORIZONTAL_SLIDER_OPTION_FOUR.show()
+        self.__HORIZONTAL_SLIDER_OPTION_ONE_MEMORY.show()
+        self.__HORIZONTAL_SLIDER_OPTION_TWO_ATTENTION.show()
+        self.__HORIZONTAL_SLIDER_OPTION_THREE_SPEED.show()
+        self.__HORIZONTAL_SLIDER_OPTION_FOUR_PROBLEM_SOLVING.show()
         self.__CONFIRM_BUTTON.show()
         self.__SPEED_LABEL.show()
         self.__ATTENTION_LABEL.show()

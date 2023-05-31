@@ -121,8 +121,9 @@ class Game:
             self.__skill_selection_screen.remove_UI_elements()
         else:
             self.__current_screen.show_UI_elements()
-            self.__current_screen.check_for_user_interaction_with_UI()
-            # print(self.__current_screen.get_value_from_slider())
+            confirmed = self.__current_screen.check_for_user_interaction_with_UI()
+            if confirmed:
+                self.__current_pos -= 2
             
     def check_screen_state(self):
         return self.__current_pos
