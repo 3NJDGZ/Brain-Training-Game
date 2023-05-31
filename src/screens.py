@@ -1,4 +1,5 @@
 import pygame
+import random
 import mysql.connector
 import pygame_gui
 from pygame_gui.core import ObjectID
@@ -15,6 +16,27 @@ pygame.display.set_caption("Brain Training Game")
 
 # Pygame_GUI
 MANAGER = pygame_gui.UIManager((WIDTH, HEIGHT), 'src/Theme/theme.json')
+
+# Reset auto increment of PlayerID in Player Entity
+def reset_auto_increment(x: int):
+    # Connect to host root server on computer 
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        passwd="password",
+        database="MainDB"
+    )
+    # Setup cursor to execute SQL commands on DB
+    mycursor = db.cursor()
+
+    mycursor.execute(f"""
+    ALTER TABLE Player 
+    AUTO_INCREMENT = {x};
+    """)
+    db.commit()
+    db.close()
+
+reset_auto_increment(3)
 
 class Screen(ABC):
     def __init__(self, Title: str):
@@ -143,6 +165,16 @@ class Register_Screen(Get_User_Info_Screen):
                 return ui_finished
 
             MANAGER.process_events(event)
+        
+    def generate_random_salt(self):
+        random_length = random.randint(5, 20)
+        salt = ""
+
+        for loop in range(random_length):
+            salt += chr(random.randint(0, 127))
+        
+        return salt
+
     
     def register(self, username, password):
 
@@ -152,20 +184,25 @@ class Register_Screen(Get_User_Info_Screen):
 
         successful_registration = False
         if len(username) > 0 and len(password) > 0:
+            salt = self.generate_random_salt()
             mycursor.execute(f"""
-            INSERT INTO Player (Username, Password)
-            VALUES ('{username}', '{password}');
+            INSERT INTO Player (Username, Password, Salt)
+            VALUES ('{username}', aes_encrypt(concat('{password}', md5('{salt}')), 'encryptionkey1234'), md5('{salt}'));
             """)
 
             # Fetch PlayerID of the newly registered Player from the Player Entity
             mycursor.execute(f"""
-            SELECT PlayerID
+            SELECT *
             FROM Player
-            WHERE Player.Username = '{username}'
-            AND Player.Password = '{password}'
+            ORDER BY PlayerID DESC
             """)
-            for x in mycursor:
-                current_player_id = x[0]
+
+            records = mycursor.fetchall()
+            for record in records:
+                current_player_id = record[0]
+                break
+
+            print(current_player_id)
 
             # Set up default information in Weights Entity 
             mycursor.execute(f"""
@@ -236,9 +273,9 @@ class Login_Screen(Get_User_Info_Screen):
         mycursor = db.cursor()
 
         valid_details = False
-        # check if username and password is valid 
+        # check if username and password is valid (replace + decrypt salted passwords)
         mycursor.execute(f"""
-        SELECT Username, Password
+        SELECT Username, replace(cast(aes_decrypt(Password, 'encryptionkey1234') as char(100)), Salt, '') 
         FROM Player;
         """)
 
