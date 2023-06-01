@@ -14,7 +14,17 @@ class Game:
         self.__registration_confirmation_screen = Registration_Confirmation_Screen("REGISTRATION SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
-        self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen, self.__registration_confirmation_screen, self.__login_confirmation_screen, self.__skill_selection_screen]
+        self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
+
+        # Array of screens which will be used to specify the current screen to the user as the current index positioning.
+        self.screens = [self.__intro_screen, # 0
+                        self.__register_screen, # 1
+                        self.__login_screen, # 2
+                        self.__registration_confirmation_screen, # 3
+                        self.__login_confirmation_screen, # 4
+                        self.__skill_selection_screen, # 5
+                        self.__main_menu_screen # 6
+                        ]
         self.__current_pos = 0
         self.__current_screen = self.screens[self.__current_pos]
 
@@ -34,6 +44,8 @@ class Game:
         
             self.__current_screen = self.screens[self.__current_pos]
 
+            # print(len(self.screens))
+
             # print(f"Current State: {self.check_screen_state()}")
 
             self.__current_screen.show_UI_elements()
@@ -48,6 +60,8 @@ class Game:
 
             self.check_if_screen_is_registration_confirmation()
             self.check_if_screen_is_login_confirmation()
+
+            self.check_if_screen_is_main_menu()
 
             MANAGER.process_events(event)
 
@@ -69,7 +83,7 @@ class Game:
         else:
             self.__current_screen.show_UI_elements()
             if self.__current_screen.check_for_user_interaction_with_UI():
-                print("sewey")
+                self.__current_pos += 2
 
     def check_if_screen_is_register(self):
         if not isinstance(self.__current_screen, Register_Screen):
@@ -124,6 +138,13 @@ class Game:
             confirmed = self.__current_screen.check_for_user_interaction_with_UI()
             if confirmed:
                 self.__current_pos -= 2
+    
+    def check_if_screen_is_main_menu(self):
+        if not isinstance(self.__current_screen, Main_Menu_Screen):
+            self.__main_menu_screen.remove_UI_elements()
+        else:
+            self.__current_screen.show_UI_elements()
+            self.__current_screen.check_for_user_interaction_with_UI()
             
     def check_screen_state(self):
         return self.__current_pos

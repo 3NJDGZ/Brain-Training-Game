@@ -36,7 +36,7 @@ def reset_auto_increment(x: int):
     db.commit()
     db.close()
 
-reset_auto_increment(3)
+# reset_auto_increment(3)
 
 class Screen(ABC):
     def __init__(self, Title: str):
@@ -461,4 +461,40 @@ class Skill_Selection_Screen(Screen):
         self.__MEMORY_LABEL.show()
         self.__PROBLEM_SOLVING_LABEL.show()
     
+class Main_Menu_Screen(Screen):
+    def __init__(self, Title: str):
+        super().__init__(Title)
 
+        # UI
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((390, 75), (500, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="MAIN MENU")
+        self.__PLAY_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((540, 200), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#play_button"), text="PLAY")
+        self.__SETTINGS_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((540, 300), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#settings_button"), text="SETTINGS")
+        self.__TUTORIAL_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((540, 400), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#tutorial_button"), text="TUTORIAL")
+        self.__STATS_AND_PERFORMANCE_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((415, 500), (450, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#stats_and_performance_button"), text="STATS & PERFORMANCE")
+    
+    def show_UI_elements(self):
+        self.__TITLE_LABEL.show()
+        self.__PLAY_BUTTON.show()
+        self.__SETTINGS_BUTTON.show()
+        self.__TUTORIAL_BUTTON.show()
+        self.__STATS_AND_PERFORMANCE_BUTTON.show()
+    
+    def remove_UI_elements(self):
+        self.__TITLE_LABEL.hide()
+        self.__PLAY_BUTTON.hide()
+        self.__SETTINGS_BUTTON.hide()
+        self.__TUTORIAL_BUTTON.hide()
+        self.__STATS_AND_PERFORMANCE_BUTTON.hide()
+
+    def check_for_user_interaction_with_UI(self):
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#play_button":
+                print("play button has been pressed")
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#settings_button":
+                print("settings button has been pressed")
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#tutorial_button":
+                print("tutorial button has been pressed")
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#stats_and_performance_button":
+                print("stats and performance button has been pressed")
+            
+            MANAGER.process_events(event)
