@@ -5,7 +5,7 @@ from screens import *
 pygame.init()
 class Game:
     def __init__(self):
-        self.__UI_REFRESH_RATE = CLOCK.tick(60)/10000
+        self.__UI_REFRESH_RATE = CLOCK.tick(60)/1000
 
         # Screens
         self.__intro_screen = Intro_Screen("Intro!")
@@ -44,13 +44,8 @@ class Game:
         
             self.__current_screen = self.screens[self.__current_pos]
 
-            # print(len(self.screens))
-
-            # print(f"Current State: {self.check_screen_state()}")
-
             self.__current_screen.show_UI_elements()
             
-            self.update_UI_screen()
             self.__current_screen._fill_with_colour()
 
             self.check_if_screen_is_intro()
@@ -63,9 +58,8 @@ class Game:
 
             self.check_if_screen_is_main_menu()
 
-            MANAGER.process_events(event)
-
             self.draw_UI(self.__current_screen)
+            self.update_UI_screen()
             self.update_screen()
 
     # State Transition Functions 
