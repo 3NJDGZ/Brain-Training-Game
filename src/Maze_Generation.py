@@ -1,11 +1,17 @@
 import pygame
 import time
 from random import randint
+import random
+import sys
+
+sys.setrecursionlimit(10**6)
+
+pygame.init()
 
 # Initialise Variables
 CLOCK = pygame.time.Clock()
 WIDTH = 1280
-STARTING_TILE_SIZE = 80 # common factors between 1280, 720: 80, 40, 16, 8, 4, 2, 1
+STARTING_TILE_SIZE = 8 # common factors between 1280, 720: 80, 40, 16, 8, 4, 2, 1
 HEIGHT = 720
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 LINE_COLOUR = (255, 0, 0)
@@ -56,46 +62,25 @@ class Cell:
                       "bottom": True,
                       "left": True}
         self.__visited = False
-        self.__current = False
+    
+    def get_walls(self):
+        return self.__walls
+    
+    def set_walls(self, wall_to_be_changed, value: bool):
+        self.__walls[f'{wall_to_be_changed}'] = value
     
     def set_visited(self, value: bool):
         self.__visited = value
     
     def get_row_column_positioning(self):
         return [self.__x // STARTING_TILE_SIZE, self.__y // STARTING_TILE_SIZE]
-
-    def draw_current_cell(self):
-        if self.__current == True:
-            pygame.draw.rect(WIN, (255, 255, 0), (self.__x, self.__y, STARTING_TILE_SIZE, STARTING_TILE_SIZE))
             
-    
-    def draw_cell(self, WIN: WIN):
-        # print(f"x: {self.__x}, y: {self.__y}.")
-        if self.__visited == True:
-            pygame.draw.rect(WIN, (255, 255, 255), (self.__x, self.__y, STARTING_TILE_SIZE, STARTING_TILE_SIZE))
-        if self.__walls["top"] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y))
-        if self.__walls["right"] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y - STARTING_TILE_SIZE))
-        if self.__walls["bottom"] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y - STARTING_TILE_SIZE), (self.__x, self.__y - STARTING_TILE_SIZE))
-        if self.__walls["left"] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y - STARTING_TILE_SIZE), (self.__x, self.__y))
-        
-class RecursiveDepthFirstSearch:
-    def __init__(self, grid_of_cells, stack: Stack):
-        self.grid_of_cells = grid_of_cells
-        self.stack = stack
-        self.visited_cells = []
-    
-    def _dfs(self):
-        current_cell = stack.peek()
-        current_cell.draw_cell(WIN)
-        self.visited_cells.append(current_cell)
-        current_cell_column_row_positioning = current_cell.get_row_column_positioning()
+    def check_adjacent_cells(self):
+
+        adjacent_cells = []
+        current_cell_column_row_positioning = self.get_row_column_positioning()
         current_column = current_cell_column_row_positioning[0]
         current_row = current_cell_column_row_positioning[1]
-        adjacent_cells = []
 
         # check for adjacent nodes
         if current_column - 1 >= 0: # cell to the left
@@ -106,14 +91,23 @@ class RecursiveDepthFirstSearch:
             adjacent_cells.append(grid_of_cells[current_row - 1][current_column])
         if current_row + 1 < rows: # cell beneath the current cell 
             adjacent_cells.append(grid_of_cells[current_row + 1][current_column])
-
-        for connected_cell in adjacent_cells:
-            if connected_cell not in self.visited_cells:
-                connected_cell.set_visited(True)
-                stack.push(connected_cell)
-                self._dfs()
-        stack.pop()
-            
+        
+        random.shuffle(adjacent_cells)
+        return adjacent_cells
+    
+    def draw_cell(self):
+        # print(f"x: {self.__x}, y: {self.__y}.")
+        if self.__visited == True:
+            pygame.draw.rect(WIN, (255, 255, 255), (self.__x, self.__y, STARTING_TILE_SIZE, STARTING_TILE_SIZE))
+        if self.__walls['top'] == True:
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y), 4)
+        if self.__walls['right'] == True:
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), 4)
+        if self.__walls['bottom'] == True:
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y + STARTING_TILE_SIZE), 4)
+        if self.__walls['left'] == True:
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y), 4)
+        
 print(f"Columns: {cols}")
 print(f"Rows: {rows}")
 
@@ -129,17 +123,16 @@ row = 0
 column = 0
 current_cell = grid_of_cells[row][column]
 
-print(f"Number of Cells: {len(grid_of_cells)}")
+print(f"Number of Cells: {len(grid_of_cells) * cols}")
 
 stack = Stack(len(grid_of_cells) * cols)
 stack.push(current_cell)
-dfs = RecursiveDepthFirstSearch(grid_of_cells, stack)
-dfs._dfs()
-
+visited_cells = []
 
 def main():
     running = True
     CLOCK.tick(60)
+    dfs()
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -148,16 +141,62 @@ def main():
         
         WIN.fill((255, 120, 50))
 
-
         # Draw the cells
         for row in grid_of_cells:
             for cell in row:
-                cell.draw_cell(WIN)
+                cell.draw_cell()
     
         pygame.display.update()
-        pygame.time.delay(100)
 
     pygame.quit()
+
+def dfs():
+    current_cell = stack.peek()
+    if current_cell is not None:
+        current_cell.set_visited(True)
+        visited_cells.append(stack.peek())
+        adjacent_cells = current_cell.check_adjacent_cells()
+        
+        for connected_cell in adjacent_cells:
+            if connected_cell not in visited_cells:
+                if connected_cell is not None:
+                    stack.push(connected_cell)
+                    remove_walls(current_cell, connected_cell)
+                    dfs()
+        stack.pop()
+
+def remove_walls(current_cell: Cell, next_cell: Cell):
+    current_cell_column_row_positioning = current_cell.get_row_column_positioning()
+    next_cell_column_row_positioning = next_cell.get_row_column_positioning()
+
+    # column then row [column, row]
+    print(f"Current: {current_cell_column_row_positioning}, Next: {next_cell_column_row_positioning}")
+    current_x = current_cell_column_row_positioning[0]
+    current_y = current_cell_column_row_positioning[1]
+    next_x = next_cell_column_row_positioning[0]
+    next_y = next_cell_column_row_positioning[1]
+
+    # check if top cell is next cell relative to current cell
+    if current_y - next_y == 1:
+        next_cell.set_walls('bottom', False)
+        current_cell.set_walls('top', False)
+    
+    # check if bottom cell is next cell relative to current cell
+    if current_y - next_y == -1:
+        next_cell.set_walls('top', False)
+        current_cell.set_walls('bottom', False)
+    
+    # check if right cell is next cell relative to current cell
+    if current_x - next_x == -1:
+        next_cell.set_walls('left', False)
+        current_cell.set_walls('right', False)
+    
+    # check if left cell is next cell relative to current cell
+    if current_x - next_x == 1:
+        next_cell.set_walls('right', False)
+        current_cell.set_walls('left', False)
+    
+    print(f"Current: {current_cell.get_walls()}, Next: {next_cell.get_walls()}")
 
 if __name__ == "__main__":
     main()
