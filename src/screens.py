@@ -9,7 +9,6 @@ pygame.init()
 
 # Initialise Variables for Pygame
 WIDTH = 1280
-TILE = 100
 HEIGHT = 720
 CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Brain Training Game")
@@ -462,7 +461,7 @@ class Skill_Selection_Screen(Screen):
     
 class Main_Menu_Screen(Screen):
     def __init__(self, Title: str):
-        super().__init__(Title)
+        super(Main_Menu_Screen, self).__init__(Title)
 
         # UI
         self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((390, 75), (500, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="MAIN MENU")
@@ -486,14 +485,194 @@ class Main_Menu_Screen(Screen):
         self.__STATS_AND_PERFORMANCE_BUTTON.hide()
 
     def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#play_button":
-                print("play button has been pressed")
+                ui_finished = "PLAY"
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#settings_button":
-                print("settings button has been pressed")
+                ui_finished = "SETTINGS"
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#tutorial_button":
-                print("tutorial button has been pressed")
+                ui_finished = "TUTORIAL"
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#stats_and_performance_button":
-                print("stats and performance button has been pressed")
+                ui_finished = "STATS"
             
             MANAGER.process_events(event)
+        return ui_finished
+
+class Stack:
+    def __init__(self, maxsize):
+        self.items = [None] * maxsize
+        self.stackpointer = -1
+    
+    def push(self, item):
+        if self.stackpointer != len(self.items)-1:
+            self.stackpointer += 1
+            self.items[self.stackpointer] = item
+    
+    def pop(self):
+        if self.stackpointer != -1:
+            self.stackpointer -= 1
+            return self.items[self.stackpointer + 1]
+    
+    def is_full(self):
+        if self.stackpointer == len(self.items) - 1:
+            return True
+        else:
+            return False
+    
+    def is_empty(self):
+        if self.stackpointer == -1:
+            return True
+        else:
+            return False
+    
+    def print_data(self):
+        for i in self.items:
+            print(i)
+
+    def peek(self):
+        return self.items[self.stackpointer]
+
+class Cell:
+    def __init__(self, x: int, y: int, WIN, STARTING_TILE_SIZE: int, grid_of_cells, cols: int, rows: int, LINE_COLOUR):
+        self.STARTING_TILE_SIZE = STARTING_TILE_SIZE
+        self.WIN = WIN
+        self.grid_of_cells = grid_of_cells
+        self.cols = cols
+        self.rows = rows
+        self.LINE_COLOUR = LINE_COLOUR
+        self.__x = x
+        self.__y = y
+        self.__walls = {"top": True,
+                      "right": True,
+                      "bottom": True,
+                      "left": True}
+        self.__visited = False
+    
+    def get_walls(self):
+        return self.__walls
+    
+    def set_walls(self, wall_to_be_changed, value: bool):
+        self.__walls[f'{wall_to_be_changed}'] = value
+    
+    def set_visited(self, value: bool):
+        self.__visited = value
+    
+    def get_row_column_positioning(self):
+        return [self.__x // self.STARTING_TILE_SIZE, self.__y // self.STARTING_TILE_SIZE]
+            
+    def check_adjacent_cells(self):
+
+        adjacent_cells = []
+        current_cell_column_row_positioning = self.get_row_column_positioning()
+        current_column = current_cell_column_row_positioning[0]
+        current_row = current_cell_column_row_positioning[1]
+
+        # check for adjacent nodes
+        if current_column - 1 >= 0: # cell to the left
+            adjacent_cells.append(self.grid_of_cells[current_row][current_column - 1])
+        if current_column + 1 < self.cols: # cell to the right 
+            adjacent_cells.append(self.grid_of_cells[current_row][current_column + 1])
+        if current_row - 1 >= 0: # cell above current cell
+            adjacent_cells.append(self.grid_of_cells[current_row - 1][current_column])
+        if current_row + 1 < self.rows: # cell beneath the current cell 
+            adjacent_cells.append(self.grid_of_cells[current_row + 1][current_column])
+        
+        random.shuffle(adjacent_cells)
+        return adjacent_cells
+    
+    def draw_cell(self):
+        # print(f"x: {self.__x}, y: {self.__y}.")
+        if self.__visited == True:
+            pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+        if self.__walls['top'] == True:
+            pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.STARTING_TILE_SIZE, self.__y), 4)
+        if self.__walls['right'] == True:
+            pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x + self.STARTING_TILE_SIZE, self.__y), (self.__x + self.STARTING_TILE_SIZE, self.__y + self.STARTING_TILE_SIZE), 4)
+        if self.__walls['bottom'] == True:
+            pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x + self.STARTING_TILE_SIZE, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y + self.STARTING_TILE_SIZE), 4)
+        if self.__walls['left'] == True:
+            pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y), 4)
+
+class Maze_Screen(Screen):
+    def __init__(self, Title: str):
+        super(Maze_Screen, self).__init__(Title)
+        self.visited_cells = []
+        self.grid_of_cells = []
+        # self.WIN = self._get_WIN()
+        self.STARTING_TILE_SIZE = 8
+        self.rows = HEIGHT // self.STARTING_TILE_SIZE
+        self.cols = WIDTH // self.STARTING_TILE_SIZE
+        self.LINE_COLOUR = (255, 0, 0)
+
+
+        for a in range(self.rows):
+            row = []
+            for b in range(self.cols):
+                row.append(Cell(self.STARTING_TILE_SIZE * b, self.STARTING_TILE_SIZE * a, self._WIN, self.STARTING_TILE_SIZE, self.grid_of_cells, self.cols, self.rows, self.LINE_COLOUR))
+            self.grid_of_cells.append(row)
+        self.stack = Stack(len(self.grid_of_cells) * self.cols)
+        self.Initial_Cell = self.grid_of_cells[0][0]
+        self.stack.push(self.Initial_Cell)
+    
+    def draw_cells_on_screen(self):
+        for row in self.grid_of_cells:
+            for cell in row:
+                cell.draw_cell()
+
+    def dfs(self):
+        current_cell = self.stack.peek()
+        if current_cell is not None:
+            current_cell.set_visited(True)
+            self.visited_cells.append(self.stack.peek())
+            adjacent_cells = current_cell.check_adjacent_cells()
+            
+            for connected_cell in adjacent_cells:
+                if connected_cell not in self.visited_cells:
+                    if connected_cell is not None:
+                        self.stack.push(connected_cell)
+                        self.remove_walls(current_cell, connected_cell)
+                        self.dfs()
+            self.stack.pop()
+    
+    def remove_walls(self, current_cell: Cell, next_cell: Cell):
+        current_cell_column_row_positioning = current_cell.get_row_column_positioning()
+        next_cell_column_row_positioning = next_cell.get_row_column_positioning()
+
+        # column then row [column, row]
+        print(f"Current: {current_cell_column_row_positioning}, Next: {next_cell_column_row_positioning}")
+        current_x = current_cell_column_row_positioning[0]
+        current_y = current_cell_column_row_positioning[1]
+        next_x = next_cell_column_row_positioning[0]
+        next_y = next_cell_column_row_positioning[1]
+
+        # check if top cell is next cell relative to current cell
+        if current_y - next_y == 1:
+            next_cell.set_walls('bottom', False)
+            current_cell.set_walls('top', False)
+        
+        # check if bottom cell is next cell relative to current cell
+        if current_y - next_y == -1:
+            next_cell.set_walls('top', False)
+            current_cell.set_walls('bottom', False)
+        
+        # check if right cell is next cell relative to current cell
+        if current_x - next_x == -1:
+            next_cell.set_walls('left', False)
+            current_cell.set_walls('right', False)
+        
+        # check if left cell is next cell relative to current cell
+        if current_x - next_x == 1:
+            next_cell.set_walls('right', False)
+            current_cell.set_walls('left', False)
+        
+        print(f"Current: {current_cell.get_walls()}, Next: {next_cell.get_walls()}")
+    
+    def show_UI_elements(self):
+        return super().show_UI_elements()
+
+    def remove_UI_elements(self):
+        return super().remove_UI_elements()
+    
+    def check_for_user_interaction_with_UI(self):
+        return super().check_for_user_interaction_with_UI()      

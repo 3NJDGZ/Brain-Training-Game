@@ -15,6 +15,7 @@ class Game:
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
+        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST")
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
         self.screens = [self.__intro_screen, # 0
@@ -23,7 +24,8 @@ class Game:
                         self.__registration_confirmation_screen, # 3
                         self.__login_confirmation_screen, # 4
                         self.__skill_selection_screen, # 5
-                        self.__main_menu_screen # 6
+                        self.__main_menu_screen, # 6
+                        self.__maze_screen # 7
                         ]
         self.__current_pos = 0
         self.__current_screen = self.screens[self.__current_pos]
@@ -41,6 +43,8 @@ class Game:
                     sys.exit()
                 
                 MANAGER.process_events(event)
+            
+            print(f"Current State: {self.get()}")
         
             self.__current_screen = self.screens[self.__current_pos]
 
@@ -57,6 +61,8 @@ class Game:
             self.check_if_screen_is_login_confirmation()
 
             self.check_if_screen_is_main_menu()
+
+            self.check_if_screen_is_maze_screen()
 
             self.draw_UI(self.__current_screen)
             self.update_UI_screen()
@@ -138,7 +144,18 @@ class Game:
             self.__main_menu_screen.remove_UI_elements()
         else:
             self.__current_screen.show_UI_elements()
-            self.__current_screen.check_for_user_interaction_with_UI()
+            button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
+            print(button_pressed)
+            if button_pressed == "PLAY":
+                self.__current_screen.remove_UI_elements()
+                self.__current_pos += 1
+    
+    def check_if_screen_is_maze_screen(self):
+        if not isinstance(self.__current_pos, Maze_Screen):
+            self.__maze_screen.remove_UI_elements()
+        else:
+            self.__current_screen.dfs()
+            self.__current_screen.draw_cells_on_screen()
             
     def check_screen_state(self):
         return self.__current_pos
