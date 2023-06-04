@@ -5,9 +5,6 @@ import pygame_gui
 from pygame_gui.core import ObjectID
 from abc import ABC, abstractmethod
 
-import sys 
-sys.setrecursionlimit(10**6)
-
 pygame.init()
 
 # Initialise Variables for Pygame
@@ -360,6 +357,7 @@ class Skill_Selection_Screen(Screen):
 
             MANAGER.process_events(event)
     
+    # simple algorithm used to calculate weight values for the player 
     def calculate_weighted_values_for_player(self, memory_value: int, attention_value: int, speed_value: int, problem_solving_value: int):
         total_value = speed_value + attention_value + memory_value + problem_solving_value
         
@@ -502,6 +500,7 @@ class Main_Menu_Screen(Screen):
             MANAGER.process_events(event)
         return ui_finished
 
+# Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
     def __init__(self, maxsize):
         self.items = [None] * maxsize
@@ -566,6 +565,7 @@ class Cell:
             
     def check_adjacent_cells(self):
 
+        # get current cell positioning
         adjacent_cells = []
         current_cell_column_row_positioning = self.get_row_column_positioning()
         current_column = current_cell_column_row_positioning[0]
@@ -581,11 +581,12 @@ class Cell:
         if current_row + 1 < self.rows: # cell beneath the current cell 
             adjacent_cells.append(self.grid_of_cells[current_row + 1][current_column])
         
+        # shuffle the 'adjacent_shells' list in order to keep the 'randomness' of the recursive DFS
         random.shuffle(adjacent_cells)
         return adjacent_cells
     
     def draw_cell(self):
-        # print(f"x: {self.__x}, y: {self.__y}.")
+        # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__visited == True:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
         if self.__walls['top'] == True:
@@ -600,20 +601,20 @@ class Cell:
 class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
-        self.visited_cells = []
+        self.visited_cells = [] # maintains a list of all visited cells
         self.grid_of_cells = []
-        # self.WIN = self._get_WIN()
-        self.STARTING_TILE_SIZE = STARTING_TILE_SIZE # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+        self.STARTING_TILE_SIZE = STARTING_TILE_SIZE # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
         self.rows = HEIGHT // self.STARTING_TILE_SIZE
         self.cols = WIDTH // self.STARTING_TILE_SIZE
         self.LINE_COLOUR = LINE_COLOUR
 
-
+        # Setup for recursive DFS for maze generation
         for a in range(self.rows):
             row = []
             for b in range(self.cols):
                 row.append(Cell(self.STARTING_TILE_SIZE * b, self.STARTING_TILE_SIZE * a, self._WIN, self.STARTING_TILE_SIZE, self.grid_of_cells, self.cols, self.rows, self.LINE_COLOUR))
             self.grid_of_cells.append(row)
+
         self.stack = Stack(len(self.grid_of_cells) * self.cols)
         self.Initial_Cell = self.grid_of_cells[0][0]
         self.stack.push(self.Initial_Cell)
@@ -624,6 +625,7 @@ class Maze_Screen(Screen):
                 cell.draw_cell()
 
     def dfs(self):
+        # Recursive Implementation of DFS (Depth First Search Graph Traversal Algorithm)
         current_cell = self.stack.peek()
         if current_cell is not None:
             current_cell.set_visited(True)

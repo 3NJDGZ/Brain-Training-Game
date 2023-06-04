@@ -2,9 +2,10 @@ import pygame
 import sys
 from screens import *
 
+# bypasses recursion limit stated by python; required for the recursive DFS when generating more complex and larger mazes
 sys.setrecursionlimit(10**6)
-
 pygame.init()
+
 class Game:
     def __init__(self):
         self.__UI_REFRESH_RATE = CLOCK.tick(60)/1000
@@ -17,7 +18,7 @@ class Game:
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
-        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 50, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 5, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
         self.screens = [self.__intro_screen, # 0
@@ -29,8 +30,8 @@ class Game:
                         self.__main_menu_screen, # 6
                         self.__maze_screen # 7
                         ]
-        self.__current_pos = 0
-        self.__current_screen = self.screens[self.__current_pos]
+        self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
+        self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
 
     def get(self):
         return self.__current_pos
@@ -53,25 +54,26 @@ class Game:
             self.__current_screen.show_UI_elements()
             
             self.__current_screen._fill_with_colour()
-
+            
+            # Checking what type of screen should be displayed
+            # USER ON-BOARDING Screens
             self.check_if_screen_is_intro()
             self.check_if_screen_is_register()
             self.check_if_screen_is_login()
             self.check_if_screen_is_skill_screens()
-
             self.check_if_screen_is_registration_confirmation()
             self.check_if_screen_is_login_confirmation()
-
+            # GAMEPLAY Screens
             self.check_if_screen_is_main_menu()
-
             self.check_if_screen_is_maze_screen()
 
+            # Draw UI of corresponding screen
             self.draw_UI(self.__current_screen)
             self.update_UI_screen()
             self.update_screen()
             CLOCK.tick(60)
 
-    # State Transition Functions 
+    # These methods can be seen as 'state transition functions' changing the state of the system when needed to show the correct screen to the user
     def check_if_screen_is_registration_confirmation(self):
         if not isinstance(self.__current_screen, Registration_Confirmation_Screen):
             self.__registration_confirmation_screen.remove_UI_elements()
