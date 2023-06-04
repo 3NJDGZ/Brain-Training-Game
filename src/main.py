@@ -2,6 +2,8 @@ import pygame
 import sys
 from screens import *
 
+sys.setrecursionlimit(10**6)
+
 pygame.init()
 class Game:
     def __init__(self):
@@ -15,7 +17,7 @@ class Game:
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
-        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST")
+        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 50, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
         self.screens = [self.__intro_screen, # 0
@@ -44,7 +46,7 @@ class Game:
                 
                 MANAGER.process_events(event)
             
-            print(f"Current State: {self.get()}")
+            # print(f"Current State: {self.get()}")
         
             self.__current_screen = self.screens[self.__current_pos]
 
@@ -67,6 +69,7 @@ class Game:
             self.draw_UI(self.__current_screen)
             self.update_UI_screen()
             self.update_screen()
+            CLOCK.tick(60)
 
     # State Transition Functions 
     def check_if_screen_is_registration_confirmation(self):
@@ -145,13 +148,12 @@ class Game:
         else:
             self.__current_screen.show_UI_elements()
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
-            print(button_pressed)
             if button_pressed == "PLAY":
                 self.__current_screen.remove_UI_elements()
                 self.__current_pos += 1
     
     def check_if_screen_is_maze_screen(self):
-        if not isinstance(self.__current_pos, Maze_Screen):
+        if not isinstance(self.__current_screen, Maze_Screen):
             self.__maze_screen.remove_UI_elements()
         else:
             self.__current_screen.dfs()

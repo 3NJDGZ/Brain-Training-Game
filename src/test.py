@@ -10,11 +10,12 @@ pygame.init()
 
 # Initialise Variables
 CLOCK = pygame.time.Clock()
-WIDTH = 1280
-STARTING_TILE_SIZE = 16 # common factors between 1280, 720: 80, 40, 16, 8, 4, 2, 1
-HEIGHT = 720
+WIDTH = 1600
+STARTING_TILE_SIZE = 100 # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+HEIGHT = 900
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 LINE_COLOUR = (255, 0, 0)
+line_width = 4
 cols = WIDTH // STARTING_TILE_SIZE
 rows = HEIGHT // STARTING_TILE_SIZE
 pygame.display.set_caption("Maze Generation Algorithm Test")
@@ -100,13 +101,13 @@ class Cell:
         if self.__visited == True:
             pygame.draw.rect(WIN, (255, 255, 255), (self.__x, self.__y, STARTING_TILE_SIZE, STARTING_TILE_SIZE))
         if self.__walls['top'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y), 4)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y), line_width)
         if self.__walls['right'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), 4)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), line_width)
         if self.__walls['bottom'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y + STARTING_TILE_SIZE), 4)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y + STARTING_TILE_SIZE), line_width)
         if self.__walls['left'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y), 4)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y), line_width)
         
 print(f"Columns: {cols}")
 print(f"Rows: {rows}")
