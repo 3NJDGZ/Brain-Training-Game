@@ -5,7 +5,6 @@ from screens import *
 # bypasses recursion limit stated by python; required for the recursive DFS when generating more complex and larger mazes
 sys.setrecursionlimit(10**6)
 pygame.init()
-print("sus")
 
 class Game:
     def __init__(self):
