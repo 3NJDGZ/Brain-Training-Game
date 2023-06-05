@@ -500,6 +500,38 @@ class Main_Menu_Screen(Screen):
             MANAGER.process_events(event)
         return ui_finished
 
+class Gameplay_Selection_Screen(Screen):
+    def __init__(self, Title: str):
+        super(Gameplay_Selection_Screen, self).__init__(Title)
+
+        # UI
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 350), (500, 75)), manager=MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="SELECT AN OPTION")
+        self.__LINEAR_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((575, 475), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#linear_button"), text="LINEAR")
+        self.__ENDLESS_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((825, 475), (200, 75)), manager=MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#endless_button"), text="ENDLESS")
+    
+    def show_UI_elements(self):
+        self.__TITLE_LABEL.show()
+        self.__LINEAR_BUTTON.show()
+        self.__ENDLESS_BUTTON.show()
+    
+    def remove_UI_elements(self):
+        self.__TITLE_LABEL.hide()
+        self.__LINEAR_BUTTON.hide()
+        self.__ENDLESS_BUTTON.hide()
+    
+    def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#linear_button":
+                ui_finished = "LINEAR"
+                print(ui_finished)
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#endless_button":
+                ui_finished = "ENDLESS"
+                print(ui_finished)
+            MANAGER.process_events(event)
+        return ui_finished
+    
+
 # Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
     def __init__(self, maxsize):

@@ -18,7 +18,8 @@ class Game:
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
-        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 5, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+        self.__gameplay_selection_screen = Gameplay_Selection_Screen("GAMEPLAY SELECTION SCREEN")
+        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 25, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
         self.screens = [self.__intro_screen, # 0
@@ -28,7 +29,8 @@ class Game:
                         self.__login_confirmation_screen, # 4
                         self.__skill_selection_screen, # 5
                         self.__main_menu_screen, # 6
-                        self.__maze_screen # 7
+                        self.__gameplay_selection_screen, # 7
+                        self.__maze_screen # 8
                         ]
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
@@ -65,6 +67,7 @@ class Game:
             self.check_if_screen_is_login_confirmation()
             # GAMEPLAY Screens
             self.check_if_screen_is_main_menu()
+            self.check_if_screen_is_gameplay_selection_screen()
             self.check_if_screen_is_maze_screen()
 
             # Draw UI of corresponding screen
@@ -160,7 +163,20 @@ class Game:
         else:
             self.__current_screen.dfs()
             self.__current_screen.draw_cells_on_screen()
-            
+        
+    def check_if_screen_is_gameplay_selection_screen(self):
+        if not isinstance(self.__current_screen, Gameplay_Selection_Screen):
+            self.__gameplay_selection_screen.remove_UI_elements()
+        else:
+            self.__current_screen.show_UI_elements()
+            button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
+            if button_pressed == "LINEAR":
+                self.__current_pos += 1
+                self.__current_screen.remove_UI_elements()
+            elif button_pressed == "ENDLESS":
+                self.__current_pos += 1
+                self.__current_screen.remove_UI_elements()
+
     def check_screen_state(self):
         return self.__current_pos
 
