@@ -19,7 +19,7 @@ class Game:
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
         self.__gameplay_selection_screen = Gameplay_Selection_Screen("GAMEPLAY SELECTION SCREEN")
-        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 25, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 100, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
         self.screens = [self.__intro_screen, # 0
@@ -163,6 +163,8 @@ class Game:
         else:
             self.__current_screen.dfs()
             self.__current_screen.draw_cells_on_screen()
+            self.__current_screen.blit_player_onto_screen()
+            self.__current_screen.get_playiner_input()
         
     def check_if_screen_is_gameplay_selection_screen(self):
         if not isinstance(self.__current_screen, Gameplay_Selection_Screen):
@@ -170,13 +172,13 @@ class Game:
         else:
             self.__current_screen.show_UI_elements()
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
-            if button_pressed == "LINEAR":
+            if button_pressed == "LINEAR": # will work on later
                 self.__current_pos += 1
                 self.__current_screen.remove_UI_elements()
             elif button_pressed == "ENDLESS":
                 self.__current_pos += 1
                 self.__current_screen.remove_UI_elements()
-
+    
     def check_screen_state(self):
         return self.__current_pos
 

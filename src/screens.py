@@ -4,6 +4,7 @@ import mysql.connector
 import pygame_gui
 from pygame_gui.core import ObjectID
 from abc import ABC, abstractmethod
+from player import Player
 
 pygame.init()
 
@@ -633,6 +634,10 @@ class Cell:
 class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
+
+        self.player = Player()
+
+        # No point making attributes private as of right now
         self.visited_cells = [] # maintains a list of all visited cells
         self.grid_of_cells = []
         self.STARTING_TILE_SIZE = STARTING_TILE_SIZE # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
@@ -651,6 +656,12 @@ class Maze_Screen(Screen):
         self.Initial_Cell = self.grid_of_cells[0][0]
         self.stack.push(self.Initial_Cell)
     
+    def blit_player_onto_screen(self):
+        self._WIN.blit(self.player.get_player_image(), self.player.get_rect())
+    
+    def get_playiner_input(self):
+        self.player.player_input()
+
     def draw_cells_on_screen(self):
         for row in self.grid_of_cells:
             for cell in row:
