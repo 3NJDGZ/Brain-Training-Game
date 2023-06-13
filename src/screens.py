@@ -9,8 +9,6 @@ from maze_generation import Maze
 
 pygame.init()
 
-# Initialise Variables for Pygame
-CLOCK = pygame.time.Clock()
 pygame.display.set_caption("Brain Training Game")
 
 # # Reset auto increment of PlayerID in Player Entity
@@ -36,12 +34,13 @@ pygame.display.set_caption("Brain Training Game")
 
 class Screen(ABC):
     def __init__(self, Title: str):
+        # setup protected attributes which will be used by inherited classes
         self.Title = Title
         self._WIDTH = 1600
         self._HEIGHT = 900
         self._MANAGER = pygame_gui.UIManager((self._WIDTH, self._HEIGHT), 'src/Theme/theme.json')
         self._WIN = pygame.display.set_mode((self._WIDTH, self._HEIGHT))
-        self._UI_REFRESH_RATE = CLOCK.tick(60)
+        # self._UI_REFRESH_RATE = CLOCK.tick(60)
         self._screen_colour = (191, 191, 191)
     
     def _get_WIN(self):
@@ -54,7 +53,7 @@ class Screen(ABC):
         self._WIN.fill((self._screen_colour))
     
     # Create connection to the MySQL DB
-    def create_connection(self):
+    def _create_connection(self):
         # Connect to host root server on computer 
         db = mysql.connector.connect(
             host="localhost",
@@ -64,6 +63,7 @@ class Screen(ABC):
         )
         return db
     
+    # Abstract methods that are required for every sub-class of 'Screen'
     @abstractmethod
     def show_UI_elements(self):
         pass
@@ -79,6 +79,7 @@ class Screen(ABC):
 class Intro_Screen(Screen):
     def __init__(self, Title: str):
         super(Intro_Screen, self).__init__(Title)
+
         # UI
         self.__LOGIN_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((575, 475), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#login_button"), text="LOGIN")
         self.__REGISTER_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((825, 475), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#register_button"), text="REGISTER")
@@ -104,9 +105,12 @@ class Intro_Screen(Screen):
         self.__REGISTER_BUTTON.show()
         self.__TITLE_LABEL.show()
 
+# A type of 'Screen' which is mainly used to get essential info from the player, such as username, and password (e.g., being used in register/login screens)
+# basically was made to avoid repeating bits of code here and there
 class Get_User_Info_Screen(Screen):
     def __init__(self, Title: str):
         super(Get_User_Info_Screen, self).__init__(Title)
+
         # UI
         self._USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((600, ((self._HEIGHT/2)-70)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#username_text_entry"))
         self._PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((600, ((self._HEIGHT/2)+30)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#password_text_entry"))
@@ -178,7 +182,7 @@ class Register_Screen(Get_User_Info_Screen):
     def register(self, username, password):
 
         # Create connection + create cursor
-        db = self.create_connection()
+        db = self._create_connection()
         mycursor = db.cursor()
 
         successful_registration = False
@@ -268,7 +272,7 @@ class Login_Screen(Get_User_Info_Screen):
     def login(self, username: str, password: str):
 
         # Create connection + create cursor
-        db = self.create_connection()
+        db = self._create_connection()
         mycursor = db.cursor()
 
         valid_details = False
@@ -290,6 +294,7 @@ class Login_Screen(Get_User_Info_Screen):
 
         return valid_details
 
+# same concept as the 'Get_User_Info_Screen'; may change later as it is kind of redundant but cba
 class Confirmation_Screen(Screen):
     def __init__(self, Title: str, subtitle: str):
         super(Confirmation_Screen, self).__init__(Title)
@@ -372,7 +377,7 @@ class Skill_Selection_Screen(Screen):
     def register_weights_onto_DB(self, weights):
 
         # Create connection + create cursor
-        db = self.create_connection()
+        db = self._create_connection()
         mycursor = db.cursor()
         
         # Get Player_ID
@@ -536,12 +541,11 @@ class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
 
+        # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
+        self.__maze = Maze(STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN)
         self.player = Player()
 
-        self.STARTING_TILE_SIZE = STARTING_TILE_SIZE # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
-        self.LINE_COLOUR = LINE_COLOUR
-        self.__maze = Maze(self.STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN)
-
+    # will work on this later; may encapsulate this method into the 'Maze' class though
     def collision_cells(self):
         print(self.player.get_player_positioning())
 
@@ -550,6 +554,7 @@ class Maze_Screen(Screen):
         self._WIN.blit(self.player.get_player_image(), self.player.get_rect())
         self.player.player_input()
     
+    # UI will need to be added; this UI will actually be separate 
     def show_UI_elements(self):
         return super().show_UI_elements()
 

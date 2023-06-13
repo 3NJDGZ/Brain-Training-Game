@@ -8,7 +8,9 @@ pygame.init()
 
 class Game:
     def __init__(self):
-        self.__UI_REFRESH_RATE = CLOCK.tick(60)/1000
+        # Base attributes (used for boilerplate-ish code)
+        self.__CLOCK = pygame.time.Clock()
+        self.__UI_REFRESH_RATE = self.__CLOCK.tick(60)/1000
 
         # Screens
         self.__intro_screen = Intro_Screen("Intro!")
@@ -73,7 +75,7 @@ class Game:
             self.draw_UI(self.__current_screen)
             self.update_UI_screen(self.__current_screen)
             self.update_screen()
-            CLOCK.tick(60)
+            self.__CLOCK.tick(60)
 
     # These methods can be seen as 'state transition functions' changing the state of the system when needed to show the correct screen to the user
     def check_if_screen_is_registration_confirmation(self):
@@ -174,14 +176,8 @@ class Game:
             self.__maze_screen.remove_UI_elements()
         else:
             self.__current_screen.setup_maze_level_with_player()
-            # self.__current_screen.player.player_input()
-            # self.__current_screen.dfs()
-            # self.__current_screen.draw_cells_on_screen()
-            # self.__current_screen.blit_player_onto_screen()
-            # self.__current_screen.get_playiner_input()
-            # self.__current_screen.collision_cells()
 
-    def check_screen_state(self):
+    def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos
 
     def update_screen(self):

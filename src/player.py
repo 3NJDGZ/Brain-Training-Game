@@ -44,6 +44,7 @@ class Player(pygame.sprite.Sprite):
     def player_input(self): # gets player input for movement
         keys = pygame.key.get_pressed()
 
+        # If with Elif statements to avoid simultaneous button pressing causing diagaonal movements; restricts movement to only up, down, right, left
         if keys[pygame.K_w] and self.get_player_positioning()[1] >= 50: # Movement up
             self.__rect.y -= self.__velocity
             self.set_frame_index(0)

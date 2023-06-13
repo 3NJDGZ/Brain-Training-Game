@@ -38,6 +38,7 @@ class Stack:
 
 class Cell:
     def __init__(self, x: int, y: int, WIN, STARTING_TILE_SIZE: int, grid_of_cells, cols: int, rows: int, LINE_COLOUR):
+        # Setup attributes for Cell(s)
         self.STARTING_TILE_SIZE = STARTING_TILE_SIZE
         self.WIN = WIN
         self.grid_of_cells = grid_of_cells
@@ -45,6 +46,8 @@ class Cell:
         self.rows = rows
         self.LINE_COLOUR = LINE_COLOUR
         self.LINE_WIDTH = 5
+
+        # These attributes are private as they are specific to each instance of a Cell
         self.__x = x
         self.__y = y
         self.__walls = {"top": True,
