@@ -2,7 +2,7 @@ import pygame
 import sys
 from screens import *
 
-# bypasses recursion limit stated by python; required for the recursive DFS when generating more complex and larger mazes
+# bypasses recursion limit stated by python; required for the recursive DFS when generating more complex and larger mazes https://stackoverflow.com/questions/3323001/what-is-the-maximum-recursion-depth-and-how-to-increase-it
 sys.setrecursionlimit(10**6)
 pygame.init()
 
@@ -41,20 +41,19 @@ class Game:
     def play(self):
         running = True
         while running:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                     pygame.quit()
                     sys.exit()
                 
-                MANAGER.process_events(event)
+                self.__current_screen._get_MANAGER().process_events(event)
             
             # print(f"Current State: {self.get()}")
-        
-            self.__current_screen = self.screens[self.__current_pos]
 
+            self.__current_screen = self.screens[self.__current_pos]
             self.__current_screen.show_UI_elements()
-            
             self.__current_screen._fill_with_colour()
             
             # Checking what type of screen should be displayed
@@ -72,7 +71,7 @@ class Game:
 
             # Draw UI of corresponding screen
             self.draw_UI(self.__current_screen)
-            self.update_UI_screen()
+            self.update_UI_screen(self.__current_screen)
             self.update_screen()
             CLOCK.tick(60)
 
@@ -156,15 +155,6 @@ class Game:
             if button_pressed == "PLAY":
                 self.__current_screen.remove_UI_elements()
                 self.__current_pos += 1
-    
-    def check_if_screen_is_maze_screen(self):
-        if not isinstance(self.__current_screen, Maze_Screen):
-            self.__maze_screen.remove_UI_elements()
-        else:
-            self.__current_screen.dfs()
-            self.__current_screen.draw_cells_on_screen()
-            self.__current_screen.blit_player_onto_screen()
-            self.__current_screen.get_playiner_input()
         
     def check_if_screen_is_gameplay_selection_screen(self):
         if not isinstance(self.__current_screen, Gameplay_Selection_Screen):
@@ -179,17 +169,29 @@ class Game:
                 self.__current_pos += 1
                 self.__current_screen.remove_UI_elements()
     
+    def check_if_screen_is_maze_screen(self):
+        if not isinstance(self.__current_screen, Maze_Screen):
+            self.__maze_screen.remove_UI_elements()
+        else:
+            self.__current_screen.setup_maze_level_with_player()
+            # self.__current_screen.player.player_input()
+            # self.__current_screen.dfs()
+            # self.__current_screen.draw_cells_on_screen()
+            # self.__current_screen.blit_player_onto_screen()
+            # self.__current_screen.get_playiner_input()
+            # self.__current_screen.collision_cells()
+
     def check_screen_state(self):
         return self.__current_pos
 
     def update_screen(self):
         pygame.display.update()
 
-    def update_UI_screen(self):
-        MANAGER.update(self.__UI_REFRESH_RATE)
+    def update_UI_screen(self, screen: Screen):
+        screen._get_MANAGER().update(self.__UI_REFRESH_RATE)
     
     def draw_UI(self, screen: Screen):
-        MANAGER.draw_ui(screen._get_WIN())
+        screen._get_MANAGER().draw_ui(screen._get_WIN())
     
 brain_training_game = Game()
 brain_training_game.play()

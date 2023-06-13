@@ -1,5 +1,6 @@
 import pygame
 import time
+from screens import * 
 from random import randint
 import random
 import sys
@@ -10,12 +11,11 @@ pygame.init()
 
 # Initialise Variables
 CLOCK = pygame.time.Clock()
-WIDTH = 1600
-STARTING_TILE_SIZE = 100 # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
-HEIGHT = 900
+WIDTH = 1280
+STARTING_TILE_SIZE = 8 # common factors between 1280, 720: 80, 40, 16, 8, 4, 2, 1
+HEIGHT = 720
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 LINE_COLOUR = (255, 0, 0)
-line_width = 4
 cols = WIDTH // STARTING_TILE_SIZE
 rows = HEIGHT // STARTING_TILE_SIZE
 pygame.display.set_caption("Maze Generation Algorithm Test")
@@ -101,14 +101,84 @@ class Cell:
         if self.__visited == True:
             pygame.draw.rect(WIN, (255, 255, 255), (self.__x, self.__y, STARTING_TILE_SIZE, STARTING_TILE_SIZE))
         if self.__walls['top'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y), line_width)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y), 4)
         if self.__walls['right'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), line_width)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y), (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), 4)
         if self.__walls['bottom'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y + STARTING_TILE_SIZE), line_width)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x + STARTING_TILE_SIZE, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y + STARTING_TILE_SIZE), 4)
         if self.__walls['left'] == True:
-            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y), line_width)
+            pygame.draw.line(WIN, LINE_COLOUR, (self.__x, self.__y + STARTING_TILE_SIZE), (self.__x, self.__y), 4)
+
+
+class Maze_Screen(Screen):
+    def __init__(self, Title: str, Initial_Cell: Cell):
+        self.stack = Stack(len(grid_of_cells) * cols)
+        self.stack.push(Initial_Cell)
+        self.visited_cells = []
+        self.grid_of_cells = []
+        for a in range(rows):
+            row = []
+            for b in range(cols):
+                row.append(Cell(STARTING_TILE_SIZE * b, STARTING_TILE_SIZE * a))
+            grid_of_cells.append(row)
+
+    def dfs(self):
+        current_cell = self.stack.peek()
+        if current_cell is not None:
+            current_cell.set_visited(True)
+            self.visited_cells.append(stack.peek())
+            adjacent_cells = current_cell.check_adjacent_cells()
+            
+            for connected_cell in adjacent_cells:
+                if connected_cell not in self.visited_cells:
+                    if connected_cell is not None:
+                        self.stack.push(connected_cell)
+                        self.remove_walls(current_cell, connected_cell)
+                        self.dfs()
+            self.stack.pop()
+    
+    def remove_walls(self, current_cell: Cell, next_cell: Cell):
+        current_cell_column_row_positioning = current_cell.get_row_column_positioning()
+        next_cell_column_row_positioning = next_cell.get_row_column_positioning()
+
+        # column then row [column, row]
+        print(f"Current: {current_cell_column_row_positioning}, Next: {next_cell_column_row_positioning}")
+        current_x = current_cell_column_row_positioning[0]
+        current_y = current_cell_column_row_positioning[1]
+        next_x = next_cell_column_row_positioning[0]
+        next_y = next_cell_column_row_positioning[1]
+
+        # check if top cell is next cell relative to current cell
+        if current_y - next_y == 1:
+            next_cell.set_walls('bottom', False)
+            current_cell.set_walls('top', False)
         
+        # check if bottom cell is next cell relative to current cell
+        if current_y - next_y == -1:
+            next_cell.set_walls('top', False)
+            current_cell.set_walls('bottom', False)
+        
+        # check if right cell is next cell relative to current cell
+        if current_x - next_x == -1:
+            next_cell.set_walls('left', False)
+            current_cell.set_walls('right', False)
+        
+        # check if left cell is next cell relative to current cell
+        if current_x - next_x == 1:
+            next_cell.set_walls('right', False)
+            current_cell.set_walls('left', False)
+        
+        print(f"Current: {current_cell.get_walls()}, Next: {next_cell.get_walls()}")
+    
+    def show_UI_elements(self):
+        return super().show_UI_elements()
+
+    def remove_UI_elements(self):
+        return super().remove_UI_elements()
+    
+    def check_for_user_interaction_with_UI(self):
+        return super().check_for_user_interaction_with_UI()
+
 print(f"Columns: {cols}")
 print(f"Rows: {rows}")
 

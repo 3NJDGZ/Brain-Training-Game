@@ -10,4 +10,6 @@ Sources:
 - Player Class in pygame: https://opensource.com/article/17/12/game-python-add-a-player
 - Overall Pygame Basic Tutorial: https://www.youtube.com/watch?v=AY9MnQ4x3zk&t=1s 
 - Also Used a previous project that was made via the pygame video above: https://github.com/3NJDGZ/Ninja-Runner-Game/tree/main
-
+- Center Rect Positioning Python Pygame: https://stackoverflow.com/questions/75347619/how-do-i-find-the-position-coordinates-of-my-rect
+- Python Recursive Depth Limit Modification: https://stackoverflow.com/questions/3323001/what-is-the-maximum-recursion-depth-and-how-to-increase-it 
+- Python + MySQL Connection (Series of Videos; couldn't find playlist): https://www.youtube.com/watch?v=3vsC05rxZ8c&t=2s
