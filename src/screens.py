@@ -38,7 +38,7 @@ class Screen(ABC):
         self.Title = Title
         self._WIDTH = 1600
         self._HEIGHT = 900
-        self._MANAGER = pygame_gui.UIManager((self._WIDTH, self._HEIGHT), 'src/Theme/theme.json')
+        self._MANAGER = pygame_gui.UIManager((self._WIDTH, self._HEIGHT), 'Theme/theme.json')
         self._WIN = pygame.display.set_mode((self._WIDTH, self._HEIGHT))
         # self._UI_REFRESH_RATE = CLOCK.tick(60)
         self._screen_colour = (191, 191, 191)
