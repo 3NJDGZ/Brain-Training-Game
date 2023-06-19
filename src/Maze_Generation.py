@@ -48,6 +48,8 @@ class Cell:
         self.LINE_WIDTH = 5
 
         # These attributes are private as they are specific to each instance of a Cell
+        self.rects = []
+        self.__exit = False
         self.__x = x
         self.__y = y
         self.__walls = {"top": True,
@@ -56,6 +58,9 @@ class Cell:
                       "left": True}
         self.__visited = False
     
+    def set_exit_value(self, value_to_be_set: bool):
+        self.__exit = value_to_be_set
+
     def get_walls(self):
         return self.__walls
     
@@ -64,6 +69,18 @@ class Cell:
     
     def set_visited(self, value: bool):
         self.__visited = value
+    
+    def get_rects(self):
+        self.rects = []
+        if self.get_walls()['top']:
+            self.rects.append(pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.LINE_WIDTH))
+        if self.get_walls()['right']:
+            self.rects.append(pygame.Rect(self.__x + self.STARTING_TILE_SIZE, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE))
+        if self.get_walls()['bottom']:
+            self.rects.append(pygame.Rect(self.__x, self.__y + self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE, self.LINE_WIDTH))
+        if self.get_walls()['left']:
+            self.rects.append(pygame.Rect(self.__x, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE))
+        return self.rects
     
     def get_row_column_positioning(self):
         return [self.__x // self.STARTING_TILE_SIZE, self.__y // self.STARTING_TILE_SIZE]
@@ -90,7 +107,13 @@ class Cell:
         random.shuffle(adjacent_cells)
         return adjacent_cells
     
+
     def draw_cell(self):
+
+        # if self.__exit is True then fill cell with colour
+        if self.__exit == True:
+            pygame.draw.rect(self.WIN, (255, 255, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+
         # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__visited == True:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
@@ -113,17 +136,22 @@ class Maze():
         self.__cols = WIDTH // self.__STARTING_TILE_SIZE
         self.WIN = WIN
 
-        # Setup for recursive DFS for maze generation
+        # Setup for recursive DFS for maze generation, cells are in a grid
         for a in range(self.__rows):
             row = []
             for b in range(self.__cols):
                 row.append(Cell(self.__STARTING_TILE_SIZE * b, self.__STARTING_TILE_SIZE * a, self.WIN, self.__STARTING_TILE_SIZE, self.__grid_of_cells, self.__cols, self.__rows, self.__LINE_COLOUR))
             self.__grid_of_cells.append(row)
         
+        # initial setup for maze generation
         self.__STACK = Stack(len(self.__grid_of_cells) * self.__cols)
         self.__initial_cell = self.__grid_of_cells[0][0]
         self.__STACK.push(self.__initial_cell)
-    
+        
+    def get_grid_of_cells(self):
+        return self.__grid_of_cells
+
+    # sets up the actual maze itself and then draws it onto the screen
     def setup_maze(self):
         self.dfs()
         self.draw_cells_on_screen()

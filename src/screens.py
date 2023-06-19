@@ -171,6 +171,11 @@ class Register_Screen(Get_User_Info_Screen):
             self._MANAGER.process_events(event)
         
     def generate_random_salt(self):
+        '''
+        Generates random salt
+        Arguments: None
+        Returns: salt ()
+        '''
         random_length = random.randint(5, 20)
         salt = ""
 
@@ -541,18 +546,16 @@ class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
 
+        self.__STARTING_TILE_SIZE = STARTING_TILE_SIZE
+
         # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
         self.__maze = Maze(STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN)
-        self.player = Player()
-
-    # will work on this later; may encapsulate this method into the 'Maze' class though
-    def collision_cells(self):
-        print(self.player.get_player_positioning())
+        self.__player = Player()
 
     def setup_maze_level_with_player(self):
         self.__maze.setup_maze()
-        self._WIN.blit(self.player.get_player_image(), self.player.get_rect())
-        self.player.player_input()
+        self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
+        self.__player.player_input(self.__maze.get_grid_of_cells())
     
     # UI will need to be added; this UI will actually be separate 
     def show_UI_elements(self):

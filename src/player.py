@@ -1,14 +1,15 @@
 import pygame
 import os
 from pygame.sprite import AbstractGroup
+from maze_generation import * 
 
 pygame.init()
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
 
-        self.__width = 80
-        self.__height = 80
+        self.__width = 60
+        self.__height = 60
 
         self.__initial_x = 50
         self.__initial_y = 50
@@ -22,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.__frame_index = 0
         self.__image = self.__images[self.__frame_index]
         self.__velocity = 4
-        self.__rect = self.__image.get_rect(center= (self.__initial_x, self.__initial_y))
+        self.__rect = self.__image.get_rect(center=(self.__initial_x, self.__initial_y))
     
     def get_player_image(self):
         self.__image = self.__images[self.get_frame_index()] # updates the player image before returning it to be blitted onto the screen
@@ -40,23 +41,36 @@ class Player(pygame.sprite.Sprite):
     
     def get_rect(self): # get rect positioning of image 
         return self.__rect
-    
-    def player_input(self): # gets player input for movement
-        keys = pygame.key.get_pressed()
 
+    def check_collisions(self, cell: Cell):
+        print(self.__rect.collidelistall())
+
+    def collisions(self, grid_of_cells):
+        for row_number in range(len(grid_of_cells)):
+            row = grid_of_cells[row_number]
+            for cell in row:
+                cell_rects = cell.get_rects()
+                for rect in cell_rects:
+                    if self.get_rect().colliderect(rect):
+                        return True
+        return False
+
+    def player_input(self, grid_of_cells): # gets player input for movement
+        keys = pygame.key.get_pressed()
         # If with Elif statements to avoid simultaneous button pressing causing diagaonal movements; restricts movement to only up, down, right, left
-        if keys[pygame.K_w] and self.get_player_positioning()[1] >= 50: # Movement up
+        if keys[pygame.K_w] and not self.collisions(grid_of_cells): # Movement up
             self.__rect.y -= self.__velocity
             self.set_frame_index(0)
         
-        elif keys[pygame.K_s] and self.get_player_positioning()[1] <= 850: # Movement down 
+        elif keys[pygame.K_s] and not self.collisions(grid_of_cells): # Movement down 
             self.__rect.y += self.__velocity
             self.set_frame_index(1)
 
-        elif keys[pygame.K_d] and self.get_player_positioning()[0] <= 1550: # Movement right
+        elif keys[pygame.K_d] and not self.collisions(grid_of_cells): # Movement right
             self.__rect.x += self.__velocity 
             self.set_frame_index(2)
         
-        elif keys[pygame.K_a] and self.get_player_positioning()[0] >= 50: # Movement left
+        elif keys[pygame.K_a] and not self.collisions(grid_of_cells): # Movement left
             self.__rect.x -= self.__velocity
             self.set_frame_index(3)
+

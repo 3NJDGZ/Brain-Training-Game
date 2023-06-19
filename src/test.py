@@ -200,6 +200,8 @@ stack = Stack(len(grid_of_cells) * cols)
 stack.push(current_cell)
 visited_cells = []
 
+rect = pygame.Rect(50, 50, 50, 50)
+
 def main():
     running = True
     CLOCK.tick(60)
@@ -216,7 +218,7 @@ def main():
         for row in grid_of_cells:
             for cell in row:
                 cell.draw_cell()
-    
+        
         pygame.display.update()
 
     pygame.quit()
