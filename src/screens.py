@@ -546,8 +546,6 @@ class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
 
-        self.__STARTING_TILE_SIZE = STARTING_TILE_SIZE
-
         # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
         self.__maze = Maze(STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN)
         self.__player = Player()

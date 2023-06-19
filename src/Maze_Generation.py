@@ -73,13 +73,13 @@ class Cell:
     def get_rects(self):
         self.rects = []
         if self.get_walls()['top']:
-            self.rects.append(pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.LINE_WIDTH))
+            self.rects.append([pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.LINE_WIDTH), 'top'])
         if self.get_walls()['right']:
-            self.rects.append(pygame.Rect(self.__x + self.STARTING_TILE_SIZE, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE))
+            self.rects.append([pygame.Rect(self.__x + self.STARTING_TILE_SIZE, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE), 'right'])
         if self.get_walls()['bottom']:
-            self.rects.append(pygame.Rect(self.__x, self.__y + self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE, self.LINE_WIDTH))
+            self.rects.append([pygame.Rect(self.__x, self.__y + self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE, self.LINE_WIDTH), 'bottom'])
         if self.get_walls()['left']:
-            self.rects.append(pygame.Rect(self.__x, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE))
+            self.rects.append([pygame.Rect(self.__x, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE), 'left'])
         return self.rects
     
     def get_row_column_positioning(self):

@@ -51,26 +51,29 @@ class Player(pygame.sprite.Sprite):
             for cell in row:
                 cell_rects = cell.get_rects()
                 for rect in cell_rects:
-                    if self.get_rect().colliderect(rect):
-                        return True
+                    if self.get_rect().colliderect(rect[0]):
+                        print(rect[1])
+                        return rect[1]
         return False
 
     def player_input(self, grid_of_cells): # gets player input for movement
         keys = pygame.key.get_pressed()
+        self.collisions(grid_of_cells)
         # If with Elif statements to avoid simultaneous button pressing causing diagaonal movements; restricts movement to only up, down, right, left
-        if keys[pygame.K_w] and not self.collisions(grid_of_cells): # Movement up
+        if keys[pygame.K_w] and self.collisions(grid_of_cells) != 'top': # Movement Up
             self.__rect.y -= self.__velocity
             self.set_frame_index(0)
-        
-        elif keys[pygame.K_s] and not self.collisions(grid_of_cells): # Movement down 
+            
+        elif keys[pygame.K_s] and self.collisions(grid_of_cells) != 'bottom': # Movement down 
             self.__rect.y += self.__velocity
             self.set_frame_index(1)
 
-        elif keys[pygame.K_d] and not self.collisions(grid_of_cells): # Movement right
+        elif keys[pygame.K_d] and self.collisions(grid_of_cells) != 'right': # Movement right
             self.__rect.x += self.__velocity 
             self.set_frame_index(2)
         
-        elif keys[pygame.K_a] and not self.collisions(grid_of_cells): # Movement left
+        elif keys[pygame.K_a] and self.collisions(grid_of_cells) != 'left': # Movement left
             self.__rect.x -= self.__velocity
             self.set_frame_index(3)
-
+        
+        # print(self.get_player_positioning())
