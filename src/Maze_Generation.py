@@ -49,6 +49,7 @@ class Cell:
 
         # These attributes are private as they are specific to each instance of a Cell
         self.__exit = False
+        self.__start = False
         self.__x = x
         self.__y = y
         self.__walls = {"top": True,
@@ -63,6 +64,9 @@ class Cell:
     
     def set_exit_value(self, value_to_be_set: bool):
         self.__exit = value_to_be_set
+    
+    def set_start_value(self, value_to_be_set: bool):
+        self.__start = value_to_be_set
 
     def get_walls(self):
         return self.__walls
@@ -99,13 +103,14 @@ class Cell:
         return adjacent_cells
 
     def draw_cell(self):
-
-        # if self.__exit is True then fill cell with colour
-        if self.__exit == True:
-            pygame.draw.rect(self.WIN, (255, 255, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
-
         if self.__visited == True:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+        
+        if self.__exit == True:
+            pygame.draw.rect(self.WIN, (255, 0, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+        
+        if self.__start == True:
+            pygame.draw.rect(self.WIN, (0, 255, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
 
         # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__walls['top'] == True:
@@ -134,6 +139,13 @@ class Maze():
             for b in range(self.__cols):
                 row.append(Cell(self.__STARTING_TILE_SIZE * b, self.__STARTING_TILE_SIZE * a, self.WIN, self.__STARTING_TILE_SIZE, self.__grid_of_cells, self.__cols, self.__rows, self.__LINE_COLOUR))
             self.__grid_of_cells.append(row)
+        
+        # Exit cell
+        random_exit_cell = self.__grid_of_cells[random.randint(self.__rows // 1.5, self.__rows - 1)][random.randint(self.__cols // 1.5, self.__cols - 1)]
+        random_exit_cell.set_exit_value(True)
+        
+        # Start Cell
+        self.__grid_of_cells[0][0].set_start_value(True)
         
         # initial setup for maze generation
         self.__STACK = Stack(len(self.__grid_of_cells) * self.__cols)

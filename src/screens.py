@@ -1,6 +1,7 @@
 import pygame
 import random
 import mysql.connector
+from mysqlmodel import MySQLDatabaseConnection, Session
 import pygame_gui
 from pygame_gui.core import ObjectID
 from abc import ABC, abstractmethod
@@ -158,72 +159,18 @@ class Register_Screen(Get_User_Info_Screen):
         random_length = random.randint(5, 20)
         salt = ""
 
-        for loop in range(random_length):
+        for x in range(random_length):
             salt += chr(random.randint(0, 127))
         
         return salt
 
     def register(self, username, password):
-
-        # Create connection + create cursor
-        db = self._create_connection()
-        mycursor = db.cursor()
+        session = Session(MySQLDatabaseConnection())
 
         successful_registration = False
         if len(username) > 0 and len(password) > 0:
             salt = self.generate_random_salt()
-            mycursor.execute(f"""
-            INSERT INTO Player (Username, Password, Salt)
-            VALUES ('{username}', aes_encrypt(concat('{password}', md5('{salt}')), 'encryptionkey1234'), md5('{salt}'));
-            """)
-
-            # Fetch PlayerID of the newly registered Player from the Player Entity
-            mycursor.execute(f"""
-            SELECT *
-            FROM Player
-            ORDER BY PlayerID DESC
-            """)
-
-            records = mycursor.fetchall()
-            for record in records:
-                current_player_id = record[0]
-                break
-
-            print(current_player_id)
-
-            # Set up default information in Weights Entity 
-            mycursor.execute(f"""
-            INSERT INTO WEIGHTS (PlayerID, CognitiveAreaID, WeightValue)
-            VALUES ({current_player_id}, 1, 0.25),
-            ({current_player_id}, 2, 0.25),
-            ({current_player_id}, 3, 0.25),
-            ({current_player_id}, 4, 0.25);
-            """)
-
-            # Set up default information in Performance Entity
-            mycursor.execute(f"""
-            INSERT INTO Performance (PlayerID, CognitiveAreaID, Score)
-            VALUES ({current_player_id}, 1, 0),
-            ({current_player_id}, 2, 0),
-            ({current_player_id}, 3, 0),
-            ({current_player_id}, 4, 0)
-            """)
-
-            mycursor.execute("""
-            SELECT * 
-            FROM Player;
-            """)
-
-            for record in mycursor:
-                print(record)
-
-            # Commit Changes to DB
-            db.commit()
-            db.close()
-
-            successful_registration = True
-            mycursor.reset()
-            mycursor.close()
+            session.register_new_player_data(username, password, salt)
         return successful_registration
 
 class Login_Screen(Get_User_Info_Screen):
@@ -254,29 +201,8 @@ class Login_Screen(Get_User_Info_Screen):
         return ui_finished
     
     def login(self, username: str, password: str):
-
-        # Create connection + create cursor
-        db = self._create_connection()
-        mycursor = db.cursor()
-
-        valid_details = False
-        # check if username and password is valid (replace + decrypt salted passwords)
-        mycursor.execute(f"""
-        SELECT Username, replace(cast(aes_decrypt(Password, 'encryptionkey1234') as char(100)), Salt, '') 
-        FROM Player;
-        """)
-
-        for combination in mycursor:
-            if combination[0] == username and combination[1] == password:
-                valid_details = True
-                break
-            else:
-                valid_details = False
-        
-        mycursor.reset()
-        mycursor.close()
-
-        return valid_details
+        session = Session(MySQLDatabaseConnection())
+        return session.check_user_login(username, password)
 
 # same concept as the 'Get_User_Info_Screen'; may change later as it is kind of redundant but cba
 class Confirmation_Screen(Screen):
@@ -359,72 +285,8 @@ class Skill_Selection_Screen(Screen):
         return (weight_memory_value, weight_attention_value, weight_speed_value, weight_problem_solving_value)
 
     def register_weights_onto_DB(self, weights):
-
-        # Create connection + create cursor
-        db = self._create_connection()
-        mycursor = db.cursor()
-        
-        # Get Player_ID
-        mycursor.execute("""
-        SELECT * 
-        FROM Player
-        ORDER BY PlayerID DESC
-        """)
-
-        records = mycursor.fetchall()
-        for record in records:
-            player_id = record[0]
-            break
-            
-        print(player_id)
-
-        # Cogntiive Area ID 1 (Memory)
-        mycursor.execute(f"""
-        UPDATE Weights
-        SET WeightValue = {weights[0]}
-        WHERE CognitiveAreaID = 1
-        AND PlayerID = {player_id};
-        """)
-
-        # Cognitive Area ID 2 (Attention)
-        mycursor.execute(f"""
-        UPDATE Weights
-        SET WeightValue = {weights[1]}
-        WHERE CognitiveAreaID = 2
-        AND PlayerID = {player_id};
-        """)
-
-        # Cognitive Area ID 3 (Speed)
-        mycursor.execute(f"""
-        UPDATE Weights
-        SET WeightValue = {weights[2]}
-        WHERE CognitiveAreaID = 3
-        AND PlayerID = {player_id};
-        """)
-
-        # Cognitive Area ID 4 (Problem Solving)
-        mycursor.execute(f"""
-        UPDATE Weights
-        SET WeightValue = {weights[3]}
-        WHERE CognitiveAreaID = 4
-        AND PlayerID = {player_id};
-        """)
-    
-        # Printing if the values have been recorded 
-        mycursor.execute("""
-        SELECT *
-        FROM Weights;
-        """)
-        print("\n")
-        for x in mycursor:
-            print(x)
-        
-        # Commit Changes to DB
-        db.commit()
-        db.close()
-
-        mycursor.reset()
-        mycursor.close()
+        session = Session(MySQLDatabaseConnection())
+        session.register_weights_onto_DB(weights)
     
     def remove_UI_elements(self):
         self.__TITLE_LABEL.hide()
