@@ -49,6 +49,8 @@ class Game:
                     running = False
                     pygame.quit()
                     sys.exit()
+                if isinstance(self.__current_screen, Maze_Screen):
+                    self.__current_screen.player_input(event)
                 
                 self.__current_screen._get_MANAGER().process_events(event)
             

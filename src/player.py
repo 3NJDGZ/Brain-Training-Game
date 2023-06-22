@@ -1,5 +1,4 @@
 import pygame
-import os
 from pygame.sprite import AbstractGroup
 from maze_generation import * 
 
@@ -22,8 +21,10 @@ class Player(pygame.sprite.Sprite):
         self.__images = [player_up, player_down, player_right, player_left]
         self.__frame_index = 0
         self.__image = self.__images[self.__frame_index]
-        self.__velocity = 4
+        self.__velocity = 100
         self.__rect = self.__image.get_rect(center=(self.__initial_x, self.__initial_y))
+
+        self.cell_walls_visited = []
     
     def get_player_image(self):
         self.__image = self.__images[self.get_frame_index()] # updates the player image before returning it to be blitted onto the screen
@@ -41,39 +42,42 @@ class Player(pygame.sprite.Sprite):
     
     def get_rect(self): # get rect positioning of image 
         return self.__rect
+    
+    def get_index(self, rects):
+        index = self.get_rect().collidelist(rects)
+        return index
 
-    def check_collisions(self, cell: Cell):
-        print(self.__rect.collidelistall())
-
-    def collisions(self, grid_of_cells):
-        for row_number in range(len(grid_of_cells)):
-            row = grid_of_cells[row_number]
-            for cell in row:
-                cell_rects = cell.get_rects()
-                for rect in cell_rects:
-                    if self.get_rect().colliderect(rect[0]):
-                        print(rect[1])
-                        return rect[1]
-        return False
-
-    def player_input(self, grid_of_cells): # gets player input for movement
-        keys = pygame.key.get_pressed()
-        self.collisions(grid_of_cells)
-        # If with Elif statements to avoid simultaneous button pressing causing diagaonal movements; restricts movement to only up, down, right, left
-        if keys[pygame.K_w] and self.collisions(grid_of_cells) != 'top': # Movement Up
-            self.__rect.y -= self.__velocity
-            self.set_frame_index(0)
+    def check_current_cell(self, rects, cols, grid_of_cells):
+        index = self.get_index(rects)
+        row_number = index // cols
+        cols_number = index - (cols * row_number)
+        if (self.get_rect().left >= rects[index].left and self.get_rect().right <= rects[index].right and self.get_rect().top >= rects[index].top and self.get_rect().bottom <= rects[index].bottom):
+            print(f'player is inside cell at {grid_of_cells[row_number][cols_number].get_row_column_positioning()}')
+            print(f"Walls of current_cell: {grid_of_cells[row_number][cols_number].get_walls()}")
+            print(f"Index of cell in rects list: {index}")
+            print("\n")
+        else:
+            print("\nNot in a cell!")
+        walls = grid_of_cells[row_number][cols_number].get_walls()
+        return walls
             
-        elif keys[pygame.K_s] and self.collisions(grid_of_cells) != 'bottom': # Movement down 
-            self.__rect.y += self.__velocity
-            self.set_frame_index(1)
 
-        elif keys[pygame.K_d] and self.collisions(grid_of_cells) != 'right': # Movement right
-            self.__rect.x += self.__velocity 
-            self.set_frame_index(2)
-        
-        elif keys[pygame.K_a] and self.collisions(grid_of_cells) != 'left': # Movement left
-            self.__rect.x -= self.__velocity
-            self.set_frame_index(3)
-        
-        # print(self.get_player_positioning())
+    def player_input(self, rects, cols, grid_of_cells, event): # gets player input for movement
+        walls = self.check_current_cell(rects, cols, grid_of_cells)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_w and not walls['top']: # Movement Up
+                self.__rect.y -= self.__velocity
+                self.set_frame_index(0)
+                    
+            elif event.key == pygame.K_s and not walls['bottom']: # Movement down 
+                self.__rect.y += self.__velocity
+                self.set_frame_index(1)
+
+            elif event.key == pygame.K_d and not walls['right']: # Movement right
+                self.__rect.x += self.__velocity 
+                self.set_frame_index(2)
+            
+            elif event.key == pygame.K_a and not walls['left']: # Movement left
+                self.__rect.x -= self.__velocity
+                self.set_frame_index(3)

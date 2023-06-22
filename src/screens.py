@@ -553,7 +553,9 @@ class Maze_Screen(Screen):
     def setup_maze_level_with_player(self):
         self.__maze.setup_maze()
         self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
-        self.__player.player_input(self.__maze.get_grid_of_cells())
+    
+    def player_input(self, event):
+        self.__player.player_input(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), event)
     
     # UI will need to be added; this UI will actually be separate 
     def show_UI_elements(self):

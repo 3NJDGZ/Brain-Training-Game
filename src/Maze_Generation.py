@@ -48,7 +48,6 @@ class Cell:
         self.LINE_WIDTH = 5
 
         # These attributes are private as they are specific to each instance of a Cell
-        self.rects = []
         self.__exit = False
         self.__x = x
         self.__y = y
@@ -57,6 +56,10 @@ class Cell:
                       "bottom": True,
                       "left": True}
         self.__visited = False
+    
+    def create_rect(self):
+        rect = pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE)
+        return rect
     
     def set_exit_value(self, value_to_be_set: bool):
         self.__exit = value_to_be_set
@@ -69,19 +72,7 @@ class Cell:
     
     def set_visited(self, value: bool):
         self.__visited = value
-    
-    def get_rects(self):
-        self.rects = []
-        if self.get_walls()['top']:
-            self.rects.append([pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.LINE_WIDTH), 'top'])
-        if self.get_walls()['right']:
-            self.rects.append([pygame.Rect(self.__x + self.STARTING_TILE_SIZE, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE), 'right'])
-        if self.get_walls()['bottom']:
-            self.rects.append([pygame.Rect(self.__x, self.__y + self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE, self.LINE_WIDTH), 'bottom'])
-        if self.get_walls()['left']:
-            self.rects.append([pygame.Rect(self.__x, self.__y, self.LINE_WIDTH, self.STARTING_TILE_SIZE), 'left'])
-        return self.rects
-    
+        
     def get_row_column_positioning(self):
         return [self.__x // self.STARTING_TILE_SIZE, self.__y // self.STARTING_TILE_SIZE]
             
@@ -106,7 +97,6 @@ class Cell:
         # shuffle the 'adjacent_shells' list in order to keep the 'randomness' of the recursive DFS
         random.shuffle(adjacent_cells)
         return adjacent_cells
-    
 
     def draw_cell(self):
 
@@ -114,9 +104,10 @@ class Cell:
         if self.__exit == True:
             pygame.draw.rect(self.WIN, (255, 255, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
 
-        # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__visited == True:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+
+        # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__walls['top'] == True:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.STARTING_TILE_SIZE, self.__y), self.LINE_WIDTH)
         if self.__walls['right'] == True:
@@ -134,6 +125,7 @@ class Maze():
         self.__grid_of_cells = []
         self.__rows = HEIGHT // self.__STARTING_TILE_SIZE
         self.__cols = WIDTH // self.__STARTING_TILE_SIZE
+        self.__rects = []
         self.WIN = WIN
 
         # Setup for recursive DFS for maze generation, cells are in a grid
@@ -147,9 +139,22 @@ class Maze():
         self.__STACK = Stack(len(self.__grid_of_cells) * self.__cols)
         self.__initial_cell = self.__grid_of_cells[0][0]
         self.__STACK.push(self.__initial_cell)
+
+        # get rects for each cell to check for collisions with walls
+        for row in self.__grid_of_cells:
+            for cell in row:
+                rect = cell.create_rect()
+                self.__rects.append(rect)
+    
         
     def get_grid_of_cells(self):
         return self.__grid_of_cells
+
+    def get_rects(self):
+        return self.__rects
+
+    def get_cols(self):
+        return self.__cols
 
     # sets up the actual maze itself and then draws it onto the screen
     def setup_maze(self):
@@ -160,7 +165,7 @@ class Maze():
         for row in self.__grid_of_cells:
             for cell in row:
                 cell.draw_cell()
-
+        
     def dfs(self):
         # Recursive Implementation of DFS (Depth First Search Graph Traversal Algorithm)
         current_cell = self.__STACK.peek()
@@ -182,7 +187,7 @@ class Maze():
         next_cell_column_row_positioning = next_cell.get_row_column_positioning()
 
         # column then row [column, row]
-        print(f"Current: {current_cell_column_row_positioning}, Next: {next_cell_column_row_positioning}")
+        # print(f"Current: {current_cell_column_row_positioning}, Next: {next_cell_column_row_positioning}")
         current_x = current_cell_column_row_positioning[0]
         current_y = current_cell_column_row_positioning[1]
         next_x = next_cell_column_row_positioning[0]
@@ -208,4 +213,4 @@ class Maze():
             next_cell.set_walls('right', False)
             current_cell.set_walls('left', False)
         
-        print(f"Current: {current_cell.get_walls()}, Next: {next_cell.get_walls()}")
+        # print(f"Current: {current_cell.get_walls()}, Next: {next_cell.get_walls()}")
