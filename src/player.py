@@ -5,6 +5,57 @@ from maze_generation import *
 pygame.init()
 
 class Player(pygame.sprite.Sprite):
+    '''
+    A class to represent the Player
+
+    ...
+
+    Attributes
+    ----------
+    width : int
+        width of player image. 
+    height : int 
+        height of player image. 
+    initial_x : int 
+        initial x co-ordinate. 
+    inital_y : int 
+        initial y co-ordinate. 
+    player_up : image 
+        image of player 'up' animation.
+    player_down : image 
+        image of player 'down' animation. 
+    player_right : image 
+        image of player 'right' animation. 
+    player_left : image 
+        image of player 'left' animation.
+    images : array 
+        array of the player image animations.
+    frame_index : int
+        integer value used to represent what frame from 'images' should be shown.
+    velocity : int
+        how mnay pixels the player can move across x, y plane. 
+    rect : rect 
+        pygame rect object of the player image from 'images'.
+    
+    Methods
+    -------
+    get_player_image():
+        returns the current player image frame.
+    get_player_positioning():
+        returns x, y position of player relative to the center of its rect.
+    get_frame_index():
+        returns the current value of the frame index.
+    set_frame_index(index_to_be_set: int):
+        sets the frame index to the value from 'index_to_be_set'.
+    get_rect():
+        returns player rect.
+    get_index():
+        returns the index value of the rect that has collided with the player rect.
+    check_current_cell(rects, cols, grid_of_cells):
+        checks the current cell that the player is in and what corresponding walls it has are present.
+    player_input(rects, cols, grid_of_cells, event):
+        used for player movement and player collision with walls of the maze.
+    '''
     def __init__(self):
 
         self.__width = 60
@@ -23,8 +74,6 @@ class Player(pygame.sprite.Sprite):
         self.__image = self.__images[self.__frame_index]
         self.__velocity = 100
         self.__rect = self.__image.get_rect(center=(self.__initial_x, self.__initial_y))
-
-        self.cell_walls_visited = []
     
     def get_player_image(self):
         self.__image = self.__images[self.get_frame_index()] # updates the player image before returning it to be blitted onto the screen
@@ -44,10 +93,31 @@ class Player(pygame.sprite.Sprite):
         return self.__rect
     
     def get_index(self, rects):
+        '''
+        - Returns the index value of the rect that has collided with the player, aka the current cell
+
+            Parameters:
+                rects (1D array): a list of all the rects generated from each cell from 'grid_of_cells'
+            
+            Returns:
+                index (int): integer value representing the index positioning 
+        '''
         index = self.get_rect().collidelist(rects)
         return index
 
     def check_current_cell(self, rects, cols, grid_of_cells):
+        '''
+        - Checks the current cell that the player is in and the walls present for that current cell.
+        - Also calculates the corresponding position in the two dimensional array 'grid_of_cells' from the 1 dimensional array 'rects'
+            
+            Parameters:
+                rects (1D array): a list of all the rects generated from each cell from 'grid_of_cells'
+                cols (int): decimal integer of the number of columns calculated from the tile size of each cell
+                grid_of_cells (2D array): 2D array representation of the cells used for the creation of the maze
+            
+            Returns:
+                walls (dict): dict object that stores the values of what walls are present for the current cell
+        '''
         index = self.get_index(rects)
         row_number = index // cols
         cols_number = index - (cols * row_number)
@@ -59,10 +129,21 @@ class Player(pygame.sprite.Sprite):
         else:
             print("\nNot in a cell!")
         walls = grid_of_cells[row_number][cols_number].get_walls()
-        return walls
-            
+        return walls    
 
     def player_input(self, rects, cols, grid_of_cells, event): # gets player input for movement
+        '''
+        - Used for Player Input and Movement aswell as collision theory with the walls of the maze
+
+            Parameters:
+                rects (1D array): a list of all the rects generated from each cell from 'grid_of_cells'
+                cols (int): decimal integer of the number of columns calculated from the tile size of each cell
+                grid_of_cells (2D array): 2D array representation of the cells used for the creation of the maze
+                event (object): a pygame event that will be evaluated (this allows the single button key presses required for player movement as well as maze collision theory)
+            
+            Returns: 
+                Nothing
+        '''
         walls = self.check_current_cell(rects, cols, grid_of_cells)
 
         if event.type == pygame.KEYDOWN:
