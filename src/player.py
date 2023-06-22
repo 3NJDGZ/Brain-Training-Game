@@ -5,7 +5,7 @@ from maze_generation import *
 pygame.init()
 
 class Player(pygame.sprite.Sprite):
-    '''
+    """
     A class to represent the Player
 
     ...
@@ -55,7 +55,7 @@ class Player(pygame.sprite.Sprite):
         checks the current cell that the player is in and what corresponding walls it has are present.
     player_input(rects, cols, grid_of_cells, event):
         used for player movement and player collision with walls of the maze.
-    '''
+    """
     def __init__(self):
 
         self.__width = 60
@@ -93,31 +93,41 @@ class Player(pygame.sprite.Sprite):
         return self.__rect
     
     def get_index(self, rects):
-        '''
-        - Returns the index value of the rect that has collided with the player, aka the current cell
+        """
+        Returns the index value of the rect that has collided with the player, aka the current cell.
 
-            Parameters:
-                rects (1D array): a list of all the rects generated from each cell from 'grid_of_cells'
-            
-            Returns:
-                index (int): integer value representing the index positioning 
-        '''
+        Parameters
+        ----------
+        rects : 1D array
+            a list of all the rects generated from each cell from 'grid_of_cells'.
+        
+        Returns
+        -------
+        index : int 
+            integer value representing the index positioning.
+        """
         index = self.get_rect().collidelist(rects)
         return index
 
     def check_current_cell(self, rects, cols, grid_of_cells):
-        '''
-        - Checks the current cell that the player is in and the walls present for that current cell.
-        - Also calculates the corresponding position in the two dimensional array 'grid_of_cells' from the 1 dimensional array 'rects'
+        """
+        Checks the current cell that the player is in and the walls present for that current cell.
+        Also calculates the corresponding position in the two dimensional array 'grid_of_cells' from the 1 dimensional array 'rects'.
             
-            Parameters:
-                rects (1D array): a list of all the rects generated from each cell from 'grid_of_cells'
-                cols (int): decimal integer of the number of columns calculated from the tile size of each cell
-                grid_of_cells (2D array): 2D array representation of the cells used for the creation of the maze
-            
-            Returns:
-                walls (dict): dict object that stores the values of what walls are present for the current cell
-        '''
+        Parameters
+        ----------
+        rects : 1D array
+            a list of all the rects generated from each cell from 'grid_of_cells'.
+        cols : int 
+            decimal integer of the number of columns calculated from the tile size of each cell.
+        grid_of_cells : 2D array
+            2D array representation of the cells used for the creation of the maze.
+    
+        Returns
+        -------
+        walls : dict 
+            dict object that stores the values of what walls are present for the current cell.
+        """
         index = self.get_index(rects)
         row_number = index // cols
         cols_number = index - (cols * row_number)
@@ -132,18 +142,24 @@ class Player(pygame.sprite.Sprite):
         return walls    
 
     def player_input(self, rects, cols, grid_of_cells, event): # gets player input for movement
-        '''
-        - Used for Player Input and Movement aswell as collision theory with the walls of the maze
+        """
+        Used for Player Input and Movement aswell as collision theory with the walls of the maze.
 
-            Parameters:
-                rects (1D array): a list of all the rects generated from each cell from 'grid_of_cells'
-                cols (int): decimal integer of the number of columns calculated from the tile size of each cell
-                grid_of_cells (2D array): 2D array representation of the cells used for the creation of the maze
-                event (object): a pygame event that will be evaluated (this allows the single button key presses required for player movement as well as maze collision theory)
-            
-            Returns: 
-                Nothing
-        '''
+        Parameters
+        ----------
+        rects : 1D array 
+            a list of all the rects generated from each cell from 'grid_of_cells'.
+        cols : int 
+            decimal integer of the number of columns calculated from the tile size of each cell.
+        grid_of_cells : 2D array
+            2D array representation of the cells used for the creation of the maze.
+        event : pygame object 
+            a pygame event that will be evaluated (this allows the single button key presses required for player movement as well as maze collision theory).
+        
+        Returns
+        -------
+        None
+        """
         walls = self.check_current_cell(rects, cols, grid_of_cells)
 
         if event.type == pygame.KEYDOWN:
