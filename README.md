@@ -7,11 +7,11 @@ Project (Source Code) for NEA A Level Computer Science.
 - argon2 Module: https://argon2-cffi.readthedocs.io/en/stable/
 - Python + MySQL Connection (Series of Videos; couldn't find playlist): https://www.youtube.com/watch?v=3vsC05rxZ8c&t=2s
 
-## UI Handling
+### UI Handling
 - Pygame_GUI Documentation: https://pygame-gui.readthedocs.io/en/latest/#:~:text=Pygame%20GUI%20is%20a%20module,for%20games%20written%20in%20pygame
 - Text Input within Pygame via Pygame_GUI: https://www.youtube.com/watch?v=kDSdjsdoGOY&t=2s
 
-## Pygame Handling
+### Pygame Handling
 - Maze Generation: https://www.youtube.com/watch?v=Ez7U6jU0q5k&t=91s (used a slightly different algo + implementation)
 - Player Class in pygame: https://opensource.com/article/17/12/game-python-add-a-player
 - Overall Pygame Basic Tutorial: https://www.youtube.com/watch?v=AY9MnQ4x3zk&t=1s 
