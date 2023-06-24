@@ -4,3 +4,4 @@ mysql.connnector
 pygame_gui
 os
 random
+argon2

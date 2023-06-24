@@ -1,9 +1,11 @@
+# import necessary modules
 import pygame
 import sys
 from screens import *
 
 # bypasses recursion limit stated by python; required for the recursive DFS when generating more complex and larger mazes https://stackoverflow.com/questions/3323001/what-is-the-maximum-recursion-depth-and-how-to-increase-it
 sys.setrecursionlimit(10**6)
+
 pygame.init()
 
 class Game:
@@ -14,8 +16,8 @@ class Game:
 
         # Screens
         self.__intro_screen = Intro_Screen("Intro!")
-        self.__register_screen = Register_Screen("REGISTER MENU")
-        self.__login_screen = Login_Screen("LOGIN MENU")
+        self.__register_screen = Register_Screen("REGISTER MENU", "INVALID INPUTS, TRY AGAIN")
+        self.__login_screen = Login_Screen("LOGIN MENU", "INVALID DETAILS, TRY AGAIN.")
         self.__registration_confirmation_screen = Registration_Confirmation_Screen("REGISTRATION SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__login_confirmation_screen = Login_Confirmation_Screen("LOGIN SUCCESSFUL", "PRESS 'SPACE' TO CONTINUE.")
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")

@@ -1,12 +1,17 @@
-import pygame
-import random
-import mysql.connector
-from mysqlmodel import MySQLDatabaseConnection, PlayerDataManager
+# pygame modules
 import pygame_gui
 from pygame_gui.core import ObjectID
-from abc import ABC, abstractmethod
+import pygame
+
+# custom modules (player + maze)
 from player import Player
 from maze_generation import Maze
+
+# data handling
+from mysqlmodel import MySQLDatabaseConnection, PlayerDataManager
+
+# miscellaneous 
+from abc import ABC, abstractmethod
 
 pygame.init()
 
@@ -33,17 +38,6 @@ class Screen(ABC):
 
     def _fill_with_colour(self):
         self._WIN.fill((self._screen_colour))
-    
-    # Create connection to the MySQL DB
-    def _create_connection(self):
-        # Connect to host root server on computer 
-        db = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            passwd="password",
-            database="MainDB"
-        )
-        return db
     
     # Abstract methods that are required for every sub-class of 'Screen'
     @abstractmethod
@@ -90,7 +84,7 @@ class Intro_Screen(Screen):
 # A type of 'Screen' which is mainly used to get essential info from the player, such as username, and password (e.g., being used in register/login screens)
 # basically was made to avoid repeating bits of code here and there
 class Get_User_Info_Screen(Screen):
-    def __init__(self, Title: str):
+    def __init__(self, Title: str, error_msg):
         super(Get_User_Info_Screen, self).__init__(Title)
 
         # UI
@@ -98,6 +92,7 @@ class Get_User_Info_Screen(Screen):
         self._PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((600, ((self._HEIGHT/2)+30)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#password_text_entry"))
         self._GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
         self._TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((625, 250), (350, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text=Title)
+        self._ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 600), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#error_label"), text=error_msg)
 
         # Other
         self._username = ""
@@ -121,16 +116,34 @@ class Get_User_Info_Screen(Screen):
         self._PASSWORD_INPUT.hide()
         self._GO_BACK_BUTTON.hide()
         self._TITLE_LABEL.hide()
+        self._ERROR_LABEL.hide()
     
     def show_UI_elements(self):
         self._USERNAME_INPUT.show()
         self._PASSWORD_INPUT.show()
         self._GO_BACK_BUTTON.show()
         self._TITLE_LABEL.show()
+    
+    def show_error(self):
+        self._ERROR_LABEL.show()
 
 class Register_Screen(Get_User_Info_Screen):
-    def __init__(self, Title: str):
-        super(Register_Screen, self).__init__(Title)
+    def __init__(self, Title: str, error_msg):
+        super().__init__(Title, error_msg)
+
+        self.__PW_ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 600), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#error_label"), text="PASSWORD IS TOO SHORT (>=5 CHAR)")
+    
+    def show_PW_error(self):
+        self.__PW_ERROR_LABEL.show()
+
+    def remove_UI_elements(self):
+        self._USERNAME_INPUT.hide()
+        self._PASSWORD_INPUT.hide()
+        self._GO_BACK_BUTTON.hide()
+        self._TITLE_LABEL.hide()
+        self._ERROR_LABEL.hide()
+        self.__PW_ERROR_LABEL.hide()
+    
 
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
@@ -140,42 +153,30 @@ class Register_Screen(Get_User_Info_Screen):
 
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#password_text_entry":
                 self.set_password(event.text)
-            
+                
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
-                self.register(self.get_username(), self.get_password())
-                ui_finished = "TEXT_ENTRY"
-                return ui_finished
+                if len(self.get_username()) > 0:
+                    if len(self.get_password()) >= 5:
+                        self.register(self.get_username(), self.get_password())
+                        ui_finished = "TEXT_ENTRY"
+                        return ui_finished
+                    else:
+                        self.show_PW_error()
+                else:
+                    self.show_error()
             
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
                 ui_finished = "BUTTON"
                 return ui_finished
 
             self._MANAGER.process_events(event)
-        
-    def generate_random_salt(self):
-        '''
-        Generates random salt
-        Arguments: None
-        Returns: salt ()
-        '''
-        random_length = random.randint(5, 20)
-        salt = ""
-
-        for x in range(random_length):
-            salt += chr(random.randint(0, 127))
-        
-        return salt
 
     def register(self, username, password):
-        successful_registration = False
-        if len(username) > 0 and len(password) > 0:
-            salt = self.generate_random_salt()
-            PDM.register_new_player_data(username, password, salt)
-        return successful_registration
+        PDM.register_new_player_data(username, password)
 
 class Login_Screen(Get_User_Info_Screen):
-    def __init__(self, Title: str):
-        super(Login_Screen, self).__init__(Title)
+    def __init__(self, Title: str, error_msg):
+        super().__init__(Title, error_msg)
 
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
@@ -192,7 +193,7 @@ class Login_Screen(Get_User_Info_Screen):
                 if self.login(self.get_username(), self.get_password()):
                     ui_finished = "TEXT_ENTRY"
                 else:
-                    print("Invalid Details")
+                    self.show_error()
             
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
                 ui_finished = "BUTTON"
@@ -253,6 +254,9 @@ class Skill_Selection_Screen(Screen):
         self.__HORIZONTAL_SLIDER_OPTION_FOUR_PROBLEM_SOLVING = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((450, 550), (700, 50)), manager=self._MANAGER, start_value=0, value_range=(0, 100), click_increment=1, object_id=ObjectID(class_id="@horizontal_sliders", object_id="#slider4_problem_solving"))
         self.__CONFIRM_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 650), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#confirm_button"), text="CONFIRM")
 
+        # Error Message
+        self.__ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 775), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#error_label"), text="EACH SLIDER MUST BE > 0")
+
     # Get values from each Horiztonal Slider
     def get_value_from_slider(self):
         memory_value = self.__HORIZONTAL_SLIDER_OPTION_ONE_MEMORY.get_current_value()
@@ -267,21 +271,27 @@ class Skill_Selection_Screen(Screen):
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#confirm_button":
                 values = self.get_value_from_slider()
                 weight_values = self.calculate_weighted_values_for_player(values[0], values[1], values[2], values[3])
-                self.register_weights_onto_DB(weight_values)
-                return True
+                if weight_values is None:
+                    self.show_error_msg()
+                else:
+                    self.register_weights_onto_DB(weight_values)
+                    return True
 
             self._MANAGER.process_events(event)
     
     # simple algorithm used to calculate weight values for the player 
     def calculate_weighted_values_for_player(self, memory_value: int, attention_value: int, speed_value: int, problem_solving_value: int):
-        total_value = speed_value + attention_value + memory_value + problem_solving_value
-        
-        weight_speed_value = speed_value / total_value
-        weight_attention_value = attention_value / total_value
-        weight_memory_value = memory_value / total_value
-        weight_problem_solving_value = problem_solving_value / total_value
+        if memory_value == 0 or attention_value == 0 or speed_value == 0 or problem_solving_value == 0:
+            return None
+        else:
+            total_value = speed_value + attention_value + memory_value + problem_solving_value
+            
+            weight_speed_value = speed_value / total_value
+            weight_attention_value = attention_value / total_value
+            weight_memory_value = memory_value / total_value
+            weight_problem_solving_value = problem_solving_value / total_value
 
-        return (weight_memory_value, weight_attention_value, weight_speed_value, weight_problem_solving_value)
+            return (weight_memory_value, weight_attention_value, weight_speed_value, weight_problem_solving_value)
 
     def register_weights_onto_DB(self, weights):
         PDM.register_weights_onto_DB(weights)
@@ -297,6 +307,10 @@ class Skill_Selection_Screen(Screen):
         self.__ATTENTION_LABEL.hide()
         self.__MEMORY_LABEL.hide()
         self.__PROBLEM_SOLVING_LABEL.hide()
+        self.__ERROR_LABEL.hide()
+    
+    def show_error_msg(self):
+        self.__ERROR_LABEL.show()
     
     def show_UI_elements(self):
         self.__TITLE_LABEL.show()

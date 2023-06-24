@@ -1,7 +1,5 @@
-select PlayerID, Username, replace(cast(aes_decrypt(Password, 'encryptionkey1234') as char(100)), Salt, ''), Salt
+select * 
 from Player;
--- select * 
--- from Player;
 select * 
 from CPS;
 select * 

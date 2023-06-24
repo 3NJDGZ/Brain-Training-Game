@@ -1,4 +1,6 @@
+# import necessary modules
 import mysql.connector
+import argon2
 from abc import ABC
 
 class MySQLDatabaseConnection:
@@ -20,14 +22,18 @@ class MySQLDatabaseModel(ABC):
 class PlayerDataManager(MySQLDatabaseModel):
     def __init__(self, DBC: MySQLDatabaseConnection):
         super().__init__(DBC)
+        self.ph = argon2.PasswordHasher()
     
-    def register_new_player_data(self, username, password, salt):
+    def register_new_player_data(self, username, password):
         mycursor = self._DBC.get_cursor()
+
+        hashed_pw = self.ph.hash(password)
+
         mycursor.execute(
             f"""
-            INSERT INTO Player (Username, Password, Salt)
-            VALUES ('{username}', aes_encrypt(concat('{password}', md5('{salt}')), 'encryptionkey1234'), md5('{salt}'));
-            """
+            INSERT INTO Player (Username, Password)
+            VALUES (%s, %s)
+            """, (username, hashed_pw)
         )
 
         # Set up default information in Weights Entity 
@@ -136,15 +142,21 @@ class PlayerDataManager(MySQLDatabaseModel):
         valid_details = False
         # check if username and password is valid (replace + decrypt salted passwords)
         mycursor.execute(f"""
-        SELECT Username, replace(cast(aes_decrypt(Password, 'encryptionkey1234') as char(100)), Salt, '') 
+        SELECT Username, Password 
         FROM Player
         WHERE Username = %s;
         """, (username, ))
 
         result = mycursor.fetchone()
         if result:
-            if result[0] == username and result[1] == password:
-                valid_details = True
+            if result[0] == username:
+                stored_hash = result[1]
+                try: 
+                    self.ph.verify(stored_hash, password)
+                    print("password match")
+                    valid_details = True
+                except argon2.exceptions.VerifyMismatchError:
+                    print("password do not match")
 
         return valid_details
 
