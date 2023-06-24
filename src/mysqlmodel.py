@@ -10,7 +10,6 @@ class MySQLDatabaseConnection:
             database="MainDB"
         )
 
-    
     def get_cursor(self):
         return self.db.cursor()
 
@@ -18,7 +17,7 @@ class MySQLDatabaseModel(ABC):
     def __init__(self, DBC: MySQLDatabaseConnection):
         self._DBC = DBC
 
-class Session(MySQLDatabaseModel):
+class PlayerDataManager(MySQLDatabaseModel):
     def __init__(self, DBC: MySQLDatabaseConnection):
         super().__init__(DBC)
     
@@ -138,16 +137,15 @@ class Session(MySQLDatabaseModel):
         # check if username and password is valid (replace + decrypt salted passwords)
         mycursor.execute(f"""
         SELECT Username, replace(cast(aes_decrypt(Password, 'encryptionkey1234') as char(100)), Salt, '') 
-        FROM Player;
-        """)
+        FROM Player
+        WHERE Username = %s;
+        """, (username, ))
 
-        for combination in mycursor:
-            if combination[0] == username and combination[1] == password:
+        result = mycursor.fetchone()
+        if result:
+            if result[0] == username and result[1] == password:
                 valid_details = True
-                break
-            else:
-                valid_details = False
-        
+
         return valid_details
 
     

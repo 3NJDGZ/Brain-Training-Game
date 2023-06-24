@@ -1,7 +1,7 @@
 import pygame
 import random
 import mysql.connector
-from mysqlmodel import MySQLDatabaseConnection, Session
+from mysqlmodel import MySQLDatabaseConnection, PlayerDataManager
 import pygame_gui
 from pygame_gui.core import ObjectID
 from abc import ABC, abstractmethod
@@ -11,6 +11,8 @@ from maze_generation import Maze
 pygame.init()
 
 pygame.display.set_caption("Brain Training Game")
+
+PDM = PlayerDataManager(MySQLDatabaseConnection())
 
 class Screen(ABC):
     def __init__(self, Title: str):
@@ -165,12 +167,10 @@ class Register_Screen(Get_User_Info_Screen):
         return salt
 
     def register(self, username, password):
-        session = Session(MySQLDatabaseConnection())
-
         successful_registration = False
         if len(username) > 0 and len(password) > 0:
             salt = self.generate_random_salt()
-            session.register_new_player_data(username, password, salt)
+            PDM.register_new_player_data(username, password, salt)
         return successful_registration
 
 class Login_Screen(Get_User_Info_Screen):
@@ -201,8 +201,7 @@ class Login_Screen(Get_User_Info_Screen):
         return ui_finished
     
     def login(self, username: str, password: str):
-        session = Session(MySQLDatabaseConnection())
-        return session.check_user_login(username, password)
+        return PDM.check_user_login(username, password)
 
 # same concept as the 'Get_User_Info_Screen'; may change later as it is kind of redundant but cba
 class Confirmation_Screen(Screen):
@@ -285,8 +284,7 @@ class Skill_Selection_Screen(Screen):
         return (weight_memory_value, weight_attention_value, weight_speed_value, weight_problem_solving_value)
 
     def register_weights_onto_DB(self, weights):
-        session = Session(MySQLDatabaseConnection())
-        session.register_weights_onto_DB(weights)
+        PDM.register_weights_onto_DB(weights)
     
     def remove_UI_elements(self):
         self.__TITLE_LABEL.hide()
