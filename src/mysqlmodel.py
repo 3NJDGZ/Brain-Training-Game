@@ -4,7 +4,9 @@ import argon2
 from abc import ABC
 
 class MySQLDatabaseConnection:
+    """A class that represents a connection to the DB."""
     def __init__(self):
+        """Makes a DB connection as an attribute, returns nothing."""
         self.db = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -13,18 +15,59 @@ class MySQLDatabaseConnection:
         )
 
     def get_cursor(self):
+        """used to get the cursor allowing executiong of SQL commands, returns cursor() object."""
         return self.db.cursor()
 
 class MySQLDatabaseModel(ABC):
+    """A class that represents the DB Model and takes the parameter of the DB connection, returns nothing."""
     def __init__(self, DBC: MySQLDatabaseConnection):
+        """sets up the DB connection attribute, returs nothing"""
         self._DBC = DBC
 
 class PlayerDataManager(MySQLDatabaseModel):
+    """
+    A class to represent the Player's Data Manager and connection to the MySQL DB.
+
+    ...
+
+    Attributes
+    ----------
+    ph : argon2 object
+        Password Hasher object used to hash passwords for the DB.
+    
+    Methods
+    -------
+    register_new_player_data(username, password):
+        registers the new player's relevant data onto the database.
+    register_weights_onto_db(weights):
+        registers the corresponding weight values from player onto database.
+    retireve_player_id():
+        returns the most recently added player's PlayerID.
+    check_user_login(username, password):
+        checks and authorises the user when they are logging in.
+    """
     def __init__(self, DBC: MySQLDatabaseConnection):
+        """Sets up the argon2 password hasher, returns nothing."""
         super().__init__(DBC)
         self.ph = argon2.PasswordHasher()
     
     def register_new_player_data(self, username, password):
+        """
+        Registers the new player on the database.
+
+        Inserts relevant information into the entities: 'Player', 'Weights', and 'Performance'
+
+        Parameters
+        ----------
+        username : str
+            username of player
+        password : str 
+            password of player
+        
+        Returns
+        -------
+        None
+        """
         mycursor = self._DBC.get_cursor()
 
         hashed_pw = self.ph.hash(password)
@@ -40,7 +83,7 @@ class PlayerDataManager(MySQLDatabaseModel):
         current_player_id = self.retrieve_player_id()
         mycursor.execute(
             f"""
-            INSERT INTO WEIGHTS (PlayerID, CognitiveAreaID, WeightValue)
+            INSERT INTO Weights (PlayerID, CognitiveAreaID, WeightValue)
             VALUES ({current_player_id}, 1, 0.25),
             ({current_player_id}, 2, 0.25),
             ({current_player_id}, 3, 0.25),
@@ -72,6 +115,20 @@ class PlayerDataManager(MySQLDatabaseModel):
         self._DBC.db.commit()
     
     def register_weights_onto_DB(self, weights):
+        """
+        Registers the corresponding weight values onto the database.
+
+        Each weight value corresponds to the importance of each cognitive area.
+
+        Parameters
+        ----------
+        weights : array
+            array of the weight values.
+        
+        Returns
+        -------
+        None
+        """
         mycursor = self._DBC.get_cursor()
         # Get Player_ID
         player_id = self.retrieve_player_id()
@@ -120,6 +177,18 @@ class PlayerDataManager(MySQLDatabaseModel):
         self._DBC.db.commit()
         
     def retrieve_player_id(self):
+        """
+        Retrieves the most recently added player's PlayerID.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        current_player_id : int
+            the player's PlayerID.
+        """
         mycursor = self._DBC.get_cursor()
         mycursor.execute(
             """
@@ -137,6 +206,22 @@ class PlayerDataManager(MySQLDatabaseModel):
         return current_player_id
 
     def check_user_login(self, username, password):
+        """
+        Checks and authorises the users inputted details to the info stored within the database.
+        
+
+        Parameters
+        ----------
+        username : str 
+            input username from user.
+        password : str 
+            input password from user.
+        
+        Returns
+        -------
+        valid_details : bool
+            bool variable that signifies if the details inputted were value or not.
+        """
         mycursor = self._DBC.get_cursor()
 
         valid_details = False
