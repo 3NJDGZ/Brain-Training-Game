@@ -138,6 +138,11 @@ class Player(pygame.sprite.Sprite):
             print("\n")
         else:
             print("\nNot in a cell!")
+
+        # Checks if the Player has Arrived at the exit of the maze
+        if grid_of_cells[row_number][cols_number].get_exit_value():
+            print("Arrived at the exit!")
+
         walls = grid_of_cells[row_number][cols_number].get_walls()
         return walls    
 

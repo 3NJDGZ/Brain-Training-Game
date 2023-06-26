@@ -49,6 +49,7 @@ class Cell:
 
         # These attributes are private as they are specific to each instance of a Cell
         self.__exit = False
+        self.__exercise_present = False
         self.__start = False
         self.__x = x
         self.__y = y
@@ -58,12 +59,21 @@ class Cell:
                       "left": True}
         self.__visited = False
     
+    def get_exercise_present(self):
+        return self.__exercise_present
+    
+    def set_exercise_present(self, value_to_be_set: bool):
+        self.__exercise_present = value_to_be_set
+
     def create_rect(self):
         rect = pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE)
         return rect
     
     def set_exit_value(self, value_to_be_set: bool):
         self.__exit = value_to_be_set
+    
+    def get_exit_value(self):
+        return self.__exit
     
     def set_start_value(self, value_to_be_set: bool):
         self.__start = value_to_be_set
@@ -103,23 +113,26 @@ class Cell:
         return adjacent_cells
 
     def draw_cell(self):
-        if self.__visited == True:
+        if self.__visited:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
         
-        if self.__exit == True:
+        if self.__exit:  # Checks if the cell is the Exit cell; if it is then make it red 
             pygame.draw.rect(self.WIN, (255, 0, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
         
-        if self.__start == True:
+        if self.__start: # Checks if the cell is the Start cell; if it is make it green
             pygame.draw.rect(self.WIN, (0, 255, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+        
+        if self.__exercise_present: # Checks if the cell is an exercise cell; if it is make it blue
+            pygame.draw.rect(self.WIN, (0, 0, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
 
         # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
-        if self.__walls['top'] == True:
+        if self.__walls['top']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.STARTING_TILE_SIZE, self.__y), self.LINE_WIDTH)
-        if self.__walls['right'] == True:
+        if self.__walls['right']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x + self.STARTING_TILE_SIZE, self.__y), (self.__x + self.STARTING_TILE_SIZE, self.__y + self.STARTING_TILE_SIZE), self.LINE_WIDTH)
-        if self.__walls['bottom'] == True:
+        if self.__walls['bottom']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x + self.STARTING_TILE_SIZE, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y + self.STARTING_TILE_SIZE), self.LINE_WIDTH)
-        if self.__walls['left'] == True:
+        if self.__walls['left']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y), self.LINE_WIDTH)
 
 class Maze():
@@ -143,6 +156,14 @@ class Maze():
         # Exit cell
         random_exit_cell = self.__grid_of_cells[random.randint(self.__rows // 1.5, self.__rows - 1)][random.randint(self.__cols // 1.5, self.__cols - 1)]
         random_exit_cell.set_exit_value(True)
+
+        # Generating Exercise(s) Cells; only visualising them as blue cells; functionality has not yet been implemented.
+        for x in range(random.randint(1, 5)):
+            row_number = random.randint(1, self.__rows)
+            cols_number = random.randint(1, self.__cols)
+            exercise_cell = self.__grid_of_cells[row_number][cols_number]
+            if not exercise_cell.get_exit_value():
+                exercise_cell.set_exercise_present(True)
         
         # Start Cell
         self.__grid_of_cells[0][0].set_start_value(True)
