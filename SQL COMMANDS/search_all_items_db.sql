@@ -1,3 +1,4 @@
+use TestDB;
 select * 
 from Player;
 select * 

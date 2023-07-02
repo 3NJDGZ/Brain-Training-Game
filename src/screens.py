@@ -861,6 +861,12 @@ class Maze_Screen(Screen):
         self.__maze.setup_maze()
         self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
     
+    def check_player_cell_is_exit(self):
+        self.__player.check_if_current_cell_is_exit(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
+    
+    def check_player_cell_is_exercise(self):
+        self.__player.check_if_current_cell_is_exercise(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
+    
     def player_input(self, event):
         """Processes player input on the maze screen"""
         self.__player.player_input(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), event)

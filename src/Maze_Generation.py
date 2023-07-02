@@ -1,5 +1,6 @@
 import pygame
 import random
+from exercises import TestExercise, Exercises
 
 # Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
@@ -50,6 +51,7 @@ class Cell:
         # These attributes are private as they are specific to each instance of a Cell
         self.__exit = False
         self.__exercise_present = False
+        self.__exercise = None
         self.__start = False
         self.__x = x
         self.__y = y
@@ -58,6 +60,12 @@ class Cell:
                       "bottom": True,
                       "left": True}
         self.__visited = False
+    
+    def get_exercise(self):
+        return self.__exercise
+
+    def set_exercise(self, exercise: Exercises):
+        self.__exercise = exercise
     
     def get_exercise_present(self):
         return self.__exercise_present
@@ -68,7 +76,7 @@ class Cell:
     def create_rect(self):
         rect = pygame.Rect(self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE)
         return rect
-    
+
     def set_exit_value(self, value_to_be_set: bool):
         self.__exit = value_to_be_set
     
@@ -135,6 +143,10 @@ class Cell:
         if self.__walls['left']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y), self.LINE_WIDTH)
 
+    def create_exercise_for_cell(self):
+        if self.get_exercise_present():
+            self.set_exercise(TestExercise("Memory", 1))
+
 class Maze():
     def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN):
         self.__STARTING_TILE_SIZE = STARTING_TILE_SIZE
@@ -161,9 +173,10 @@ class Maze():
         for x in range(random.randint(1, 5)):
             row_number = random.randint(1, self.__rows)
             cols_number = random.randint(1, self.__cols)
-            exercise_cell = self.__grid_of_cells[row_number][cols_number]
+            exercise_cell = self.__grid_of_cells[row_number-1][cols_number-1]
             if not exercise_cell.get_exit_value():
                 exercise_cell.set_exercise_present(True)
+                exercise_cell.create_exercise_for_cell()
         
         # Start Cell
         self.__grid_of_cells[0][0].set_start_value(True)
@@ -204,6 +217,7 @@ class Maze():
         current_cell = self.__STACK.peek()
         if current_cell is not None:
             current_cell.set_visited(True)
+
             self.__visited_cells.append(self.__STACK.peek())
             adjacent_cells = current_cell.check_adjacent_cells()
             

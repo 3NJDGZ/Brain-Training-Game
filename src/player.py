@@ -1,4 +1,5 @@
 import pygame
+from exercises import *
 from pygame.sprite import AbstractGroup
 from maze_generation import * 
 
@@ -139,12 +140,25 @@ class Player(pygame.sprite.Sprite):
         else:
             print("\nNot in a cell!")
 
-        # Checks if the Player has Arrived at the exit of the maze
+        walls = grid_of_cells[row_number][cols_number].get_walls()
+        return walls  
+
+    def check_if_current_cell_is_exercise(self, rects, cols, grid_of_cells, WIN):
+        index = self.get_index(rects)
+        row_number = index // cols
+        cols_number = index - (cols * row_number)
+
+        if grid_of_cells[row_number][cols_number].get_exercise_present():
+            print("Arrived at an exercise cell!")
+            grid_of_cells[row_number][cols_number].get_exercise().draw_surface_on_screen(WIN)
+
+    def check_if_current_cell_is_exit(self, rects, cols, grid_of_cells):
+        index = self.get_index(rects)
+        row_number = index // cols
+        cols_number = index - (cols * row_number)
+
         if grid_of_cells[row_number][cols_number].get_exit_value():
             print("Arrived at the exit!")
-
-        walls = grid_of_cells[row_number][cols_number].get_walls()
-        return walls    
 
     def player_input(self, rects, cols, grid_of_cells, event): # gets player input for movement
         """

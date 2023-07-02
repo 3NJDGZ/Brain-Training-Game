@@ -1,5 +1,5 @@
--- KEY = "encryptionkey1234"
--- SALTS randomly generated within the Python Code and then hashed via MD5
+
+-- use TestDB;
 
 -- Creating Tables:
 CREATE TABLE Player (

@@ -180,6 +180,8 @@ class Game:
             self.__maze_screen.remove_UI_elements()
         else:
             self.__current_screen.setup_maze_level_with_player()
+            self.__current_screen.check_player_cell_is_exit()
+            self.__current_screen.check_player_cell_is_exercise()
 
     def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos
