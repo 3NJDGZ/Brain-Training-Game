@@ -132,30 +132,37 @@ class Player(pygame.sprite.Sprite):
         index = self.get_index(rects)
         row_number = index // cols
         cols_number = index - (cols * row_number)
-        if (self.get_rect().left >= rects[index].left and self.get_rect().right <= rects[index].right and self.get_rect().top >= rects[index].top and self.get_rect().bottom <= rects[index].bottom):
-            print(f'player is inside cell at {grid_of_cells[row_number][cols_number].get_row_column_positioning()}')
-            print(f"Walls of current_cell: {grid_of_cells[row_number][cols_number].get_walls()}")
-            print(f"Index of cell in rects list: {index}")
-            print("\n")
-        else:
-            print("\nNot in a cell!")
+        # if (self.get_rect().left >= rects[index].left and self.get_rect().right <= rects[index].right and self.get_rect().top >= rects[index].top and self.get_rect().bottom <= rects[index].bottom):
+        #     print(f'player is inside cell at {grid_of_cells[row_number][cols_number].get_row_column_positioning()}')
+        #     print(f"Walls of current_cell: {grid_of_cells[row_number][cols_number].get_walls()}")
+        #     print(f"Index of cell in rects list: {index}")
+        #     print("\n")
+        # else:
+        #     print("\nNot in a cell!")
 
         walls = grid_of_cells[row_number][cols_number].get_walls()
         return walls  
-
-    def check_if_current_cell_is_exercise(self, rects, cols, grid_of_cells, WIN):
+    
+    def calculate_row_cols(self, rects, cols):
         index = self.get_index(rects)
         row_number = index // cols
         cols_number = index - (cols * row_number)
+        return row_number, cols_number
+    
+    def check_type_of_exercise_cell(self, rects, cols, grid_of_cells):
+        row_number, cols_number = self.calculate_row_cols(rects, cols)
+        if grid_of_cells[row_number][cols_number].get_exercise_present():
+            return grid_of_cells[row_number][cols_number].get_exercise()
+
+    def check_collision_with_exercise_cell(self, rects, cols, grid_of_cells, WIN):
+        row_number, cols_number = self.calculate_row_cols(rects, cols)
 
         if grid_of_cells[row_number][cols_number].get_exercise_present():
-            print("Arrived at an exercise cell!")
-            grid_of_cells[row_number][cols_number].get_exercise().draw_surface_on_screen(WIN)
+            grid_of_cells[row_number][cols_number].get_exercise().draw_exercise_on_screen(WIN)
+            return grid_of_cells[row_number][cols_number].get_exercise()
 
-    def check_if_current_cell_is_exit(self, rects, cols, grid_of_cells):
-        index = self.get_index(rects)
-        row_number = index // cols
-        cols_number = index - (cols * row_number)
+    def check_collision_with_exit_cell(self, rects, cols, grid_of_cells):
+        row_number, cols_number = self.calculate_row_cols(rects, cols)
 
         if grid_of_cells[row_number][cols_number].get_exit_value():
             print("Arrived at the exit!")

@@ -1,4 +1,5 @@
-use TestDB;
+-- use TestDB;
+use MainDB;
 select * 
 from Player;
 select * 

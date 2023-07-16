@@ -1,7 +1,6 @@
 import pygame
 import random
-from exercises import TestExercise, Exercises
-
+from exercises import ChalkboardChallenge, TestExercise, CognitiveExercise
 # Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
     def __init__(self, maxsize):
@@ -64,7 +63,7 @@ class Cell:
     def get_exercise(self):
         return self.__exercise
 
-    def set_exercise(self, exercise: Exercises):
+    def set_exercise(self, exercise: CognitiveExercise):
         self.__exercise = exercise
     
     def get_exercise_present(self):
@@ -125,13 +124,13 @@ class Cell:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
         
         if self.__exit:  # Checks if the cell is the Exit cell; if it is then make it red 
-            pygame.draw.rect(self.WIN, (255, 0, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+            pygame.draw.rect(self.WIN, (255, 0, 0), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
         
         if self.__start: # Checks if the cell is the Start cell; if it is make it green
-            pygame.draw.rect(self.WIN, (0, 255, 0), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+            pygame.draw.rect(self.WIN, (0, 255, 0), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
         
         if self.__exercise_present: # Checks if the cell is an exercise cell; if it is make it blue
-            pygame.draw.rect(self.WIN, (0, 0, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+            pygame.draw.rect(self.WIN, (0, 0, 255), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
 
         # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__walls['top']:
@@ -145,7 +144,16 @@ class Cell:
 
     def create_exercise_for_cell(self):
         if self.get_exercise_present():
-            self.set_exercise(TestExercise("Memory", 1))
+            random_number = random.randint(1, 2)
+            # random_number  = 2
+            if random_number == 1:
+                self.set_exercise(TestExercise(["Memory"]))
+            elif random_number == 2:
+                cc = ChalkboardChallenge(["ProblemSolving"])
+                self.set_exercise(cc)
+                cc.generate_equation()
+                cc.generate_equation()
+                cc.show_every_equation()
 
 class Maze():
     def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN):
@@ -170,7 +178,7 @@ class Maze():
         random_exit_cell.set_exit_value(True)
 
         # Generating Exercise(s) Cells; only visualising them as blue cells; functionality has not yet been implemented.
-        for x in range(random.randint(1, 5)):
+        for x in range(random.randint(3, 5)):
             row_number = random.randint(1, self.__rows)
             cols_number = random.randint(1, self.__cols)
             exercise_cell = self.__grid_of_cells[row_number-1][cols_number-1]

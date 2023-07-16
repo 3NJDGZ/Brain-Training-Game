@@ -1,6 +1,6 @@
 # import necessary modules
-import pygame
 import sys
+from exercises import *
 from screens import *
 
 # bypasses recursion limit stated by python; required for the recursive DFS when generating more complex and larger mazes https://stackoverflow.com/questions/3323001/what-is-the-maximum-recursion-depth-and-how-to-increase-it
@@ -39,7 +39,7 @@ class Game:
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
 
-    def get(self):
+    def get_state(self):
         return self.__current_pos
 
     def play(self):
@@ -53,10 +53,12 @@ class Game:
                     sys.exit()
                 if isinstance(self.__current_screen, Maze_Screen):
                     self.__current_screen.player_input(event)
+                    if isinstance(self.__current_screen.check_type_of_exercise_cell(), ChalkboardChallenge):
+                        self.__current_screen.check_type_of_exercise_cell().user_input(event)
                 
                 self.__current_screen._get_MANAGER().process_events(event)
             
-            # print(f"Current State: {self.get()}")
+            # print(f"Current State: {self.get_state()}")
 
             self.__current_screen = self.screens[self.__current_pos]
             self.__current_screen.show_UI_elements()
@@ -180,8 +182,8 @@ class Game:
             self.__maze_screen.remove_UI_elements()
         else:
             self.__current_screen.setup_maze_level_with_player()
-            self.__current_screen.check_player_cell_is_exit()
-            self.__current_screen.check_player_cell_is_exercise()
+            self.__current_screen.check_collision_with_exit_cell()
+            self.__current_screen.check_collision_with_exercise_cell()
 
     def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos
