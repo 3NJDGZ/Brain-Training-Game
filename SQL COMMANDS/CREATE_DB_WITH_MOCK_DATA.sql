@@ -1,6 +1,6 @@
 
 -- use TestDB;
-
+USE MainDB;
 -- Creating Tables:
 CREATE TABLE Player (
     PlayerID int NOT NULL AUTO_INCREMENT,

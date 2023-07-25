@@ -853,7 +853,7 @@ class Maze_Screen(Screen):
         super(Maze_Screen, self).__init__(Title)
 
         # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
-        self.__maze = Maze(STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN)
+        self.__maze = Maze(STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM)
         self.__player = Player()
 
     def setup_maze_level_with_player(self):

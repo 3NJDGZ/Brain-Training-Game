@@ -50,6 +50,20 @@ class PlayerDataManager(MySQLDatabaseModel):
         """Sets up the argon2 password hasher, returns nothing."""
         super().__init__(DBC)
         self.ph = argon2.PasswordHasher()
+        self.__username = ""
+        self.__player_id = None
+    
+    def set_username(self, username_to_be_set):
+        self.__username = username_to_be_set
+    
+    def set_player_id(self, player_id_to_be_set):
+        self.__player_id = player_id_to_be_set
+    
+    def get_username(self):
+        return self.__username
+    
+    def get_player_id(self):
+        return self.__player_id
     
     def register_new_player_data(self, username, password):
         """
@@ -227,22 +241,37 @@ class PlayerDataManager(MySQLDatabaseModel):
         valid_details = False
         # check if username and password is valid (replace + decrypt salted passwords)
         mycursor.execute(f"""
-        SELECT Username, Password 
+        SELECT PlayerID, Username, Password 
         FROM Player
         WHERE Username = %s;
         """, (username, ))
 
         result = mycursor.fetchone()
         if result:
-            if result[0] == username:
-                stored_hash = result[1]
+            if result[1] == username:
+                stored_hash = result[2]
                 try: 
                     self.ph.verify(stored_hash, password)
                     print("password match")
                     valid_details = True
+                    self.set_username(username)
+                    self.set_player_id(result[0])
+                    print(f"Username: {self.get_username()}")
+                    print(f"Player ID: {self.get_player_id()}")
                 except argon2.exceptions.VerifyMismatchError:
                     print("password do not match")
 
         return valid_details
 
-    
+    def record_points_from_exercises_on_DB(self, points: int, CognitiveAreaID: int):
+        mycursor = self._DBC.get_cursor()
+        print(points)
+        print(f"Player ID: {self.get_player_id()}")
+        mycursor.execute(f"""
+        UPDATE Performance
+        SET Score = Score + {points}
+        WHERE CognitiveAreaID = {CognitiveAreaID}
+        AND PlayerID = {self.get_player_id()};
+        """)
+
+        self._DBC.db.commit()

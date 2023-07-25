@@ -84,6 +84,9 @@ class Cell:
     
     def set_start_value(self, value_to_be_set: bool):
         self.__start = value_to_be_set
+    
+    def get_start_value(self):
+        return self.__start
 
     def get_walls(self):
         return self.__walls
@@ -142,21 +145,21 @@ class Cell:
         if self.__walls['left']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y), self.LINE_WIDTH)
 
-    def create_exercise_for_cell(self):
+    def create_exercise_for_cell(self, PDM):
         if self.get_exercise_present():
             random_number = random.randint(1, 2)
             # random_number  = 2
             if random_number == 1:
-                self.set_exercise(TestExercise(["Memory"]))
+                self.set_exercise(TestExercise(1, PDM))
             elif random_number == 2:
-                cc = ChalkboardChallenge(["ProblemSolving"])
+                cc = ChalkboardChallenge(4, PDM)
                 self.set_exercise(cc)
                 cc.generate_equation()
                 cc.generate_equation()
                 cc.show_every_equation()
 
 class Maze():
-    def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN):
+    def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN, PDM):
         self.__STARTING_TILE_SIZE = STARTING_TILE_SIZE
         self.__LINE_COLOUR = LINE_COLOUR
         self.__visited_cells = []
@@ -164,6 +167,7 @@ class Maze():
         self.__rows = HEIGHT // self.__STARTING_TILE_SIZE
         self.__cols = WIDTH // self.__STARTING_TILE_SIZE
         self.__rects = []
+        self.__PDM = PDM
         self.WIN = WIN
 
         # Setup for recursive DFS for maze generation, cells are in a grid
@@ -179,12 +183,12 @@ class Maze():
 
         # Generating Exercise(s) Cells; only visualising them as blue cells; functionality has not yet been implemented.
         for x in range(random.randint(3, 5)):
-            row_number = random.randint(1, self.__rows)
-            cols_number = random.randint(1, self.__cols)
+            row_number = random.randint(4, self.__rows)
+            cols_number = random.randint(4, self.__cols)
             exercise_cell = self.__grid_of_cells[row_number-1][cols_number-1]
-            if not exercise_cell.get_exit_value():
+            if not exercise_cell.get_exit_value() and not exercise_cell.get_start_value():
                 exercise_cell.set_exercise_present(True)
-                exercise_cell.create_exercise_for_cell()
+                exercise_cell.create_exercise_for_cell(self.__PDM)
         
         # Start Cell
         self.__grid_of_cells[0][0].set_start_value(True)

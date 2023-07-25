@@ -1,6 +1,5 @@
 import pygame
 from exercises import *
-from pygame.sprite import AbstractGroup
 from maze_generation import * 
 
 pygame.init()
