@@ -49,7 +49,7 @@ class CognitiveExercise(ABC):
     def user_input(self, event):
         pass
 
-# Chalboard Challenge Code
+# Chalboard Challenge Code (Cognitive Area: Problem-Solving)
 class ChalkboardChallenge(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
         super().__init__(CognitiveAreaID, PDM)
@@ -200,8 +200,135 @@ class Equation():
             return self.__equation
         else:
             raise NumberOfOperandError()
+# End of Chalkboard Challenge Code
+
+# Memory Matrix Code (Cognitive Area: Memory)
+class MemoryMatrix(CognitiveExercise):
+    def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
+        super().__init__(CognitiveAreaID, PDM)
+        # Necessary Attributes
+        self.__points_earned = 0
+        self.__trails_left = 3
+        self.__tile_size = 100
+        self.__grid_of_cells = []
+        self.__stored_pattern = []
+
+        # Controls the Size of the grid
+        self.__rows = 6
+        self.__cols = 10
+
+        # Controls how many highlighted cells there will be (must be less than 60)
+        self.__number_of_highlighted_cells = 20
+
+        # Setup the grid of cells 
+        for a in range(self.__rows):
+            row = []
+            for b in range(self.__cols):
+                row.append(MMCell(self.__tile_size * b, self.__tile_size * a, self.__tile_size, self.__cols, self.__rows, (0, 0, 0)))
+            self.__grid_of_cells.append(row)
+        
+        self.generate_cell_pattern()
+        self.store_pattern()
     
-# End of Chalkboard Challenge code
+    def store_pattern(self):
+        # creating and storing the pattern, 1s representing a a highlighted cell
+        for row in self.__grid_of_cells:
+            pattern_row = []
+            for cell in row:
+                if cell.get_highlighted_cell():
+                    pattern_row.append(1)
+                else:
+                    pattern_row.append(0)
+            self.__stored_pattern.append(pattern_row)
+        
+        # Printing the stored pattern
+        for row in self.__stored_pattern:
+            print(row)
+        print("\n")
+        
+    def generate_cell_pattern(self):
+        for x in range(0, self.__number_of_highlighted_cells):
+                    # Generate Random Positioning for Cell
+                    random_row = randint(0, self.__rows)
+                    random_col = randint(0, self.__cols)
+                    random_cell = self.__grid_of_cells[random_row-1][random_col-1]
+
+                    # Check if current cell is not highlighted
+                    if random_cell.get_highlighted_cell() == False:
+                        random_cell.set_highlighted(True)
+                    else:
+                        # If it is highlighted, then find another position 
+                        while True:
+                            random_row = randint(0, self.__rows)
+                            random_col = randint(0, self.__cols)
+                            random_cell = self.__grid_of_cells[random_row-1][random_col-1]
+                            if not random_cell.get_highlighted_cell():
+                                random_cell.set_highlighted(True)
+                                break
+    
+    def reset_grid_of_cells(self):
+        for row in self.__grid_of_cells:
+            for cell in row:
+                cell.set_highlighted(False)
+
+    def calculate_points(self):
+        return super().calculate_points()
+    
+    def record_points_on_DB(self, points):
+        return super().record_points_on_DB(points)
+    
+    def show_UI_elements(self):
+        return super().show_UI_elements()
+    
+    def remove_UI_elements(self):
+        return super().remove_UI_elements()
+    
+    def draw_exercise_on_screen(self, WIN):
+        pygame.draw.rect(WIN, (255, 216, 107), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+        for row in self.__grid_of_cells:
+                for cell in row:
+                    cell.draw_cell(WIN)
+
+    def user_input(self, event):
+        return super().user_input(event)
+
+class MMCell():
+    def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR):
+        self.__x = x + 180
+        self.__y = y + 130
+        self.tile_size = tile_size
+        self.cols = cols
+        self.rows = rows
+        self.LINE_COLOUR = LINE_COLOUR
+        self.LINE_WIDTH = 5
+        self.__walls = {"top": True,
+                      "right": True,
+                      "bottom": True,
+                      "left": True}
+        self.__highlighted = False
+    
+    def set_highlighted(self, value_to_be_set: bool):
+        self.__highlighted = value_to_be_set
+    
+    def get_highlighted_cell(self):
+        return self.__highlighted
+    
+    def draw_cell(self, WIN):
+        if self.__highlighted: 
+            pygame.draw.rect(WIN, (0, 213, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
+        if self.__walls['top']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.tile_size, self.__y), self.LINE_WIDTH)
+        if self.__walls['right']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x + self.tile_size, self.__y), (self.__x + self.tile_size, self.__y + self.tile_size), self.LINE_WIDTH)
+        if self.__walls['bottom']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x + self.tile_size, self.__y + self.tile_size), (self.__x, self.__y + self.tile_size), self.LINE_WIDTH)
+        if self.__walls['left']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x, self.__y + self.tile_size), (self.__x, self.__y), self.LINE_WIDTH)
+
+# End of Memory Matrix Code
+
+
+# Test Exercise Code
 class TestExercise(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
         super().__init__(CognitiveAreaID, PDM)
@@ -223,4 +350,4 @@ class TestExercise(CognitiveExercise):
     
     def draw_exercise_on_screen(self, WIN):
         pygame.draw.rect(WIN, (122, 51, 255), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-    
+# End of Test Exercise Code
