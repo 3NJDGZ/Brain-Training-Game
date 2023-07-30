@@ -18,3 +18,4 @@ Project (Source Code) for NEA A Level Computer Science.
 - Also Used a previous project that was made via the pygame video above: https://github.com/3NJDGZ/Ninja-Runner-Game/tree/main
 - Center Rect Positioning Python Pygame: https://stackoverflow.com/questions/75347619/how-do-i-find-the-position-coordinates-of-my-rect
 - Python Recursive Depth Limit Modification: https://stackoverflow.com/questions/3323001/what-is-the-maximum-recursion-depth-and-how-to-increase-it 
+- Pygame Timers: https://www.youtube.com/watch?v=YOCt8nsQqEo

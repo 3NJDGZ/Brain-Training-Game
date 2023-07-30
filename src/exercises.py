@@ -1,10 +1,9 @@
 import pygame
+import time
 from random import randint
 from abc import ABC
 from abc import abstractmethod
 from mysqlmodel import PlayerDataManager
-
-pygame.init()
 
 
 # Class Errors
@@ -213,6 +212,10 @@ class MemoryMatrix(CognitiveExercise):
         self.__grid_of_cells = []
         self.__stored_pattern = []
 
+        self.__current_time = 0 
+        self.__spacebar_press_time = 0
+        self.__space_bar_pressed = False
+
         # Controls the Size of the grid
         self.__rows = 6
         self.__cols = 10
@@ -285,12 +288,31 @@ class MemoryMatrix(CognitiveExercise):
     
     def draw_exercise_on_screen(self, WIN):
         pygame.draw.rect(WIN, (255, 216, 107), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+        self.__current_time = pygame.time.get_ticks()
+        if self.__space_bar_pressed: # checks if the space bar button has been pressed
+            self.draw_cells(WIN, True)
+            if self.__current_time - self.__spacebar_press_time > 4000:
+                self.draw_cells(WIN, False)
+                self.__space_bar_pressed = False
+        else:
+            self.draw_cells(WIN, False)
+
+        self.show_times()
+        # https://www.youtube.com/watch?v=YOCt8nsQqEo pygame timers
+    
+    def show_times(self):
+        print(f"Space Bar Press Time: {self.__spacebar_press_time}, Current Time: {self.__current_time}")
+    
+    def draw_cells(self, WIN, show_highlights: bool):
         for row in self.__grid_of_cells:
                 for cell in row:
-                    cell.draw_cell(WIN)
+                    cell.draw_cell(WIN, show_highlights)
 
     def user_input(self, event):
-        return super().user_input(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                self.__spacebar_press_time = pygame.time.get_ticks()
+                self.__space_bar_pressed = True
 
 class MMCell():
     def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR):
@@ -313,8 +335,8 @@ class MMCell():
     def get_highlighted_cell(self):
         return self.__highlighted
     
-    def draw_cell(self, WIN):
-        if self.__highlighted: 
+    def draw_cell(self, WIN, draw_highlighted: bool):
+        if self.__highlighted and draw_highlighted: 
             pygame.draw.rect(WIN, (0, 213, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
         if self.__walls['top']:
             pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.tile_size, self.__y), self.LINE_WIDTH)

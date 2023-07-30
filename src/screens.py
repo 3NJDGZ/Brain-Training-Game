@@ -13,8 +13,6 @@ from mysqlmodel import MySQLDatabaseConnection, PlayerDataManager
 # miscellaneous 
 from abc import ABC, abstractmethod
 
-pygame.init()
-
 pygame.display.set_caption("Brain Training Game")
 
 PDM = PlayerDataManager(MySQLDatabaseConnection())
