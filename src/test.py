@@ -1,17 +1,33 @@
-import time
+import pygame
+import sys
 
-def countdown_timer(seconds):
-    while seconds > 0:
-        print(f"Time remaining: {seconds} seconds")
-        time.sleep(1)
-        seconds -= 1
+pygame.init()
 
-    print("Time's up!")
+screen_width, screen_height = 800, 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("One-Time Key Press")
 
-if __name__ == "__main__":
-    try:
-        user_input = int(input("Enter the countdown time in seconds: "))
-        countdown_timer(user_input)
-    except ValueError:
-        print("Invalid input. Please enter a valid number of seconds.")
+clock = pygame.time.Clock()
 
+def handle_events():
+    global key_pressed
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not key_pressed:
+                print("Space key pressed!")
+                # Add your desired action here
+                key_pressed = True
+
+key_pressed = False
+
+while True:
+    screen.fill((255, 255, 255))
+
+    handle_events()
+
+    pygame.display.update()
+
+    clock.tick(60)

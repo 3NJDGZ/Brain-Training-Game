@@ -26,7 +26,7 @@ class Game:
         self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 100, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
-        self.screens = [self.__intro_screen, # 0
+        self.screens = [self. __intro_screen, # 0
                         self.__register_screen, # 1
                         self.__login_screen, # 2
                         self.__registration_confirmation_screen, # 3
@@ -45,7 +45,7 @@ class Game:
     def play(self):
         running = True
         while running: 
-
+                     
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False

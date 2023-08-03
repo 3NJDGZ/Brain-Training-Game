@@ -1,9 +1,10 @@
 import pygame
-import time
 from random import randint
 from abc import ABC
 from abc import abstractmethod
 from mysqlmodel import PlayerDataManager
+import pygame_gui
+from pygame_gui.core import ObjectID
 
 
 # Class Errors
@@ -30,14 +31,6 @@ class CognitiveExercise(ABC):
 
     @abstractmethod
     def record_points_on_DB(self, points):
-        pass
-        
-    @abstractmethod
-    def show_UI_elements(self):
-        pass
-
-    @abstractmethod
-    def remove_UI_elements(self):
         pass
 
     @abstractmethod
@@ -72,12 +65,6 @@ class ChalkboardChallenge(CognitiveExercise):
     
     def record_points_on_DB(self, points):
         self._PDM.record_points_from_exercises_on_DB(points, self._CognitiveAreaID)
-    
-    def show_UI_elements(self):
-        return super().show_UI_elements()
-    
-    def remove_UI_elements(self):
-        return super().remove_UI_elements()
 
     def user_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -117,9 +104,9 @@ class ChalkboardChallenge(CognitiveExercise):
 
             # Middle Selection Tile 
             text_to_be_shown = "Determine which side is larger"
+            text_to_be_shown_surface = font.render(text_to_be_shown, True, (255, 255, 255))
             controls = "LEFT 'Z', EQUAL 'X', RIGHT 'C'"
             controls_surface = font.render(controls, True, (255, 255, 255))
-            text_to_be_shown_surface = font.render(text_to_be_shown, True, (255, 255, 255))
 
             # First Equation
             equation1 = self.__EQUATIONS[0].get_equation()
@@ -207,21 +194,123 @@ class MemoryMatrix(CognitiveExercise):
         super().__init__(CognitiveAreaID, PDM)
         # Necessary Attributes
         self.__points_earned = 0
-        self.__trails_left = 3
-        self.__tile_size = 100
+        self.__trail_active = False
+
+        # Patterns
+        number_of_highlighted_cells_one = randint(4, 10)
+        number_of_highlighted_cells_two = randint(12, 18)
+        number_of_highlighted_cells_three = randint(20, 26)
+        self.__patterns = [MMPattern(number_of_highlighted_cells_one), MMPattern(number_of_highlighted_cells_two), MMPattern(number_of_highlighted_cells_three)]
+        self.__current_pos = 0
+        self.__current_pattern = self.__patterns[self.__current_pos]
+
+        # Inputs
+        self.__space_bar_down = False
+        self.__space_bar_press_time = 0
+
+        # Mouse
+        self.__mouse_position = 0
+        self.__mouse_x = 0
+        self.__mouse_y = 0
+
+    def find_mouse_pos(self): # https://www.youtube.com/watch?v=OYw9D75d7Lw
+        self.__mouse_position = pygame.mouse.get_pos()
+        self.__mouse_x = self.__mouse_position[0]
+        self.__mouse_y = self.__mouse_position[1]
+        print(f"[{self.__mouse_x}, {self.__mouse_y}]")
+    
+    def find_cell_position(self):
+        cell_column_positioning = (self.__mouse_x - 180) // 100
+        cell_row_positioining = (self.__mouse_y - 110) // 100
+        # print(f"{cell_column_positioning}, {cell_row_positioining}")
+        # print(self.__current_pattern.get_grid_of_cells()[cell_row_positioining][cell_column_positioning].get_highlighted_cell())
+        return cell_column_positioning, cell_row_positioining
+    
+    def user_selection_cells(self):
+        if self.__mouse_x >= 180 and self.__mouse_y >= 110 and self.__mouse_x <= 980 and self.__mouse_y <= 710:
+            col_pos, row_pos = self.find_cell_position()
+            self.__current_pattern.get_grid_of_cells()[row_pos][col_pos].set_selected_by_user(True)
+            if self.__current_pattern.get_grid_of_cells()[row_pos][col_pos].get_highlighted_cell():
+                # increase the points 
+                print("correct cell")
+                self.__points_earned += 20
+                # make more code that will check if the player has picked all of the cells correctly and will then automatically move to the next change
+            else:
+                self.__current_pattern.increment_number_of_errors()
+                print("you selected a wrong cell")
+            
+            if self.__current_pattern.get_number_of_errors() == 3:
+                print("wrong")
+                self.__current_pattern.set_finished(True)
+                self.__current_pos += 1
+                self.__current_pattern = self.__patterns[self.__current_pos]
+
+                # Reset all base values back to original state
+                self.__space_bar_down = False
+                self.__trail_active = False
+
+    def calculate_points(self):
+        return super().calculate_points()
+    
+    def record_points_on_DB(self, points):
+        return super().record_points_on_DB(points)
+    
+    def draw_exercise_on_screen(self, WIN):
+        
+        # Drawing
+        pygame.draw.rect(WIN, (255, 216, 107), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+        self.__current_pattern.draw_cells(WIN)
+
+        # font
+        font = pygame.font.Font(None, 50) 
+
+        # Text 
+        score_text = f"Score: {self.__points_earned}"
+        score_text_surface = font.render(score_text, True, (255, 255, 255))
+        WIN.blit(score_text_surface, (1000, 110))
+        trail_number_text = f"Trail: {self.__current_pos + 1}"
+        trail_number_text_surface = font.render(trail_number_text, True, (255, 255, 255))
+        WIN.blit(trail_number_text_surface, (1000, 160))
+
+        # Checking Timers
+        self.__current_time = pygame.time.get_ticks()
+        if self.__space_bar_down:
+            self.__current_pattern.set_show_value(True)
+            if self.__current_time - self.__space_bar_press_time > 4000: # Checks if 4 seconds have passed since the player has last pressed the space bar
+                self.__space_bar_down = False
+                self.__trail_active = True
+                self.__current_pattern.set_show_value(False)
+                self.__current_pattern.set_user_selected_cells(True)
+
+        # print(f"Current Time: {self.__current_time}, Button Press Time: {self.__space_bar_press_time}")
+
+        # https://www.youtube.com/watch?v=YOCt8nsQqEo pygame timers
+    
+    def user_input(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not self.__space_bar_down and not self.__trail_active:
+                self.__space_bar_press_time = pygame.time.get_ticks() 
+                self.__space_bar_down = True
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1: # left mouse button
+                # print("Left mouse button has been clicked!")
+                self.find_mouse_pos()
+                if self.__trail_active:
+                    self.user_selection_cells()
+                # print(f"Mouse Position: {self.__mouse_position}")
+
+class MMPattern():
+    def __init__(self, number_of_highlighted_cells: int):
         self.__grid_of_cells = []
-        self.__stored_pattern = []
-
-        self.__current_time = 0 
-        self.__spacebar_press_time = 0
-        self.__space_bar_pressed = False
-
-        # Controls the Size of the grid
+        self.__abstracted_pattern = []
+        self.__tile_size = 100
         self.__rows = 6
-        self.__cols = 10
-
-        # Controls how many highlighted cells there will be (must be less than 60)
-        self.__number_of_highlighted_cells = 20
+        self.__cols = 8
+        self.__number_of_highlighted_cells = number_of_highlighted_cells
+        self.__finished = False
+        self.__show_highlights = False
+        self.__show_user_selected_cells = False
+        self.__errors = 0 # cap at three
 
         # Setup the grid of cells 
         for a in range(self.__rows):
@@ -229,26 +318,31 @@ class MemoryMatrix(CognitiveExercise):
             for b in range(self.__cols):
                 row.append(MMCell(self.__tile_size * b, self.__tile_size * a, self.__tile_size, self.__cols, self.__rows, (0, 0, 0)))
             self.__grid_of_cells.append(row)
-        
+    
         self.generate_cell_pattern()
         self.store_pattern()
     
-    def store_pattern(self):
-        # creating and storing the pattern, 1s representing a a highlighted cell
-        for row in self.__grid_of_cells:
-            pattern_row = []
-            for cell in row:
-                if cell.get_highlighted_cell():
-                    pattern_row.append(1)
-                else:
-                    pattern_row.append(0)
-            self.__stored_pattern.append(pattern_row)
-        
-        # Printing the stored pattern
-        for row in self.__stored_pattern:
-            print(row)
-        print("\n")
-        
+    def set_finished(self, value_to_be_set: bool):
+        self.__finished = value_to_be_set
+    
+    def get_finished(self):
+        return self.__finished
+    
+    def get_number_of_errors(self):
+        return self.__errors
+
+    def increment_number_of_errors(self):
+        self.__errors += 1
+    
+    def get_grid_of_cells(self):
+        return self.__grid_of_cells
+    
+    def set_show_value(self, value_to_be_set: bool):
+        self.__show_highlights = value_to_be_set
+    
+    def set_user_selected_cells(self, value_to_be_set: bool):
+        self.__show_user_selected_cells = value_to_be_set
+    
     def generate_cell_pattern(self):
         for x in range(0, self.__number_of_highlighted_cells):
                     # Generate Random Positioning for Cell
@@ -269,55 +363,31 @@ class MemoryMatrix(CognitiveExercise):
                                 random_cell.set_highlighted(True)
                                 break
     
-    def reset_grid_of_cells(self):
+    def store_pattern(self):
+        # creating and storing the pattern, 1s representing a a highlighted cell
         for row in self.__grid_of_cells:
+            pattern_row = []
             for cell in row:
-                cell.set_highlighted(False)
-
-    def calculate_points(self):
-        return super().calculate_points()
+                if cell.get_highlighted_cell():
+                    pattern_row.append(1)
+                else:
+                    pattern_row.append(0)
+            self.__abstracted_pattern.append(pattern_row)
+        
+        # Printing the stored pattern
+        for row in self.__abstracted_pattern:
+            print(row)
+        print("\n")
     
-    def record_points_on_DB(self, points):
-        return super().record_points_on_DB(points)
-    
-    def show_UI_elements(self):
-        return super().show_UI_elements()
-    
-    def remove_UI_elements(self):
-        return super().remove_UI_elements()
-    
-    def draw_exercise_on_screen(self, WIN):
-        pygame.draw.rect(WIN, (255, 216, 107), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-        self.__current_time = pygame.time.get_ticks()
-        if self.__space_bar_pressed: # checks if the space bar button has been pressed
-            self.draw_cells(WIN, True)
-            if self.__current_time - self.__spacebar_press_time > 4000:
-                self.draw_cells(WIN, False)
-                self.__space_bar_pressed = False
-        else:
-            self.draw_cells(WIN, False)
-
-        self.show_times()
-        # https://www.youtube.com/watch?v=YOCt8nsQqEo pygame timers
-    
-    def show_times(self):
-        print(f"Space Bar Press Time: {self.__spacebar_press_time}, Current Time: {self.__current_time}")
-    
-    def draw_cells(self, WIN, show_highlights: bool):
+    def draw_cells(self, WIN):
         for row in self.__grid_of_cells:
                 for cell in row:
-                    cell.draw_cell(WIN, show_highlights)
-
-    def user_input(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                self.__spacebar_press_time = pygame.time.get_ticks()
-                self.__space_bar_pressed = True
+                    cell.draw_cell(WIN, self.__show_highlights, self.__show_user_selected_cells)
 
 class MMCell():
     def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR):
         self.__x = x + 180
-        self.__y = y + 130
+        self.__y = y + 110
         self.tile_size = tile_size
         self.cols = cols
         self.rows = rows
@@ -328,15 +398,30 @@ class MMCell():
                       "bottom": True,
                       "left": True}
         self.__highlighted = False
-    
+        self.__selected_by_user = False
+        self.__correct = False
+
+    def set_correct(self, value_to_be_set: bool):
+        self.__correct = value_to_be_set
+
     def set_highlighted(self, value_to_be_set: bool):
         self.__highlighted = value_to_be_set
     
     def get_highlighted_cell(self):
         return self.__highlighted
+
+    def set_selected_by_user(self, value_to_be_set: bool):
+        self.__selected_by_user = value_to_be_set
+
     
-    def draw_cell(self, WIN, draw_highlighted: bool):
-        if self.__highlighted and draw_highlighted: 
+    def draw_cell(self, WIN, draw_highlighted: bool, draw_user_selection: bool):
+
+        if self.__selected_by_user and not self.__highlighted:
+            pygame.draw.rect(WIN, (255, 0, 0), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
+        elif self.__selected_by_user and draw_user_selection: # draw the selected cells by the user
+            pygame.draw.rect(WIN, (176, 206, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
+
+        if self.__highlighted and draw_highlighted: # draw the highlighted cells from the pattern to show to the user
             pygame.draw.rect(WIN, (0, 213, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
         if self.__walls['top']:
             pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.tile_size, self.__y), self.LINE_WIDTH)
@@ -363,12 +448,6 @@ class TestExercise(CognitiveExercise):
     
     def record_points_on_DB(self, points):
         return super().record_points_on_DB(points)
-    
-    def show_UI_elements(self):
-        return super().show_UI_elements()
-    
-    def remove_UI_elements(self):
-        return super().remove_UI_elements()
     
     def draw_exercise_on_screen(self, WIN):
         pygame.draw.rect(WIN, (122, 51, 255), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
