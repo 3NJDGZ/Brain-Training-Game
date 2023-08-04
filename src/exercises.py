@@ -54,9 +54,6 @@ class ChalkboardChallenge(CognitiveExercise):
         self.lower_threshold = 0
         self.higher_threshold = 10
 
-    def set_record_points(self, value_to_be_set: bool):
-        self.__record_points = value_to_be_set
-
     def calculate_points(self):
         self.__amount_of_incorrect_answers = 5 - self.__amount_of_correct_answers
         self.__points_earned = (self.__amount_of_correct_answers * 200) + (self.__amount_of_incorrect_answers * -200)
@@ -125,7 +122,7 @@ class ChalkboardChallenge(CognitiveExercise):
             if not self.__record_points:
                 points = self.calculate_points()
                 self.record_points_on_DB(points)
-                self.set_record_points(True)
+                self.__record_points = True
         
     def generate_equation(self):
         operands = []
@@ -195,6 +192,8 @@ class MemoryMatrix(CognitiveExercise):
         # Necessary Attributes
         self.__points_earned = 0
         self.__trail_active = False
+        self.__completely_finished = False
+        self.__record_points = False
 
         # Patterns
         number_of_highlighted_cells_one = randint(4, 10)
@@ -227,60 +226,91 @@ class MemoryMatrix(CognitiveExercise):
         return cell_column_positioning, cell_row_positioining
     
     def user_selection_cells(self):
-        if self.__mouse_x >= 180 and self.__mouse_y >= 110 and self.__mouse_x <= 980 and self.__mouse_y <= 710:
-            col_pos, row_pos = self.find_cell_position()
-            self.__current_pattern.get_grid_of_cells()[row_pos][col_pos].set_selected_by_user(True)
-            if self.__current_pattern.get_grid_of_cells()[row_pos][col_pos].get_highlighted_cell():
-                # increase the points 
-                print("correct cell")
-                self.__points_earned += 20
-                # make more code that will check if the player has picked all of the cells correctly and will then automatically move to the next change
-            else:
-                self.__current_pattern.increment_number_of_errors()
-                print("you selected a wrong cell")
-            
-            if self.__current_pattern.get_number_of_errors() == 3:
-                print("wrong")
-                self.__current_pattern.set_finished(True)
-                self.__current_pos += 1
-                self.__current_pattern = self.__patterns[self.__current_pos]
+        if not self.__completely_finished:
+            if self.__mouse_x >= 180 and self.__mouse_y >= 110 and self.__mouse_x <= 980 and self.__mouse_y <= 710:
+                col_pos, row_pos = self.find_cell_position()
+                selected_cell = self.__current_pattern.get_grid_of_cells()[row_pos][col_pos]
+                if selected_cell.get_highlighted_cell() and not selected_cell.get_selected_by_user():
+                    selected_cell.set_selected_by_user(True)
+                    # increase the points 
+                    print("You have selected a correct cell!")
+                    self.calculate_points()
+                    # make more code that will check if the player has picked all of the cells correctly and will then automatically move to the next change
+                elif selected_cell.get_highlighted_cell() and selected_cell.get_selected_by_user():
+                    print("You have already selected this cell!")
+                else:
+                    if selected_cell.get_selected_by_user() and selected_cell.get_incorrect():
+                        print("You have already selected this wrong cell!")
+                    else:
+                        self.__current_pattern.increment_number_of_errors()
+                        selected_cell.set_incorrect(True)
+                        selected_cell.set_selected_by_user(True)
+                        print("You have selected a wrong cell!")
+                    
+                if self.__current_pattern.get_number_of_errors() == 3:
+                    self.go_to_next_trail()
+                
+                # Abstract the user selected patterns
+                if selected_cell.get_highlighted_cell():
+                    self.__current_pattern.dynamically_update_user_selected_cells(col_pos, row_pos)
+                
+                if self.__current_pattern.get_abstracted_pattern() == self.__current_pattern.get_user_selected_grid_of_cells():
+                    print("You got this trail fully correct!")
+                    self.__points_earned += 100
+                    self.go_to_next_trail()
+    
+    def go_to_next_trail(self):
+        if self.__current_pos < 2:
+            self.__current_pattern.set_finished(True)
+            self.__current_pos += 1
+            self.__current_pattern = self.__patterns[self.__current_pos]
 
-                # Reset all base values back to original state
-                self.__space_bar_down = False
-                self.__trail_active = False
+            # Reset all base values back to original state
+            self.__space_bar_down = False
+            self.__trail_active = False
+        else:
+            print("No more trails!")
+            self.__completely_finished = True
 
     def calculate_points(self):
-        return super().calculate_points()
+        self.__points_earned += 20
     
     def record_points_on_DB(self, points):
-        return super().record_points_on_DB(points)
+        self._PDM.record_points_from_exercises_on_DB(points, self._CognitiveAreaID)
     
     def draw_exercise_on_screen(self, WIN):
-        
-        # Drawing
-        pygame.draw.rect(WIN, (255, 216, 107), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-        self.__current_pattern.draw_cells(WIN)
-
         # font
         font = pygame.font.Font(None, 50) 
+        if self.__completely_finished:
+            pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+            final_score_text = f"Final Score: {self.__points_earned}"
+            final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
+            WIN.blit(final_score_text_surface, ((1600 - final_score_text_surface.get_width()) / 2, (900 - final_score_text_surface.get_height()) / 2))
+            if not self.__record_points:
+                self.record_points_on_DB(self.__points_earned)
+                self.__record_points = True
+        else:
+            # Drawing
+            pygame.draw.rect(WIN, (255, 216, 107), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+            self.__current_pattern.draw_cells(WIN)
 
-        # Text 
-        score_text = f"Score: {self.__points_earned}"
-        score_text_surface = font.render(score_text, True, (255, 255, 255))
-        WIN.blit(score_text_surface, (1000, 110))
-        trail_number_text = f"Trail: {self.__current_pos + 1}"
-        trail_number_text_surface = font.render(trail_number_text, True, (255, 255, 255))
-        WIN.blit(trail_number_text_surface, (1000, 160))
+            # Text 
+            score_text = f"Score: {self.__points_earned}"
+            score_text_surface = font.render(score_text, True, (255, 255, 255))
+            WIN.blit(score_text_surface, (1000, 110))
+            trail_number_text = f"Trail: {self.__current_pos + 1}"
+            trail_number_text_surface = font.render(trail_number_text, True, (255, 255, 255))
+            WIN.blit(trail_number_text_surface, (1000, 160))
 
-        # Checking Timers
-        self.__current_time = pygame.time.get_ticks()
-        if self.__space_bar_down:
-            self.__current_pattern.set_show_value(True)
-            if self.__current_time - self.__space_bar_press_time > 4000: # Checks if 4 seconds have passed since the player has last pressed the space bar
-                self.__space_bar_down = False
-                self.__trail_active = True
-                self.__current_pattern.set_show_value(False)
-                self.__current_pattern.set_user_selected_cells(True)
+            # Checking Timers
+            self.__current_time = pygame.time.get_ticks()
+            if self.__space_bar_down:
+                self.__current_pattern.set_show_value(True)
+                if self.__current_time - self.__space_bar_press_time > 4000: # Checks if 4 seconds have passed since the player has last pressed the space bar
+                    self.__space_bar_down = False
+                    self.__trail_active = True
+                    self.__current_pattern.set_show_value(False)
+                    self.__current_pattern.set_user_selected_cells(True)
 
         # print(f"Current Time: {self.__current_time}, Button Press Time: {self.__space_bar_press_time}")
 
@@ -302,7 +332,8 @@ class MemoryMatrix(CognitiveExercise):
 class MMPattern():
     def __init__(self, number_of_highlighted_cells: int):
         self.__grid_of_cells = []
-        self.__abstracted_pattern = []
+        self.__abstracted_pattern = [] # Abstracted Pattern of the Highlighted Cells represented as a 2D matrix with 1s and 0s
+        self.__user_selected_grid_of_cells = [] # Abstracted Pattern of the selected cells by the user represented in the same way as mentioned above
         self.__tile_size = 100
         self.__rows = 6
         self.__cols = 8
@@ -318,9 +349,22 @@ class MMPattern():
             for b in range(self.__cols):
                 row.append(MMCell(self.__tile_size * b, self.__tile_size * a, self.__tile_size, self.__cols, self.__rows, (0, 0, 0)))
             self.__grid_of_cells.append(row)
+        
+        # Setup an empty grid of cells
+        for a in range(self.__rows):
+            row = []
+            for b in range(self.__cols):
+                row.append(0)
+            self.__user_selected_grid_of_cells.append(row)
     
         self.generate_cell_pattern()
         self.store_pattern()
+    
+    def get_user_selected_grid_of_cells(self):
+        return self.__user_selected_grid_of_cells
+    
+    def get_abstracted_pattern(self):
+        return self.__abstracted_pattern
     
     def set_finished(self, value_to_be_set: bool):
         self.__finished = value_to_be_set
@@ -379,10 +423,17 @@ class MMPattern():
             print(row)
         print("\n")
     
+    def dynamically_update_user_selected_cells(self, col_pos: int, row_pos: int):
+        self.__user_selected_grid_of_cells[row_pos][col_pos] = 1
+        print("\n")
+        for row in self.__user_selected_grid_of_cells:
+            print(row)
+
     def draw_cells(self, WIN):
         for row in self.__grid_of_cells:
                 for cell in row:
                     cell.draw_cell(WIN, self.__show_highlights, self.__show_user_selected_cells)
+
 
 class MMCell():
     def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR):
@@ -399,10 +450,13 @@ class MMCell():
                       "left": True}
         self.__highlighted = False
         self.__selected_by_user = False
-        self.__correct = False
-
-    def set_correct(self, value_to_be_set: bool):
-        self.__correct = value_to_be_set
+        self.__incorrect = False
+    
+    def set_incorrect(self, value_to_be_set: bool):
+        self.__incorrect = value_to_be_set
+    
+    def get_incorrect(self):
+        return self.__incorrect
 
     def set_highlighted(self, value_to_be_set: bool):
         self.__highlighted = value_to_be_set
@@ -412,11 +466,13 @@ class MMCell():
 
     def set_selected_by_user(self, value_to_be_set: bool):
         self.__selected_by_user = value_to_be_set
-
     
+    def get_selected_by_user(self):
+        return self.__selected_by_user
+
     def draw_cell(self, WIN, draw_highlighted: bool, draw_user_selection: bool):
 
-        if self.__selected_by_user and not self.__highlighted:
+        if self.__selected_by_user and self.__incorrect:
             pygame.draw.rect(WIN, (255, 0, 0), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
         elif self.__selected_by_user and draw_user_selection: # draw the selected cells by the user
             pygame.draw.rect(WIN, (176, 206, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
