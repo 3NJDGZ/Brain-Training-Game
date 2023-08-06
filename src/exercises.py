@@ -1,5 +1,5 @@
 import pygame
-from random import randint
+import random
 from abc import ABC
 from abc import abstractmethod
 from mysqlmodel import PlayerDataManager
@@ -17,6 +17,30 @@ class NoEquations(Exception):
     def __init__(self, message = "No Equations present/generated for the Chalkboard Challenge Exercise"):
         self.message = message
         super().__init__(self.message)
+
+class Cell():
+    def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR):
+        self._x = x
+        self._y = y
+        self.tile_size = tile_size
+        self.cols = cols
+        self.rows = rows
+        self.LINE_COLOUR = LINE_COLOUR
+        self.LINE_WIDTH = 5
+        self._walls = {"top": True,
+                      "right": True,
+                      "bottom": True,
+                      "left": True}
+
+    def draw_cell(self, WIN):
+        if self._walls['top']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x, self._y), (self._x + self.tile_size, self._y), self.LINE_WIDTH)
+        if self._walls['right']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x + self.tile_size, self._y), (self._x + self.tile_size, self._y + self.tile_size), self.LINE_WIDTH)
+        if self._walls['bottom']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x + self.tile_size, self._y + self.tile_size), (self._x, self._y + self.tile_size), self.LINE_WIDTH)
+        if self._walls['left']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x, self._y + self.tile_size), (self._x, self._y), self.LINE_WIDTH)
 
 class CognitiveExercise(ABC):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
@@ -41,7 +65,7 @@ class CognitiveExercise(ABC):
     def user_input(self, event):
         pass
 
-# Chalboard Challenge Code (Cognitive Area: Problem-Solving)
+# Chalboard Challenge Code (Cognitive Area: Problem-Solving 4)
 class ChalkboardChallenge(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
         super().__init__(CognitiveAreaID, PDM)
@@ -126,9 +150,9 @@ class ChalkboardChallenge(CognitiveExercise):
         
     def generate_equation(self):
         operands = []
-        no_of_operands = randint(2, 5)
+        no_of_operands = random.randint(2, 5)
         for x in range(no_of_operands):
-            random_operand = randint(self.lower_threshold, self.higher_threshold)
+            random_operand = random.randint(self.lower_threshold, self.higher_threshold)
             operands.append(random_operand)
         self.__EQUATIONS.append(Equation(operands))
 
@@ -159,7 +183,7 @@ class Equation():
         return self.__answer
     
     def get_random_operator(self):
-        random_operator = self.operators[randint(0, 3)]
+        random_operator = self.operators[random.randint(0, 3)]
         return random_operator
 
     def create_equation(self):
@@ -185,7 +209,7 @@ class Equation():
             raise NumberOfOperandError()
 # End of Chalkboard Challenge Code
 
-# Memory Matrix Code (Cognitive Area: Memory)
+# Memory Matrix Code (Cognitive Area: Memory 1)
 class MemoryMatrix(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
         super().__init__(CognitiveAreaID, PDM)
@@ -196,9 +220,9 @@ class MemoryMatrix(CognitiveExercise):
         self.__record_points = False
 
         # Patterns
-        number_of_highlighted_cells_one = randint(4, 10)
-        number_of_highlighted_cells_two = randint(12, 18)
-        number_of_highlighted_cells_three = randint(20, 26)
+        number_of_highlighted_cells_one = random.randint(4, 10)
+        number_of_highlighted_cells_two = random.randint(12, 18)
+        number_of_highlighted_cells_three = random.randint(20, 26)
         self.__patterns = [MMPattern(number_of_highlighted_cells_one), MMPattern(number_of_highlighted_cells_two), MMPattern(number_of_highlighted_cells_three)]
         self.__current_pos = 0
         self.__current_pattern = self.__patterns[self.__current_pos]
@@ -219,15 +243,13 @@ class MemoryMatrix(CognitiveExercise):
         print(f"[{self.__mouse_x}, {self.__mouse_y}]")
     
     def find_cell_position(self):
-        cell_column_positioning = (self.__mouse_x - 180) // 100
-        cell_row_positioining = (self.__mouse_y - 110) // 100
-        # print(f"{cell_column_positioning}, {cell_row_positioining}")
-        # print(self.__current_pattern.get_grid_of_cells()[cell_row_positioining][cell_column_positioning].get_highlighted_cell())
+        cell_column_positioning = (self.__mouse_x - 400) // 100
+        cell_row_positioining = (self.__mouse_y - 150) // 100
         return cell_column_positioning, cell_row_positioining
     
     def user_selection_cells(self):
         if not self.__completely_finished:
-            if self.__mouse_x >= 180 and self.__mouse_y >= 110 and self.__mouse_x <= 980 and self.__mouse_y <= 710:
+            if self.__mouse_x >= 400 and self.__mouse_y >= 150 and self.__mouse_x <= 1200 and self.__mouse_y <= 750:
                 col_pos, row_pos = self.find_cell_position()
                 selected_cell = self.__current_pattern.get_grid_of_cells()[row_pos][col_pos]
                 if selected_cell.get_highlighted_cell() and not selected_cell.get_selected_by_user():
@@ -297,10 +319,13 @@ class MemoryMatrix(CognitiveExercise):
             # Text 
             score_text = f"Score: {self.__points_earned}"
             score_text_surface = font.render(score_text, True, (255, 255, 255))
-            WIN.blit(score_text_surface, (1000, 110))
+            WIN.blit(score_text_surface, (500, 105))
             trail_number_text = f"Trail: {self.__current_pos + 1}"
             trail_number_text_surface = font.render(trail_number_text, True, (255, 255, 255))
-            WIN.blit(trail_number_text_surface, (1000, 160))
+            WIN.blit(trail_number_text_surface, (1000, 105))
+            space_bar_text = "PRESS 'SPACE' TO REVEAL THE HIGHLIGHTED CELLS"
+            space_bar_text_surface = font.render(space_bar_text, True, (255, 255, 255))
+            WIN.blit(space_bar_text_surface, ((1600 - space_bar_text_surface.get_width()) / 2, 765))
 
             # Checking Timers
             self.__current_time = pygame.time.get_ticks()
@@ -390,8 +415,8 @@ class MMPattern():
     def generate_cell_pattern(self):
         for x in range(0, self.__number_of_highlighted_cells):
                     # Generate Random Positioning for Cell
-                    random_row = randint(0, self.__rows)
-                    random_col = randint(0, self.__cols)
+                    random_row = random.randint(0, self.__rows)
+                    random_col = random.randint(0, self.__cols)
                     random_cell = self.__grid_of_cells[random_row-1][random_col-1]
 
                     # Check if current cell is not highlighted
@@ -400,8 +425,8 @@ class MMPattern():
                     else:
                         # If it is highlighted, then find another position 
                         while True:
-                            random_row = randint(0, self.__rows)
-                            random_col = randint(0, self.__cols)
+                            random_row = random.randint(0, self.__rows)
+                            random_col = random.randint(0, self.__cols)
                             random_cell = self.__grid_of_cells[random_row-1][random_col-1]
                             if not random_cell.get_highlighted_cell():
                                 random_cell.set_highlighted(True)
@@ -434,23 +459,14 @@ class MMPattern():
                 for cell in row:
                     cell.draw_cell(WIN, self.__show_highlights, self.__show_user_selected_cells)
 
-
-class MMCell():
+class MMCell(Cell):
     def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR):
-        self.__x = x + 180
-        self.__y = y + 110
-        self.tile_size = tile_size
-        self.cols = cols
-        self.rows = rows
-        self.LINE_COLOUR = LINE_COLOUR
-        self.LINE_WIDTH = 5
-        self.__walls = {"top": True,
-                      "right": True,
-                      "bottom": True,
-                      "left": True}
+        super().__init__(x, y, tile_size, cols, rows, LINE_COLOUR)
         self.__highlighted = False
         self.__selected_by_user = False
         self.__incorrect = False
+        self._x = x + 400
+        self._y = y + 150
     
     def set_incorrect(self, value_to_be_set: bool):
         self.__incorrect = value_to_be_set
@@ -473,23 +489,175 @@ class MMCell():
     def draw_cell(self, WIN, draw_highlighted: bool, draw_user_selection: bool):
 
         if self.__selected_by_user and self.__incorrect:
-            pygame.draw.rect(WIN, (255, 0, 0), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
+            pygame.draw.rect(WIN, (255, 0, 0), (self._x+5, self._y+5, self.tile_size-10, self.tile_size-10))
         elif self.__selected_by_user and draw_user_selection: # draw the selected cells by the user
-            pygame.draw.rect(WIN, (176, 206, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
+            pygame.draw.rect(WIN, (176, 206, 255), (self._x+5, self._y+5, self.tile_size-10, self.tile_size-10))
 
         if self.__highlighted and draw_highlighted: # draw the highlighted cells from the pattern to show to the user
-            pygame.draw.rect(WIN, (0, 213, 255), (self.__x+5, self.__y+5, self.tile_size-10, self.tile_size-10))
-        if self.__walls['top']:
-            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x, self.__y), (self.__x + self.tile_size, self.__y), self.LINE_WIDTH)
-        if self.__walls['right']:
-            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x + self.tile_size, self.__y), (self.__x + self.tile_size, self.__y + self.tile_size), self.LINE_WIDTH)
-        if self.__walls['bottom']:
-            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x + self.tile_size, self.__y + self.tile_size), (self.__x, self.__y + self.tile_size), self.LINE_WIDTH)
-        if self.__walls['left']:
-            pygame.draw.line(WIN, self.LINE_COLOUR, (self.__x, self.__y + self.tile_size), (self.__x, self.__y), self.LINE_WIDTH)
-
+            pygame.draw.rect(WIN, (0, 213, 255), (self._x+5, self._y+5, self.tile_size-10, self.tile_size-10))
+        if self._walls['top']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x, self._y), (self._x + self.tile_size, self._y), self.LINE_WIDTH)
+        if self._walls['right']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x + self.tile_size, self._y), (self._x + self.tile_size, self._y + self.tile_size), self.LINE_WIDTH)
+        if self._walls['bottom']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x + self.tile_size, self._y + self.tile_size), (self._x, self._y + self.tile_size), self.LINE_WIDTH)
+        if self._walls['left']:
+            pygame.draw.line(WIN, self.LINE_COLOUR, (self._x, self._y + self.tile_size), (self._x, self._y), self.LINE_WIDTH)
 # End of Memory Matrix Code
 
+# Schulte Table Code (Cognitive Area: Attention 2)
+class SchulteTable(CognitiveExercise):
+    def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
+        super().__init__(CognitiveAreaID, PDM)
+        self.grid_dimension = 4 # options are only 4 or 5 
+        self.__table_grid = TableGrid(self.grid_dimension)
+
+        # Mouse Positions
+        self.__mouse_pos = pygame.mouse.get_pos()
+        self.__mouse_x = self.__mouse_pos[0]
+        self.__mouse_y = self.__mouse_pos[1]
+
+        self.__next_number_to_find = 1 # starting number
+        self.__space_bar_down = False
+        self.__record_points = False
+
+        self.__points_earned = 0
+
+        self.__space_bar_time = 0
+        self.__completely_finished = False
+    
+    def calculate_points(self):
+        max_points = 50 * (self.grid_dimension**2)
+        print(max_points)
+        seconds_to_complete = (pygame.time.get_ticks() - self.__space_bar_time) // 1000
+        print(f"Seconds to complete: {seconds_to_complete}")
+        self.__points_earned = max_points - (25 * seconds_to_complete)
+        print(self.__points_earned)
+
+    def record_points_on_DB(self, points):
+        self._PDM.record_points_from_exercises_on_DB(points, 2)
+    
+    def draw_exercise_on_screen(self, WIN):
+        pygame.draw.rect(WIN, (255, 110, 161), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+        font = pygame.font.Font(None, 50)
+        if self.__space_bar_down:
+            time = (pygame.time.get_ticks() - self.__space_bar_time) // 1000
+
+            self.__table_grid.draw_cells(WIN, True)
+
+            find_next_number_text = f"FIND {self.__next_number_to_find}"
+            find_next_number_text_surface = font.render(find_next_number_text, True, (255, 255, 255))
+            WIN.blit(find_next_number_text_surface, ((1600 - find_next_number_text_surface.get_width()) / 2, 150))
+
+            time_text = f"TIME: {time}"
+            time_text_surface = font.render(time_text, True, (255, 255, 255))
+            WIN.blit(time_text_surface, ((1600 - time_text_surface.get_width()) / 2, 715))
+
+
+            if self.__completely_finished:
+                pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+                final_score_text = f"Final Score: {self.__points_earned}"
+                final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
+                WIN.blit(final_score_text_surface, ((1600 - final_score_text_surface.get_width()) / 2, (900 - final_score_text_surface.get_height()) / 2))
+                if not self.__record_points:
+                    self.record_points_on_DB(self.__points_earned)
+                    self.__record_points = True
+
+        else:
+            text = "PRESS SPACE TO SHOW THE NUMBERS"
+            text_surface = font.render(text, True, (255, 255, 255))
+            WIN.blit(text_surface, ((1600 - text_surface.get_width()) / 2, (900 - text_surface.get_height()) / 2))
+    
+    def select_cells(self):
+        min_x = ((1600 - (100 * self.grid_dimension)) / 2)
+        min_y = ((900 - (100 * self.grid_dimension)) / 2)
+        if self.__mouse_x >= min_x and self.__mouse_x <= (min_x + (100 * self.grid_dimension)) and self.__mouse_y >= min_y and self.__mouse_y <= (min_y + (100 * self.grid_dimension)):
+            col_pos, row_pos = self.find_cell_position()
+            grid_of_cells = self.__table_grid.get_grid_of_cells()
+            current_number = grid_of_cells[row_pos][col_pos].get_number()
+            if self.__next_number_to_find == self.grid_dimension**2:
+                self.__completely_finished = True
+                self.calculate_points()
+            elif current_number == self.__next_number_to_find:
+                print("Correct!")
+                self.__next_number_to_find += 1
+            else:
+                print("Incorrect!")
+        else:
+            print("Mouse click is out of range!")
+
+    def find_cell_position(self):
+        cell_column_positioning = (self.__mouse_x - ((1600 - (100 * self.grid_dimension)) // 2)) // 100
+        cell_row_positioining = (self.__mouse_y - ((900 - (100 * self.grid_dimension)) // 2)) // 100
+        return cell_column_positioning, cell_row_positioining
+    
+    def update_mouse_coordinates(self):
+        self.__mouse_pos = pygame.mouse.get_pos()
+        self.__mouse_x = self.__mouse_pos[0]
+        self.__mouse_y = self.__mouse_pos[1]
+
+    def user_input(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not self.__space_bar_down and not self.__completely_finished:
+                self.__space_bar_down = True
+                self.__space_bar_time = pygame.time.get_ticks()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and self.__space_bar_down and not self.__completely_finished:
+                self.update_mouse_coordinates()
+                self.select_cells()
+
+class TableGrid():
+    def __init__(self, grid_dimension: int):
+        self.__grid_of_cells = []
+        self.__array_of_numbers = []
+        self.__rows = grid_dimension
+        self.__cols = grid_dimension
+        self.__max_number = grid_dimension**2
+        self.__tile_size = 100
+
+        for number in range(0, self.__max_number):
+            self.__array_of_numbers.append(number + 1)
+        random.shuffle(self.__array_of_numbers)
+
+        # Setup the grid of cells
+        index = 0
+        for a in range(self.__rows):
+            row = []
+            for b in range(self.__cols):
+                row.append(TGCell(self.__tile_size * b, self.__tile_size * a, self.__tile_size, self.__cols, self.__rows, (0, 0, 0), self.__array_of_numbers[index], grid_dimension))
+                index += 1
+            self.__grid_of_cells.append(row)
+    
+    def get_grid_of_cells(self):
+        return self.__grid_of_cells
+
+    def draw_cells(self, WIN, show_numbers: bool):
+        for row in self.__grid_of_cells:
+            for cell in row:
+                cell.draw_cell(WIN, show_numbers)
+
+class TGCell(Cell):
+    def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR, Number: int, grid_dimension):
+        super().__init__(x, y, tile_size, cols, rows, LINE_COLOUR)
+        if grid_dimension == 5:
+            self._x = x + 550
+            self._y = y + 200
+        elif grid_dimension == 4:
+            self._x = x + 600
+            self._y = y + 250
+        self.__number = Number
+    
+    def get_number(self):
+        return self.__number
+
+    def draw_cell(self, WIN, show_numbers: bool):
+        if show_numbers:
+            font = pygame.font.Font(None, 40)
+            number_text = str(self.__number)
+            number_text_surface = font.render(number_text, True, (255, 255, 255))
+            WIN.blit(number_text_surface, (self._x + ((100 - number_text_surface.get_width()) / 2), self._y + ((100 - number_text_surface.get_height()) / 2)))
+        return super().draw_cell(WIN)
+# End of Schulte Table Code
 
 # Test Exercise Code
 class TestExercise(CognitiveExercise):

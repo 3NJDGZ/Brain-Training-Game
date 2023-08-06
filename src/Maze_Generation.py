@@ -1,6 +1,6 @@
 import pygame
 import random
-from exercises import MemoryMatrix, ChalkboardChallenge, TestExercise, CognitiveExercise
+from exercises import SchulteTable, MemoryMatrix, ChalkboardChallenge, TestExercise, CognitiveExercise
 # Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
     def __init__(self, maxsize):
@@ -160,6 +160,9 @@ class Cell:
             elif random_number == 3:
                 mm = MemoryMatrix(1, PDM)
                 self.set_exercise(mm)
+            elif random_number == 4:
+                st = SchulteTable(2, PDM)
+                self.set_exercise(st)
 
 class Maze():
     def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN, PDM):

@@ -57,6 +57,8 @@ class Game:
                         self.__current_screen.check_type_of_exercise_cell().user_input(event)
                     elif isinstance(self.__current_screen.check_type_of_exercise_cell(), MemoryMatrix):
                         self.__current_screen.check_type_of_exercise_cell().user_input(event)
+                    elif isinstance(self.__current_screen.check_type_of_exercise_cell(), SchulteTable):
+                        self.__current_screen.check_type_of_exercise_cell().user_input(event)
                 
                 self.__current_screen._get_MANAGER().process_events(event)
             
