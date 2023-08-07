@@ -1,2 +1,1 @@
-for number in range(0, 25):
-    print(number + 1)
+print(5%4)

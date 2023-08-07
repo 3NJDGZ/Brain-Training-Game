@@ -659,6 +659,114 @@ class TGCell(Cell):
         return super().draw_cell(WIN)
 # End of Schulte Table Code
 
+# Aiming Code (Cognitive Area: Speed 3)
+class Aiming(CognitiveExercise):
+    def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
+        super().__init__(CognitiveAreaID, PDM)
+        self.__space_bar_down = False
+        self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
+        self.__points_earned = 0
+        self.__record_points = False
+        self.__completely_finished = False
+
+        # Time
+        self.__time_limit = 10 # time limit in 10s
+        self.__space_bar_press_time = 0
+        self.__current_time = 0
+
+        # Mouse Positions
+        self.__mouse_pos = pygame.mouse.get_pos()
+        self.__mouse_x = self.__mouse_pos[0]
+        self.__mouse_y = self.__mouse_pos[1]
+    
+    def update_mouse_pos(self):
+        self.__mouse_pos = pygame.mouse.get_pos()
+        self.__mouse_x = self.__mouse_pos[0]
+        self.__mouse_y = self.__mouse_pos[1]
+    
+    def check_if_player_clicks_on_target(self):
+        if self.__target.get_target_rect().collidepoint(self.__mouse_x, self.__mouse_y):
+            return True
+        else:
+            return False
+
+    def calculate_points(self):
+        self.__points_earned += 50
+    
+    def record_points_on_DB(self, points):
+        self._PDM.record_points_from_exercises_on_DB(self.__points_earned, 3)
+    
+    def draw_exercise_on_screen(self, WIN):
+        font = pygame.font.Font(None, 50)
+        self.__current_time = pygame.time.get_ticks()
+
+        if self.__space_bar_down:
+            pygame.draw.rect(WIN, (54, 217, 106), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+            self.__target.draw_target(WIN)
+
+            elapsed_time = (self.__current_time - self.__space_bar_press_time) // 1000
+            time_left = self.__time_limit - elapsed_time
+            
+            # Text
+            time_left_text = f"TIME LEFT: {time_left}"
+            time_left_text_surface = font.render(time_left_text, True, (255, 255, 255))
+            WIN.blit(time_left_text_surface, ((1600 - time_left_text_surface.get_width()) / 2, 150))
+            points_text = f"TOTAL POINTS: {self.__points_earned}"
+            points_text_surface = font.render(points_text, True, (255, 255, 255))
+            WIN.blit(points_text_surface, ((1600 - points_text_surface.get_width()) / 2, 100))
+
+            if time_left == 0:
+                self.__completely_finished = True
+            if self.__completely_finished:
+                pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+                final_score_text = f"FINAL SCORE: {self.__points_earned}"
+                final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
+                WIN.blit(final_score_text_surface, ((1600 - final_score_text_surface.get_width()) / 2, (900 - final_score_text_surface.get_height()) / 2))
+                if not self.__record_points:
+                    self.record_points_on_DB(self.__points_earned)
+                    self.__record_points = True
+
+
+
+        else:
+            pygame.draw.rect(WIN, (54, 217, 106), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+            tutorial_text = "PRESS 'SPACE' TO REVEAL THE PATTERNS"
+            tutorial_text_surface = font.render(tutorial_text, True, (255, 255, 255))
+            WIN.blit(tutorial_text_surface, ((1600 - tutorial_text_surface.get_width()) / 2, (900 - tutorial_text_surface.get_height()) / 2))
+        
+    def user_input(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not self.__space_bar_down:
+                print("Space bar has been pressed!")
+                self.__space_bar_down = True
+                self.__space_bar_press_time = pygame.time.get_ticks()
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and self.__space_bar_down:
+                self.update_mouse_pos()
+                if self.check_if_player_clicks_on_target():
+                    print("Clicked on a target!")
+                    self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
+                    self.calculate_points()
+                else:
+                    print("Did not click on a target!")
+        
+
+class Target():
+    def __init__(self, x: int, y: int):
+        self.__x = x + 160
+        self.__y = y + 90
+        self.image = pygame.transform.scale(pygame.image.load("src/target image/Target.png"), (100, 100)).convert_alpha()
+        self.__rect = self.image.get_rect(center=(self.__x, self.__y))
+
+    def get_target_rect(self):
+        return self.__rect
+    
+    def draw_target(self, WIN):
+        WIN.blit(self.image, self.__rect)
+
+# End of Aiming Code
+
 # Test Exercise Code
 class TestExercise(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
