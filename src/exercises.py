@@ -78,6 +78,9 @@ class ChalkboardChallenge(CognitiveExercise):
         self.lower_threshold = 0
         self.higher_threshold = 10
 
+        self.generate_equation()
+        self.generate_equation()
+
     def calculate_points(self):
         self.__amount_of_incorrect_answers = 5 - self.__amount_of_correct_answers
         self.__points_earned = (self.__amount_of_correct_answers * 200) + (self.__amount_of_incorrect_answers * -200)
@@ -751,7 +754,6 @@ class Aiming(CognitiveExercise):
                 else:
                     print("Did not click on a target!")
         
-
 class Target():
     def __init__(self, x: int, y: int):
         self.__x = x + 160
@@ -764,7 +766,6 @@ class Target():
     
     def draw_target(self, WIN):
         WIN.blit(self.image, self.__rect)
-
 # End of Aiming Code
 
 # Test Exercise Code

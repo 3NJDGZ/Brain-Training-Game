@@ -33,9 +33,6 @@ class PlayerDataManager(MySQLDatabaseModel):
     def set_player_id(self, player_id_to_be_set):
         self.__player_id = player_id_to_be_set
     
-    def get_username(self):
-        return self.__username
-    
     def get_player_id(self):
         return self.__player_id
     
@@ -172,8 +169,8 @@ class PlayerDataManager(MySQLDatabaseModel):
                     valid_details = True
                     self.set_username(username)
                     self.set_player_id(result[0])
-                    print(f"Username: {self.get_username()}")
-                    print(f"Player ID: {self.get_player_id()}")
+                    print(f"Username: {self.__username}")
+                    print(f"Player ID: {self.__player_id}")
                 except argon2.exceptions.VerifyMismatchError:
                     print("password do not match")
 
@@ -182,12 +179,26 @@ class PlayerDataManager(MySQLDatabaseModel):
     def record_points_from_exercises_on_DB(self, points: int, CognitiveAreaID: int):
         mycursor = self._DBC.get_cursor()
         print(points)
-        print(f"Player ID: {self.get_player_id()}")
+        print(f"Player ID: {self.__player_id}")
         mycursor.execute(f"""
         UPDATE Performance
         SET Score = Score + {points}
         WHERE CognitiveAreaID = {CognitiveAreaID}
-        AND PlayerID = {self.get_player_id()};
+        AND PlayerID = {self.__player_id};
         """)
 
         self._DBC.db.commit()
+
+    def extract_corresponding_weights(self):
+        mycursor = self._DBC.get_cursor()
+        mycursor.execute(f"""
+        SELECT WeightValue
+        FROM Weights
+        WHERE PlayerID = {self.__player_id}
+        """)
+
+        weight_values = []
+        records = mycursor.fetchall()
+        for record in records:
+            weight_values.append(record[0])
+        return weight_values

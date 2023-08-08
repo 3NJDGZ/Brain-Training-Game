@@ -23,7 +23,9 @@ class Game:
         self.__skill_selection_screen = Skill_Selection_Screen("SKILL SLIDER SELECTION")
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
         self.__gameplay_selection_screen = Gameplay_Selection_Screen("GAMEPLAY SELECTION SCREEN")
-        self.__maze_screen = Maze_Screen("MAZE SCREEN TEST", 100, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+        self.__maze_screen = None
+
+        self.__create_maze_screen = False
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
         self.screens = [self. __intro_screen, # 0
@@ -66,6 +68,13 @@ class Game:
             
             # print(f"Current State: {self.get_state()}")
 
+            # This code here is used to create an instance of the maze screen, as soon as we get the user's login
+            player_id = PDM.get_player_id()
+            if player_id is not None:
+                if not self.__create_maze_screen:
+                    self.screens[8] =  Maze_Screen("MAZE SCREEN TEST", 100, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+                    self.__create_maze_screen = True
+                    
             self.__current_screen = self.screens[self.__current_pos]
             self.__current_screen.show_UI_elements()
             self.__current_screen._fill_with_colour()
@@ -184,12 +193,13 @@ class Game:
                 self.__current_screen.remove_UI_elements()
     
     def check_if_screen_is_maze_screen(self):
-        if not isinstance(self.__current_screen, Maze_Screen):
+        if not isinstance(self.__current_screen, Maze_Screen) and self.__maze_screen is not None:
             self.__maze_screen.remove_UI_elements()
         else:
-            self.__current_screen.setup_maze_level_with_player()
-            self.__current_screen.check_collision_with_exit_cell()
-            self.__current_screen.check_collision_with_exercise_cell()
+            if isinstance(self.__current_screen, Maze_Screen):
+                self.__current_screen.setup_maze_level_with_player()
+                self.__current_screen.check_collision_with_exit_cell()
+                self.__current_screen.check_collision_with_exercise_cell()
 
     def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos

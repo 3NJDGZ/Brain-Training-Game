@@ -145,27 +145,32 @@ class Cell:
         if self.__walls['left']:
             pygame.draw.line(self.WIN, self.LINE_COLOUR, (self.__x, self.__y + self.STARTING_TILE_SIZE), (self.__x, self.__y), self.LINE_WIDTH)
 
+    def set_random_exercise(self, exercises):
+        random_index = random.randint(0, len(exercises) - 1)
+        self.set_exercise(exercises[random_index])
+
     def create_exercise_for_cell(self, PDM):
+
+        # https://www.w3schools.com/python/ref_random_choices.asp random.choices
+
         if self.get_exercise_present():
-            # random_number = random.randint(1, 3)
-            random_number = 5
-            if random_number == 1:
-                self.set_exercise(TestExercise(1, PDM))
-            elif random_number == 2:
-                cc = ChalkboardChallenge(4, PDM)
-                self.set_exercise(cc)
-                cc.generate_equation()
-                cc.generate_equation()
-                cc.show_every_equation()
-            elif random_number == 3:
-                mm = MemoryMatrix(1, PDM)
-                self.set_exercise(mm)
-            elif random_number == 4:
-                st = SchulteTable(2, PDM)
-                self.set_exercise(st)
-            elif random_number == 5:
-                a = Aiming(3, PDM)
-                self.set_exercise(a)
+            weight_values = PDM.extract_corresponding_weights()
+            cognitive_areas = ["Memory", "Attention", "Speed", "Problem Solving"]
+            selected_cognitive_area = random.choices(cognitive_areas, weight_values, k=1)[0]
+            
+            Memory_Exercises = [MemoryMatrix(1, PDM)]
+            Attention_Exercises = [SchulteTable(2, PDM)]
+            Speed_Exercises = [Aiming(3, PDM)]
+            ProblemSolving_Exercises = [ChalkboardChallenge(4, PDM)]
+
+            if selected_cognitive_area == "Memory":
+                self.set_random_exercise(Memory_Exercises)
+            elif selected_cognitive_area == "Attention":
+                self.set_random_exercise(Attention_Exercises)
+            elif selected_cognitive_area == "Speed":
+                self.set_random_exercise(Speed_Exercises)
+            elif selected_cognitive_area == "Problem Solving":
+                self.set_random_exercise(ProblemSolving_Exercises)
 
 class Maze():
     def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN, PDM):
