@@ -19,6 +19,7 @@ Project (Source Code) for NEA A Level Computer Science.
 - Center Rect Positioning Python Pygame: https://stackoverflow.com/questions/75347619/how-do-i-find-the-position-coordinates-of-my-rect
 - Python Recursive Depth Limit Modification: https://stackoverflow.com/questions/3323001/what-is-the-maximum-recursion-depth-and-how-to-increase-it 
 - Pygame Timers: https://www.youtube.com/watch?v=YOCt8nsQqEo
+- Saving and Loading Files: https://www.youtube.com/watch?v=__mZO-53PPM
 
 ### Other
-- random.choices https://www.w3schools.com/python/ref_random_choices.asp
+- random.choices: https://www.w3schools.com/python/ref_random_choices.asp
