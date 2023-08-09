@@ -23,3 +23,4 @@ Project (Source Code) for NEA A Level Computer Science.
 
 ### Other
 - random.choices: https://www.w3schools.com/python/ref_random_choices.asp
+- finding files: https://stackoverflow.com/questions/1724693/find-a-file-in-python
