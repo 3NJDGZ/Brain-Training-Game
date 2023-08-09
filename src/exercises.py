@@ -791,21 +791,3 @@ class Target():
     def draw_target(self, WIN):
         WIN.blit(self.image, self.__rect)
 # End of Aiming Code
-
-# Test Exercise Code
-class TestExercise(CognitiveExercise):
-    def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
-        super().__init__(CognitiveAreaID, PDM)
-    
-    def user_input(self, event):
-        return super().user_input(event)
-    
-    def calculate_points(self):
-        return super().calculate_points()
-    
-    def record_points_on_DB(self, points):
-        return super().record_points_on_DB(points)
-    
-    def draw_exercise_on_screen(self, WIN):
-        pygame.draw.rect(WIN, (122, 51, 255), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-# End of Test Exercise Code
