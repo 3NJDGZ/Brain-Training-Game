@@ -1,6 +1,8 @@
 # import necessary modules
 import mysql.connector
+import json
 import argon2
+import os
 from abc import ABC
 
 class MySQLDatabaseConnection: # A class that represents a connection to the DB.
@@ -26,10 +28,88 @@ class PlayerDataManager(MySQLDatabaseModel):
         self.ph = argon2.PasswordHasher()
         self.__username = ""
         self.__player_id = None
+        self.__exercise_settings = None
+
+        with open('src/setting save files/default_settings.txt') as file:
+            self.__exercise_settings = json.load(file)
+        
+    def change_settings_according_to_user(self, difficulty_mm, difficulty_a, difficulty_st):
+        changed_settings = {} # https://www.w3schools.com/python/gloss_python_dictionary_add_item.asp
+
+        # Change Difficulty of MM
+        if difficulty_mm == 'Easy':
+            changed_settings['Memory Matrix'] = {'Difficulty': f'{difficulty_mm}',
+                                                 'Parameters': [
+                                                     [3, 6], # first trail
+                                                     [10, 14], # second trail 
+                                                     [19, 22] # third trail
+                                                 ]}
+        elif difficulty_mm == 'Medium':
+            changed_settings['Memory Matrix'] = {'Difficulty': f'{difficulty_mm}',
+                                                 'Parameters': [
+                                                     [5, 10], # first trail
+                                                     [13, 18], # second trail 
+                                                     [20, 26] # third trail
+                                                 ]}
+        elif difficulty_mm == 'Hard':
+            changed_settings['Memory Matrix'] = {'Difficulty': f'{difficulty_mm}',
+                                                 'Parameters': [
+                                                     [7, 13], # first trail
+                                                     [16, 20], # second trail 
+                                                     [26, 30] # third trail
+                                                 ]}
+        
+        # Change difficulty of A
+        if difficulty_a == 'Easy':
+            changed_settings['Aiming'] = {'Difficulty': f'{difficulty_a}',
+                                          'Parameters': [[15, 25]]}
+        elif difficulty_a == 'Medium':
+            changed_settings['Aiming'] = {'Difficulty': f'{difficulty_a}',
+                                          'Parameters': [[10, 50]]}
+        elif difficulty_a == 'Hard':
+            changed_settings['Aiming'] = {'Difficulty': f'{difficulty_a}',
+                                          'Parameters': [[5, 100]]}
+        
+        # Change difficulty of ST
+        if difficulty_st == 'Easy':
+            changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
+                                                 'Grid Dimension': 4}
+        elif difficulty_st == 'Hard':
+            changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
+                                                 'Grid Dimension': 5}
+        
+        with open(f'src/setting save files/{self.__username}_settings.txt', 'w') as file:
+            json.dump(changed_settings, file)
+        
+        self.load_settings()
     
+    def check_for_user_settings(self, file_name, path, username):
+        # https://stackoverflow.com/questions/1724693/find-a-file-in-python
+        
+        print(file_name)
+
+        found = False
+        for root, dirs, files in os.walk(path):
+            if file_name in files:
+                found = True
+        
+        if found:
+            with open(f'src/setting save files/{username}_settings.txt') as file:
+                self.__exercise_settings = json.load(file)
+            print("Loaded Customised Settings!")
+        else:
+            print("Could not find customised settings!")
+
+    def load_settings(self):
+        with open(f'src/setting save files/{self.__username}_settings.txt') as file:
+            self.__exercise_settings = json.load(file)
+
+    def get_settings(self, exercise_name: str):
+        return self.__exercise_settings[exercise_name]
+
     def set_username(self, username_to_be_set):
         self.__username = username_to_be_set
-    
+
     def set_player_id(self, player_id_to_be_set):
         self.__player_id = player_id_to_be_set
     
@@ -166,6 +246,7 @@ class PlayerDataManager(MySQLDatabaseModel):
                 try: 
                     self.ph.verify(stored_hash, password)
                     print("password match")
+                    self.check_for_user_settings(f'{username}_settings.txt', 'src/setting save files', username)
                     valid_details = True
                     self.set_username(username)
                     self.set_player_id(result[0])

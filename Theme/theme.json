@@ -94,7 +94,7 @@
     {
         "colours":
         {
-            "dark_bg":"#7d7d7d",
+            "normal_bg":"#7d7d7d",
             "hovered_bg":"#00c8ff",
             "normal_border":"#ffffff"
         },
@@ -112,6 +112,32 @@
             "shape":"rounded_rectangle",
             "shape_corner_radius":"5",
             "border_width":"2"
+        }
+    },
+    "@drop_down_menus":
+    {
+        "colours": {
+            "normal_border":"#ffffff"
+        },
+        "misc": {
+            "shape":"rounded_rectangle",
+            "shape_corner_radius": "10",
+            "border_width": "4"
+        }
+    },
+    "@drop_down_menus.#expand_button": {
+        "misc": {
+            "shape":"rounded_rectangle",
+            "shape_corner_radius":"5"
+        }
+    },
+    "@drop_down_menus.#selected_option": {
+        "misc": {
+            "shape":"rounded_rectangle",
+            "shape_corner_radius":"10"
+        },
+        "colours": {
+            "normal_border":"#3d3d3d"
         }
     }
 

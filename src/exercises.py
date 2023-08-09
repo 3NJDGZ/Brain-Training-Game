@@ -222,10 +222,14 @@ class MemoryMatrix(CognitiveExercise):
         self.__completely_finished = False
         self.__record_points = False
 
+        # Load settings
+        settings = PDM.get_settings('Memory Matrix')
+        parameters = settings['Parameters']
+        number_of_highlighted_cells_one = random.randint(parameters[0][0], parameters[0][1])
+        number_of_highlighted_cells_two = random.randint(parameters[1][0], parameters[1][1])
+        number_of_highlighted_cells_three = random.randint(parameters[2][0], parameters[2][1])
+
         # Patterns
-        number_of_highlighted_cells_one = random.randint(4, 10)
-        number_of_highlighted_cells_two = random.randint(12, 18)
-        number_of_highlighted_cells_three = random.randint(20, 26)
         self.__patterns = [MMPattern(number_of_highlighted_cells_one), MMPattern(number_of_highlighted_cells_two), MMPattern(number_of_highlighted_cells_three)]
         self.__current_pos = 0
         self.__current_pattern = self.__patterns[self.__current_pos]
@@ -271,6 +275,7 @@ class MemoryMatrix(CognitiveExercise):
                         selected_cell.set_incorrect(True)
                         selected_cell.set_selected_by_user(True)
                         print("You have selected a wrong cell!")
+                        self.__points_earned -= 50
                     
                 if self.__current_pattern.get_number_of_errors() == 3:
                     self.go_to_next_trail()
@@ -320,6 +325,9 @@ class MemoryMatrix(CognitiveExercise):
             self.__current_pattern.draw_cells(WIN)
 
             # Text 
+            difficulty_text = f"Difficulty: {self._PDM.get_settings('Memory Matrix')['Difficulty']}"
+            difficulty_text_surface = font.render(difficulty_text, True, (255, 255, 255))
+            WIN.blit(difficulty_text_surface, (170, 105))
             score_text = f"Score: {self.__points_earned}"
             score_text_surface = font.render(score_text, True, (255, 255, 255))
             WIN.blit(score_text_surface, (500, 105))
@@ -512,7 +520,10 @@ class MMCell(Cell):
 class SchulteTable(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
         super().__init__(CognitiveAreaID, PDM)
-        self.grid_dimension = 4 # options are only 4 or 5 
+
+        # Load Settings
+        settings = PDM.get_settings('Schulte Table')
+        self.grid_dimension = settings['Grid Dimension'] # options are only 4 or 5 
         self.__table_grid = TableGrid(self.grid_dimension)
 
         # Mouse Positions
@@ -555,6 +566,9 @@ class SchulteTable(CognitiveExercise):
             time_text = f"TIME: {time}"
             time_text_surface = font.render(time_text, True, (255, 255, 255))
             WIN.blit(time_text_surface, ((1600 - time_text_surface.get_width()) / 2, 715))
+            difficulty_text = f"Difficulty: {self._PDM.get_settings('Schulte Table')['Difficulty']}"
+            difficulty_text_surface = font.render(difficulty_text, True, (255, 255, 255))
+            WIN.blit(difficulty_text_surface, (170, 105))
 
 
             if self.__completely_finished:
@@ -585,6 +599,7 @@ class SchulteTable(CognitiveExercise):
                 print("Correct!")
                 self.__next_number_to_find += 1
             else:
+                self.__points_earned -= 50
                 print("Incorrect!")
         else:
             print("Mouse click is out of range!")
@@ -672,8 +687,13 @@ class Aiming(CognitiveExercise):
         self.__record_points = False
         self.__completely_finished = False
 
+        # Load Settings
+        settings = PDM.get_settings('Aiming')
+        parameters = settings['Parameters']
+        self.__time_limit = parameters[0][0]
+        self.__points_increase = parameters[0][1]
+
         # Time
-        self.__time_limit = 10 # time limit in 10s
         self.__space_bar_press_time = 0
         self.__current_time = 0
 
@@ -694,7 +714,7 @@ class Aiming(CognitiveExercise):
             return False
 
     def calculate_points(self):
-        self.__points_earned += 50
+        self.__points_earned += self.__points_increase
     
     def record_points_on_DB(self, points):
         self._PDM.record_points_from_exercises_on_DB(self.__points_earned, 3)
@@ -711,6 +731,9 @@ class Aiming(CognitiveExercise):
             time_left = self.__time_limit - elapsed_time
             
             # Text
+            difficulty_text = f"Difficulty: {self._PDM.get_settings('Aiming')['Difficulty']}"
+            difficulty_text_surface = font.render(difficulty_text, True, (255, 255, 255))
+            WIN.blit(difficulty_text_surface, (170, 105))
             time_left_text = f"TIME LEFT: {time_left}"
             time_left_text_surface = font.render(time_left_text, True, (255, 255, 255))
             WIN.blit(time_left_text_surface, ((1600 - time_left_text_surface.get_width()) / 2, 150))
@@ -733,7 +756,7 @@ class Aiming(CognitiveExercise):
 
         else:
             pygame.draw.rect(WIN, (54, 217, 106), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-            tutorial_text = "PRESS 'SPACE' TO REVEAL THE PATTERNS"
+            tutorial_text = "PRESS 'SPACE' TO REVEAL THE TARGETS"
             tutorial_text_surface = font.render(tutorial_text, True, (255, 255, 255))
             WIN.blit(tutorial_text_surface, ((1600 - tutorial_text_surface.get_width()) / 2, (900 - tutorial_text_surface.get_height()) / 2))
         
@@ -752,6 +775,7 @@ class Aiming(CognitiveExercise):
                     self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
                     self.calculate_points()
                 else:
+                    self.__points_earned -= 50
                     print("Did not click on a target!")
         
 class Target():

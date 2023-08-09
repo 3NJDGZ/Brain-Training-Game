@@ -376,37 +376,6 @@ class Main_Menu_Screen(Screen):
             self._MANAGER.process_events(event)
         return ui_finished
 
-class Gameplay_Selection_Screen(Screen):
-    def __init__(self, Title: str):
-        super(Gameplay_Selection_Screen, self).__init__(Title)
-
-        # UI
-        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 350), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="SELECT AN OPTION")
-        self.__LINEAR_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((575, 475), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#linear_button"), text="LINEAR")
-        self.__ENDLESS_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((825, 475), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#endless_button"), text="ENDLESS")
-    
-    def show_UI_elements(self):
-        self.__TITLE_LABEL.show()
-        self.__LINEAR_BUTTON.show()
-        self.__ENDLESS_BUTTON.show()
-    
-    def remove_UI_elements(self):
-        self.__TITLE_LABEL.hide()
-        self.__LINEAR_BUTTON.hide()
-        self.__ENDLESS_BUTTON.hide()
-
-    def check_for_user_interaction_with_UI(self):
-        ui_finished = ""
-        
-        for event in pygame.event.get():
-            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#linear_button":
-                ui_finished = "LINEAR"
-            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#endless_button":
-                ui_finished = "ENDLESS"
-            
-            self._MANAGER.process_events(event)
-        return ui_finished
-
 class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
@@ -440,3 +409,79 @@ class Maze_Screen(Screen):
     
     def check_for_user_interaction_with_UI(self):
         return super().check_for_user_interaction_with_UI()  
+
+class Settings_Screen(Screen):
+    def __init__(self, Title: str):
+        super(Settings_Screen, self).__init__(Title)
+
+        # UI 
+        self.__DROP_DOWN_MENU_MM = pygame_gui.elements.UIDropDownMenu(['Easy', 'Medium', 'Hard'], 'Easy',relative_rect=pygame.Rect((162.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_memory_matrix"))
+        self.__MEMORY_MATRIX_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((162.5, 115), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#memory_matrix_label"), text="MEMORY MATRIX")
+
+        self.__DROP_DOWN_MENU_A = pygame_gui.elements.UIDropDownMenu(['Easy', 'Medium', 'Hard'], 'Easy',relative_rect=pygame.Rect((687.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_aiming"))
+        self.__AIMING_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((687.5, 115), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#aiming_label"), text="AIMING")
+
+        self.__DROP_DOWN_MENU_ST = pygame_gui.elements.UIDropDownMenu(['Easy', 'Hard'], 'Easy',relative_rect=pygame.Rect((1212.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_schulte_table"))
+        self.__SCHULTE_TABLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1212.5, 115), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#schulte_table_label"), text="SCHULTE TABLE")
+
+        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
+        self.__SAVE_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1385, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#save_button"), text="SAVE")
+        # print(self.__DROP_DOWN_MENU.selected_option)
+
+        self.memory_matrix_difficulties = {
+            'Easy': [[3, 6], [10, 14], [19, 28]],
+            'Medium': [[5, 10], [13, 18], [20, 26]],
+            'Hard': [[7, 13], [16, 20], [26, 30]]
+        }
+
+        self.aiming_difficulties = {
+            'Easy': [15, 25],
+            'Medium': [10, 50],
+            'Hard': [5, 100]
+        }
+
+        self.schulte_table_difficulties = {
+            'Easy': 4,
+            'Hard': 5
+        }
+    
+    def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
+
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
+                ui_finished = "BUTTON"
+                return ui_finished
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#save_button":
+                self.change_settings()
+            if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED and event.ui_object_id == "#drop_down_menu_memory_matrix":
+                print(self.__DROP_DOWN_MENU_MM.selected_option)
+            self._MANAGER.process_events(event)
+    
+    def change_settings(self):
+        difficulty_mm = self.__DROP_DOWN_MENU_MM.selected_option
+        difficulty_a = self.__DROP_DOWN_MENU_A.selected_option
+        difficulty_st = self.__DROP_DOWN_MENU_ST.selected_option
+        PDM.change_settings_according_to_user(difficulty_mm, difficulty_a, difficulty_st)
+
+
+    def remove_UI_elements(self):
+        self.__DROP_DOWN_MENU_MM.hide()
+        self.__DROP_DOWN_MENU_A.hide()
+        self.__DROP_DOWN_MENU_ST.hide()
+        self.__GO_BACK_BUTTON.hide()
+        self.__SAVE_BUTTON.hide()
+        self.__MEMORY_MATRIX_LABEL.hide()
+        self.__AIMING_LABEL.hide()
+        self.__SCHULTE_TABLE_LABEL.hide()
+    
+    def show_UI_elements(self):
+        self.__DROP_DOWN_MENU_MM.show()
+        self.__DROP_DOWN_MENU_A.show()
+        self.__DROP_DOWN_MENU_ST.show()
+        self.__GO_BACK_BUTTON.show()
+        self.__SAVE_BUTTON.show()
+        self.__MEMORY_MATRIX_LABEL.show()
+        self.__AIMING_LABEL.show()
+        self.__SCHULTE_TABLE_LABEL.show()
+    

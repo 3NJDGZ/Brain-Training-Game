@@ -1,0 +1,1 @@
+{"Memory Matrix": {"Difficulty": "Easy", "Parameters": [[3, 6], [10, 14], [19, 22]]}, "Aiming": {"Difficulty": "Medium", "Parameters": [[10, 50]]}, "Schulte Table": {"Difficulty": "Easy", "Grid Dimension": 4}}
