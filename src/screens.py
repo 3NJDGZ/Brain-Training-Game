@@ -134,9 +134,13 @@ class Register_Screen(Get_User_Info_Screen):
         super().__init__(Title, error_msg)
 
         self.__PW_ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 600), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#error_label"), text="PASSWORD IS TOO SHORT (>=5 CHAR)")
+        self.__USERNAME_TAKEN_ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 600), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#error_label"), text="USERNAME IS ALREADY TAKEN")
     
     def show_PW_error(self):
         self.__PW_ERROR_LABEL.show()
+    
+    def show_USERNAME_error(self):
+        self.__USERNAME_TAKEN_ERROR_LABEL.show()
 
     def remove_UI_elements(self):
         self._USERNAME_INPUT.hide()
@@ -145,24 +149,28 @@ class Register_Screen(Get_User_Info_Screen):
         self._TITLE_LABEL.hide()
         self._ERROR_LABEL.hide()
         self.__PW_ERROR_LABEL.hide()
+        self.__USERNAME_TAKEN_ERROR_LABEL.hide()
     
-
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
          
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#username_text_entry":
-                self.set_username(event.text)
+                self.set_username(self._USERNAME_INPUT.text)
 
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#password_text_entry":
-                self.set_password(event.text)
+                self.set_password(self._PASSWORD_INPUT.text)
                 
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
                 if len(self.get_username()) > 0:
                     if len(self.get_password()) >= 5:
-                        self.register(self.get_username(), self.get_password())
-                        ui_finished = "TEXT_ENTRY"
-                        return ui_finished
+                        PDM.check_if_username_is_available(self.get_username())
+                        if PDM.get_username_available():
+                            self.register(self.get_username(), self.get_password())
+                            ui_finished = "TEXT_ENTRY"
+                            return ui_finished
+                        else:
+                            self.show_USERNAME_error()
                     else:
                         self.show_PW_error()
                 else:
@@ -187,12 +195,10 @@ class Login_Screen(Get_User_Info_Screen):
          
         for event in pygame.event.get():
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#username_text_entry":
-                print(event.text)
-                self.set_username(event.text)
+                self.set_username(self._USERNAME_INPUT.text)
 
             if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#password_text_entry":
-                print(event.text)
-                self.set_password(event.text)
+                self.set_password(self._PASSWORD_INPUT.text)
             
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
                 if self.login(self.get_username(), self.get_password()):

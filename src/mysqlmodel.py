@@ -29,6 +29,7 @@ class PlayerDataManager(MySQLDatabaseModel):
         self.__username = ""
         self.__player_id = None
         self.__exercise_settings = None
+        self.__username_available = False
 
         with open('src/setting save files/default_settings.txt') as file:
             self.__exercise_settings = json.load(file)
@@ -116,6 +117,27 @@ class PlayerDataManager(MySQLDatabaseModel):
     def get_player_id(self):
         return self.__player_id
     
+    def check_if_username_is_available(self, username):
+        mycursor = self._DBC.get_cursor()
+        mycursor.execute(
+            f"""
+            SELECT Username
+            FROM Player
+            """
+        )
+
+        records = mycursor.fetchall()
+
+        for db_username in records:
+            if db_username[0] == username:
+                self.__username = False
+                break
+            else:
+                self.__username_available = True
+
+    def get_username_available(self):
+        return self.__username_available
+
     def register_new_player_data(self, username, password):
         mycursor = self._DBC.get_cursor()
 
@@ -162,6 +184,7 @@ class PlayerDataManager(MySQLDatabaseModel):
             print(record)
         
         self._DBC.db.commit()
+
     
     def register_weights_onto_DB(self, weights):
         mycursor = self._DBC.get_cursor()
