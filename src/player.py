@@ -5,13 +5,13 @@ from maze_generation import *
 pygame.init()
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, width, height, initial_x, inital_y, velocity):
 
-        self.__width = 60
-        self.__height = 60
+        self.__width = width
+        self.__height = height
 
-        self.__initial_x = 50
-        self.__initial_y = 50
+        self.__initial_x = initial_x
+        self.__initial_y = inital_y
 
         player_up = pygame.transform.scale(pygame.image.load("src/player images/player_up.png"), (self.__width, self.__height)).convert_alpha()
         player_down = pygame.transform.scale(pygame.image.load("src/player images/player_down.png"), (self.__width, self.__height)).convert_alpha()
@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.__images = [player_up, player_down, player_right, player_left]
         self.__frame_index = 0
         self.__image = self.__images[self.__frame_index]
-        self.__velocity = 100
+        self.__velocity = velocity
         self.__rect = self.__image.get_rect(center=(self.__initial_x, self.__initial_y))
     
     def get_player_image(self):
@@ -84,7 +84,9 @@ class Player(pygame.sprite.Sprite):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
 
         if grid_of_cells[row_number][cols_number].get_exit_value():
-            print("Arrived at the exit!")
+            return True
+        else:
+            return False
 
     def player_input(self, rects, cols, grid_of_cells, event): # gets player input for movement
         walls = self.check_current_cell(rects, cols, grid_of_cells)

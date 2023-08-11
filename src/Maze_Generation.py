@@ -59,7 +59,7 @@ class Cell:
                       "bottom": True,
                       "left": True}
         self.__visited = False
-    
+
     def get_exercise(self):
         return self.__exercise
 
@@ -131,7 +131,7 @@ class Cell:
         
         if self.__start: # Checks if the cell is the Start cell; if it is make it green
             pygame.draw.rect(self.WIN, (0, 255, 0), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
-        
+
         if self.__exercise_present: # Checks if the cell is an exercise cell; if it is make it blue
             pygame.draw.rect(self.WIN, (0, 0, 255), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
 
@@ -173,7 +173,7 @@ class Cell:
                 self.set_random_exercise(ProblemSolving_Exercises)
 
 class Maze():
-    def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN, PDM):
+    def __init__(self, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple, WIDTH: int, HEIGHT: int, WIN, PDM, min_exercise_cells: int, max_exercise_cells: int):
         self.__STARTING_TILE_SIZE = STARTING_TILE_SIZE
         self.__LINE_COLOUR = LINE_COLOUR
         self.__visited_cells = []
@@ -183,6 +183,7 @@ class Maze():
         self.__rects = []
         self.__PDM = PDM
         self.WIN = WIN
+        self.__exercise_cells = []
 
         # Setup for recursive DFS for maze generation, cells are in a grid
         for a in range(self.__rows):
@@ -196,13 +197,14 @@ class Maze():
         random_exit_cell.set_exit_value(True)
 
         # Generating Exercise(s) Cells; only visualising them as blue cells; functionality has not yet been implemented.
-        for x in range(random.randint(3, 5)):
+        for x in range(random.randint(min_exercise_cells, max_exercise_cells)):
             row_number = random.randint(4, self.__rows)
             cols_number = random.randint(4, self.__cols)
             exercise_cell = self.__grid_of_cells[row_number-1][cols_number-1]
             if not exercise_cell.get_exit_value() and not exercise_cell.get_start_value():
                 exercise_cell.set_exercise_present(True)
                 exercise_cell.create_exercise_for_cell(self.__PDM)
+                self.__exercise_cells.append(exercise_cell)
         
         # Start Cell
         self.__grid_of_cells[0][0].set_start_value(True)
@@ -218,6 +220,12 @@ class Maze():
                 rect = cell.create_rect()
                 self.__rects.append(rect)
     
+    def check_if_all_exercise_cells_are_complete(self):
+        not_complete = False
+        for cell in self.__exercise_cells:
+            if not cell.get_exercise().get_completely_finished():
+                not_complete = True
+        return not_complete
         
     def get_grid_of_cells(self):
         return self.__grid_of_cells

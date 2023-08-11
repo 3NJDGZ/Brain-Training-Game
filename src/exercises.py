@@ -78,8 +78,13 @@ class ChalkboardChallenge(CognitiveExercise):
         self.lower_threshold = 0
         self.higher_threshold = 10
 
+        self.__completely_finished = False
+
         self.generate_equation()
         self.generate_equation()
+    
+    def get_completely_finished(self):
+        return self.__completely_finished
 
     def calculate_points(self):
         self.__amount_of_incorrect_answers = 5 - self.__amount_of_correct_answers
@@ -150,6 +155,7 @@ class ChalkboardChallenge(CognitiveExercise):
                 points = self.calculate_points()
                 self.record_points_on_DB(points)
                 self.__record_points = True
+                self.__completely_finished = True
         
     def generate_equation(self):
         operands = []
@@ -242,6 +248,9 @@ class MemoryMatrix(CognitiveExercise):
         self.__mouse_position = 0
         self.__mouse_x = 0
         self.__mouse_y = 0
+
+    def get_completely_finished(self):
+        return self.__completely_finished
 
     def find_mouse_pos(self): # https://www.youtube.com/watch?v=OYw9D75d7Lw
         self.__mouse_position = pygame.mouse.get_pos()
@@ -540,6 +549,9 @@ class SchulteTable(CognitiveExercise):
         self.__space_bar_time = 0
         self.__completely_finished = False
     
+    def get_completely_finished(self):
+        return self.__completely_finished
+    
     def calculate_points(self):
         max_points = 50 * (self.grid_dimension**2)
         print(max_points)
@@ -702,6 +714,9 @@ class Aiming(CognitiveExercise):
         self.__mouse_x = self.__mouse_pos[0]
         self.__mouse_y = self.__mouse_pos[1]
     
+    def get_completely_finished(self):
+        return self.__completely_finished
+    
     def update_mouse_pos(self):
         self.__mouse_pos = pygame.mouse.get_pos()
         self.__mouse_x = self.__mouse_pos[0]
@@ -769,15 +784,16 @@ class Aiming(CognitiveExercise):
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and self.__space_bar_down:
-                self.update_mouse_pos()
-                if self.check_if_player_clicks_on_target():
-                    print("Clicked on a target!")
-                    self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
-                    self.calculate_points()
-                else:
-                    self.__points_earned -= 50
-                    print("Did not click on a target!")
-        
+                if not self.__completely_finished:
+                    self.update_mouse_pos()
+                    if self.check_if_player_clicks_on_target():
+                        print("Clicked on a target!")
+                        self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
+                        self.calculate_points()
+                    else:
+                        self.__points_earned -= 50
+                        print("Did not click on a target!")
+            
 class Target():
     def __init__(self, x: int, y: int):
         self.__x = x + 160

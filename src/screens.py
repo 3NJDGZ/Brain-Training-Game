@@ -379,17 +379,98 @@ class Main_Menu_Screen(Screen):
 class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
+        self.LINE_COLOUR = LINE_COLOUR
+        self.__min_exercise_cells = 3
+        self.__max_exercise_cells = 5
 
         # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
-        self.__maze = Maze(STARTING_TILE_SIZE, LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM)
-        self.__player = Player()
+        self.__maze = Maze(STARTING_TILE_SIZE, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
+        self.__player = Player(60, 60, 50, 50, 100)
+
+        self.__time_limit = 5
+        self.__spacebar_down = False
+        self.__current_time = pygame.time.get_ticks()
+        self.__spacebar_down_time = 0
+        self.__game_over = False
+        
+        self.__maze_level = 1
+
+        self.__return_to_main_menu = False
 
     def setup_maze_level_with_player(self):
-        self.__maze.setup_maze()
-        self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
-    
+        font = pygame.font.Font(None, 50)
+        if self.__spacebar_down and not self.__game_over:
+            self.__maze.setup_maze()
+            self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
+
+            self.check_collision_with_exercise_cell()
+
+            self.__current_time = pygame.time.get_ticks()
+            elapsed_time = (self.__current_time - self.__spacebar_down_time) // 1000
+            time_left = self.__time_limit - elapsed_time
+
+            # text
+            time_text = f"Time Left: {time_left}s"
+            time_text_surface = font.render(time_text, True, (255, 114, 48))
+            self._WIN.blit(time_text_surface, (20, 850))
+            if time_left <= 0:
+                self.__game_over = True
+
+            if not self.__maze.check_if_all_exercise_cells_are_complete() and self.check_collision_with_exit_cell():
+                self.__maze_level += 1
+                self.__min_exercise_cells += 2
+                self.__max_exercise_cells += 3
+                if self.__maze_level >= 2: # phase 1 of mazes
+                    self.__maze = Maze(100, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
+                    self.__spacebar_down_time = 0
+                    self.__spacebar_down = False
+                    self.__time_limit = 60
+
+                    # change player size 
+                    self.__player = Player(60, 60, 50, 50, 100)
+
+                if self.__maze_level >= 5: # phase 2 of mazes
+                    self.__maze = Maze(50, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 5, 8)
+                    self.__spacebar_down_time = 0
+                    self.__spacebar_down = False
+                    self.__time_limit = 90
+
+                    # change player size 
+                    self.__player = Player(30, 30, 25, 25, 50)
+
+                if self.__maze_level >= 9: # phase 3 of mazes
+                    self.__spacebar_down_time = 0
+                    self.__spacebar_down = False
+                    self.__time_limit = 120
+                    self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 9, 12)
+                    self.__player = Player(15, 15, 12.5, 12.5, 25)
+        elif self.__game_over:
+            pygame.draw.rect(self._WIN, (0, 0, 0), pygame.Rect(0, 0, self._WIDTH, self._HEIGHT))
+            game_over_text = "GAME OVER!"
+            game_over_text_surface = font.render(game_over_text, True, (255, 255, 255))
+            self._WIN.blit(game_over_text_surface, ((1600 - game_over_text_surface.get_width()) / 2, (900 - game_over_text_surface.get_height()) / 2))
+            levels_cleared_text = f"Levels Cleared: {self.__maze_level - 1}"
+            levels_cleared_text_surface = font.render(levels_cleared_text, True, (255, 255, 255))
+            self._WIN.blit(levels_cleared_text_surface, ((1600 - levels_cleared_text_surface.get_width()) / 2, 550))
+            return_to_main_menu_text = "PRESS 'SPACE' TO RETURN TO MAIN MENU"
+            return_to_main_menu_text_surface = font.render(return_to_main_menu_text, True, (255, 255, 255))
+            self._WIN.blit(return_to_main_menu_text_surface, ((1600 - return_to_main_menu_text_surface.get_width()) / 2, 490))
+        else:
+            pygame.draw.rect(self._WIN, (0, 0, 0), pygame.Rect(0, 0, self._WIDTH, self._HEIGHT))
+
+            # text
+            text_to_be_shown = "PRESS 'SPACE' TO START THE MAZE"
+            text_to_be_shown_surface = font.render(text_to_be_shown, True, (255, 255, 255))
+            self._WIN.blit(text_to_be_shown_surface, ((1600 - text_to_be_shown_surface.get_width()) / 2, (900 - text_to_be_shown_surface.get_height()) / 2))
+            level_text = f"Maze Level: {self.__maze_level}"
+            level_text_surface = font.render(level_text, True, (255, 255, 255))
+            self._WIN.blit(level_text_surface, ((1600 - level_text_surface.get_width()) / 2, 600))
+
+    def get_return_to_main_menu(self):
+        return self.__return_to_main_menu
+
     def check_collision_with_exit_cell(self):
-        self.__player.check_collision_with_exit_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
+        return self.__player.check_collision_with_exit_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
     def check_collision_with_exercise_cell(self):
         self.__player.check_collision_with_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
@@ -398,7 +479,15 @@ class Maze_Screen(Screen):
         return self.__player.check_type_of_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
     def player_input(self, event):
-        self.__player.player_input(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not self.__spacebar_down:
+                self.__spacebar_down = True
+                self.__spacebar_down_time = pygame.time.get_ticks()
+            elif event.key == pygame.K_SPACE and self.__game_over:
+                self.__return_to_main_menu = True
+        
+        if self.__spacebar_down:
+            self.__player.player_input(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), event)
     
     # UI will need to be added; this UI will actually be separate 
     def show_UI_elements(self):

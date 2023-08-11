@@ -28,7 +28,15 @@ class Game:
         self.__create_maze_screen = False
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
-        self.screens = [self.__intro_screen, self.__register_screen, self.__login_screen, self.__registration_confirmation_screen, self.__login_confirmation_screen, self.__skill_selection_screen, self.__main_menu_screen, self.__maze_screen, self.__settings_screen]
+        self.screens = [self.__intro_screen, 
+                        self.__register_screen, 
+                        self.__login_screen, 
+                        self.__registration_confirmation_screen, 
+                        self.__login_confirmation_screen, 
+                        self.__skill_selection_screen, 
+                        self.__main_menu_screen, 
+                        self.__maze_screen, 
+                        self.__settings_screen]
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
 
@@ -186,9 +194,10 @@ class Game:
             self.__maze_screen.remove_UI_elements()
         else:
             if isinstance(self.__current_screen, Maze_Screen):
+                self.__create_maze_screen = False
                 self.__current_screen.setup_maze_level_with_player()
-                self.__current_screen.check_collision_with_exit_cell()
-                self.__current_screen.check_collision_with_exercise_cell()
+                if self.__current_screen.get_return_to_main_menu():
+                    self.__current_pos -= 1
     
     def check_if_screen_is_settings_screen(self):
         if not isinstance(self.__current_screen, Settings_Screen):
