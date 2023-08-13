@@ -61,24 +61,33 @@ class PlayerDataManager(MySQLDatabaseModel):
                                                  ]}
         
         # Change difficulty of A
-        if difficulty_a == 'Easy':
+        if difficulty_a == 'Easy (15s, +25pts)':
             changed_settings['Aiming'] = {'Difficulty': f'{difficulty_a}',
                                           'Parameters': [[15, 25]]}
-        elif difficulty_a == 'Medium':
+        elif difficulty_a == 'Medium (10s, +50pts)':
             changed_settings['Aiming'] = {'Difficulty': f'{difficulty_a}',
                                           'Parameters': [[10, 50]]}
-        elif difficulty_a == 'Hard':
+        elif difficulty_a == 'Hard (5s, +100pts)':
             changed_settings['Aiming'] = {'Difficulty': f'{difficulty_a}',
                                           'Parameters': [[5, 100]]}
         
         # Change difficulty of ST
-        if difficulty_st == 'Easy':
+        if difficulty_st == 'Easy (4*4)':
             changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
-                                                 'Grid Dimension': 4}
-        elif difficulty_st == 'Hard':
+                                                 'Grid Dimension': 4,
+                                                 'Colour': False}
+        elif difficulty_st == 'Hard (5*5)':
             changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
-                                                 'Grid Dimension': 5}
-        
+                                                 'Grid Dimension': 5,
+                                                 'Colour': False}
+        elif difficulty_st == 'Hard (5*5 + colour)':
+            changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
+                                                        'Grid Dimension': 5,
+                                                        'Colour': True}
+        elif difficulty_st == 'Easy (4*4 + colour)':
+            changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
+                                                 'Grid Dimension': 4,
+                                                 'Colour': True}
         with open(f'src/setting save files/{self.__username}_settings.txt', 'w') as file:
             json.dump(changed_settings, file)
         
@@ -306,3 +315,64 @@ class PlayerDataManager(MySQLDatabaseModel):
         for record in records:
             weight_values.append(record[0])
         return weight_values
+    
+    def calculate_CPS(self):
+        weight_values = []
+        score_values = []
+        invalid_stats = False
+        
+        # extract the score values from the DB
+        mycursor = self._DBC.get_cursor()
+        mycursor.execute(f"""
+        SELECT Score
+        FROM Performance
+        WHERE PlayerID = {self.__player_id}
+        """)
+
+        records = mycursor.fetchall()
+        for score_value in records:
+            score_values.append(score_value[0])
+        
+        print(f"Score Values: {score_values}")
+        
+        # extract the corresponding weight values
+        mycursor.execute(f"""
+        SELECT WeightValue
+        FROM Weights
+        WHERE PlayerID = {self.__player_id}
+        """)
+
+        records = mycursor.fetchall()
+        for weight_value in records:
+            weight_values.append(weight_value[0])
+        
+        print(f"Weight Values: {weight_values}")
+
+        # calculate the CPS
+        for score_value in score_values:
+            if score_value == 0:
+                invalid_stats = True
+        
+        if not invalid_stats:
+            CPS = (score_values[0] * weight_values[0]) + (score_values[1] * weight_values[1]) + (score_values[2] * weight_values[2]) + (score_values[3] * weight_values[3])
+            print(f"CPS: {CPS}")
+
+            mycursor.execute(f"""
+            SELECT *
+            FROM CPS
+            WHERE DateCalculated = CURDATE()
+            """)
+            dates = mycursor.fetchall()
+            temp_dates = []
+            for date in dates:
+                temp_dates.append(date)
+            if len(temp_dates) >= 1:
+                print("can't calculate cps today as you have already calculated it!")
+            else:
+                mycursor.execute(f"""
+                INSERT INTO CPS (PlayerID, DateCalculated, CPS)
+                VALUES ({self.__player_id}, CURDATE(), {CPS})
+                """)
+
+        else:
+            print("You need to have scores in each cognitive area! (that is not 0)")

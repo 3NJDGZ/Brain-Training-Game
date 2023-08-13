@@ -166,6 +166,7 @@ class Register_Screen(Get_User_Info_Screen):
                     if len(self.get_password()) >= 5:
                         PDM.check_if_username_is_available(self.get_username())
                         if PDM.get_username_available():
+                        # if True:
                             self.register(self.get_username(), self.get_password())
                             ui_finished = "TEXT_ENTRY"
                             return ui_finished
@@ -393,7 +394,7 @@ class Maze_Screen(Screen):
         self.__maze = Maze(STARTING_TILE_SIZE, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
         self.__player = Player(60, 60, 50, 50, 100)
 
-        self.__time_limit = 5
+        self.__time_limit = 60
         self.__spacebar_down = False
         self.__current_time = pygame.time.get_ticks()
         self.__spacebar_down_time = 0
@@ -402,6 +403,8 @@ class Maze_Screen(Screen):
         self.__maze_level = 1
 
         self.__return_to_main_menu = False
+        
+        PDM.calculate_CPS()
 
     def setup_maze_level_with_player(self):
         font = pygame.font.Font(None, 50)
@@ -513,10 +516,10 @@ class Settings_Screen(Screen):
         self.__DROP_DOWN_MENU_MM = pygame_gui.elements.UIDropDownMenu(['Easy', 'Medium', 'Hard'], 'Easy',relative_rect=pygame.Rect((162.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_memory_matrix"))
         self.__MEMORY_MATRIX_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((162.5, 115), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#memory_matrix_label"), text="MEMORY MATRIX")
 
-        self.__DROP_DOWN_MENU_A = pygame_gui.elements.UIDropDownMenu(['Easy', 'Medium', 'Hard'], 'Easy',relative_rect=pygame.Rect((687.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_aiming"))
+        self.__DROP_DOWN_MENU_A = pygame_gui.elements.UIDropDownMenu(['Easy (15s, +25pts)', 'Medium (10s, +50pts)', 'Hard (5s, +100pts)'], 'Easy (15s, +25pts)',relative_rect=pygame.Rect((687.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_aiming"))
         self.__AIMING_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((687.5, 115), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#aiming_label"), text="AIMING")
 
-        self.__DROP_DOWN_MENU_ST = pygame_gui.elements.UIDropDownMenu(['Easy', 'Hard'], 'Easy',relative_rect=pygame.Rect((1212.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_schulte_table"))
+        self.__DROP_DOWN_MENU_ST = pygame_gui.elements.UIDropDownMenu(['Easy (4*4)', 'Hard (5*5)', 'Easy (4*4 + colour)', 'Hard (5*5 + colour)'], 'Easy (4*4)',relative_rect=pygame.Rect((1212.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_schulte_table"))
         self.__SCHULTE_TABLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((1212.5, 115), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#schulte_table_label"), text="SCHULTE TABLE")
 
         self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")

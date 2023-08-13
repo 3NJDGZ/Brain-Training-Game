@@ -201,7 +201,7 @@ class Game:
     
     def check_if_screen_is_settings_screen(self):
         if not isinstance(self.__current_screen, Settings_Screen):
-            self.__settings_screen.remove_UI_elements()
+            self.__settings_screen.remove_UI_elements() 
         else:
             self.__current_screen.show_UI_elements()
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()

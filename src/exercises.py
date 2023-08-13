@@ -533,7 +533,8 @@ class SchulteTable(CognitiveExercise):
         # Load Settings
         settings = PDM.get_settings('Schulte Table')
         self.grid_dimension = settings['Grid Dimension'] # options are only 4 or 5 
-        self.__table_grid = TableGrid(self.grid_dimension)
+        self.__colour = settings['Colour']
+        self.__table_grid = TableGrid(self.grid_dimension, self.__colour)
 
         # Mouse Positions
         self.__mouse_pos = pygame.mouse.get_pos()
@@ -637,13 +638,14 @@ class SchulteTable(CognitiveExercise):
                 self.select_cells()
 
 class TableGrid():
-    def __init__(self, grid_dimension: int):
+    def __init__(self, grid_dimension: int, colour: bool):
         self.__grid_of_cells = []
         self.__array_of_numbers = []
         self.__rows = grid_dimension
         self.__cols = grid_dimension
         self.__max_number = grid_dimension**2
         self.__tile_size = 100
+        self.__colour = colour
 
         for number in range(0, self.__max_number):
             self.__array_of_numbers.append(number + 1)
@@ -654,7 +656,7 @@ class TableGrid():
         for a in range(self.__rows):
             row = []
             for b in range(self.__cols):
-                row.append(TGCell(self.__tile_size * b, self.__tile_size * a, self.__tile_size, self.__cols, self.__rows, (0, 0, 0), self.__array_of_numbers[index], grid_dimension))
+                row.append(TGCell(self.__tile_size * b, self.__tile_size * a, self.__tile_size, self.__cols, self.__rows, (0, 0, 0), self.__array_of_numbers[index], grid_dimension, self.__colour))
                 index += 1
             self.__grid_of_cells.append(row)
     
@@ -667,7 +669,7 @@ class TableGrid():
                 cell.draw_cell(WIN, show_numbers)
 
 class TGCell(Cell):
-    def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR, Number: int, grid_dimension):
+    def __init__(self, x: int, y: int, tile_size: int, cols: int, rows: int, LINE_COLOUR, Number: int, grid_dimension, colour_enable: bool):
         super().__init__(x, y, tile_size, cols, rows, LINE_COLOUR)
         if grid_dimension == 5:
             self._x = x + 550
@@ -676,6 +678,12 @@ class TGCell(Cell):
             self._x = x + 600
             self._y = y + 250
         self.__number = Number
+        self.__colour = colour_enable
+        self.number_colour = (255, 255, 255)
+        if self.__colour:
+                random_num = random.randint(1, 2)
+                if random_num == 1:
+                    self.number_colour = (255, 0, 0)
     
     def get_number(self):
         return self.__number
@@ -684,7 +692,7 @@ class TGCell(Cell):
         if show_numbers:
             font = pygame.font.Font(None, 40)
             number_text = str(self.__number)
-            number_text_surface = font.render(number_text, True, (255, 255, 255))
+            number_text_surface = font.render(number_text, True, self.number_colour)
             WIN.blit(number_text_surface, (self._x + ((100 - number_text_surface.get_width()) / 2), self._y + ((100 - number_text_surface.get_height()) / 2)))
         return super().draw_cell(WIN)
 # End of Schulte Table Code
@@ -751,10 +759,10 @@ class Aiming(CognitiveExercise):
             WIN.blit(difficulty_text_surface, (170, 105))
             time_left_text = f"TIME LEFT: {time_left}"
             time_left_text_surface = font.render(time_left_text, True, (255, 255, 255))
-            WIN.blit(time_left_text_surface, ((1600 - time_left_text_surface.get_width()) / 2, 150))
+            WIN.blit(time_left_text_surface, (170, 150))
             points_text = f"TOTAL POINTS: {self.__points_earned}"
             points_text_surface = font.render(points_text, True, (255, 255, 255))
-            WIN.blit(points_text_surface, ((1600 - points_text_surface.get_width()) / 2, 100))
+            WIN.blit(points_text_surface, (170, 195))
 
             if time_left == 0:
                 self.__completely_finished = True
