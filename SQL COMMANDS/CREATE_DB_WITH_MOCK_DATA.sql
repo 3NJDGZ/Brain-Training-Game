@@ -17,7 +17,7 @@ CREATE TABLE CPS (
     PlayerID int NOT NULL,
     DateCalculated date,
     CPS real,
-    PRIMARY KEY (PlayerID),
+    PRIMARY KEY (PlayerID, DateCalculated),
     FOREIGN KEY (PlayerID) REFERENCES Player(PlayerID)
 );
 CREATE TABLE Performance (

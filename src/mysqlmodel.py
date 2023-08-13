@@ -30,7 +30,8 @@ class PlayerDataManager(MySQLDatabaseModel):
         self.__player_id = None
         self.__exercise_settings = None
         self.__username_available = False
-        self.__CPS = 0
+        self.__CPS = []
+        self.__get_CPS = False
 
         with open('src/setting save files/default_settings.txt') as file:
             self.__exercise_settings = json.load(file)
@@ -326,22 +327,23 @@ class PlayerDataManager(MySQLDatabaseModel):
         return weight_values
     
     def get_CPS(self):
-        mycursor = self._DBC.get_cursor()
-        mycursor.execute(f"""
-        SELECT CPS
-        FROM CPS
-        WHERE PlayerID = {self.__player_id}
-        """) 
-        record = mycursor.fetchone()
+        if not self.__get_CPS:
+            mycursor = self._DBC.get_cursor()
+            mycursor.execute(f"""
+            SELECT CPS 
+            FROM CPS
+            WHERE PlayerID = {self.__player_id}
+            AND DateCalculated BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE();
+            """)
 
-        if record is not None:
-            self.__CPS = record[0]     
-
+            cps_values_last_5_days = mycursor.fetchall()
+            for cps_value in cps_values_last_5_days:
+                self.__CPS.append(cps_value[0])
+            
             mycursor.close()
-            return self.__CPS
-        else:
-            mycursor.close()
-            return 0
+            self.__get_CPS = True
+        return self.__CPS
+        
 
     def calculate_CPS(self):
         weight_values = []

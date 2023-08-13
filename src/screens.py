@@ -588,12 +588,69 @@ class Stats_and_Performance_Screen(Screen):
 
         # UI
         self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
+        self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((400, 100), (800, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="CPS (COGNITIVE PERFORMANCE SCORE)")
 
     def show_stats(self):
+        cps_values = PDM.get_CPS()
+        print(len(cps_values))
+        if len(cps_values) == 5:
+            value_today = cps_values[0]
+            value_yesterday = cps_values[1]
+            value_two_days_ago = cps_values[2]
+            value_three_days_ago = cps_values[3]
+            value_four_days_ago = cps_values[4]
+        elif len(cps_values) == 4:
+            value_today = cps_values[0]
+            value_yesterday = cps_values[1]
+            value_two_days_ago = cps_values[2]
+            value_three_days_ago = cps_values[3]
+            value_four_days_ago = 0
+        elif len(cps_values) == 3:
+            value_today = cps_values[0]
+            value_yesterday = cps_values[1]
+            value_two_days_ago = cps_values[2]
+            value_three_days_ago = 0
+            value_four_days_ago = 0
+        elif len(cps_values) == 2:
+            value_today = cps_values[0]
+            value_yesterday = cps_values[1]
+            value_two_days_ago = 0
+            value_three_days_ago = 0
+            value_four_days_ago = 0
+        elif len(cps_values) == 1:
+            value_today = cps_values[0]
+            value_yesterday = 0
+            value_two_days_ago = 0
+            value_three_days_ago = 0
+            value_four_days_ago = 0
+        else:
+            value_today = 0
+            value_yesterday = 0
+            value_two_days_ago = 0
+            value_three_days_ago = 0
+            value_four_days_ago = 0
+
         font = pygame.font.Font(None, 50)
-        cps_text = f"CPS (Cognitive Performance Score): {PDM.get_CPS()}"
-        cps_text_surface = font.render(cps_text, True, (255, 255, 255))
-        self._WIN.blit(cps_text_surface, ((1600 - cps_text_surface.get_width()) / 2, (900 - cps_text_surface.get_height()) / 2))
+
+        today_cps_text = f"Today CPS: {value_today}"
+        today_cps_text_surface = font.render(today_cps_text, True, (255, 255, 255))
+        self._WIN.blit(today_cps_text_surface, ((1600 - today_cps_text_surface.get_width()) / 2, 200))
+
+        yesterday_cps_text = f"Yesterday CPS: {value_yesterday}"
+        yesterday_cps_text_surface = font.render(yesterday_cps_text, True, (255, 255, 255))
+        self._WIN.blit(yesterday_cps_text_surface, ((1600 - yesterday_cps_text_surface.get_width()) / 2, 300))
+
+        two_days_ago_text = f"Two Days Ago CPS: {value_two_days_ago}"
+        two_days_ago_text_surface = font.render(two_days_ago_text, True, (255, 255, 255))
+        self._WIN.blit(two_days_ago_text_surface, ((1600 - two_days_ago_text_surface.get_width()) / 2, 400))
+
+        three_days_ago_text = f"Three Days Ago CPS: {value_three_days_ago}"
+        three_days_ago_text_surface = font.render(three_days_ago_text, True, (255, 255, 255))
+        self._WIN.blit(three_days_ago_text_surface, ((1600 - three_days_ago_text_surface.get_width()) / 2, 500))
+
+        four_days_ago_text = f"Four Days Ago CPS: {value_four_days_ago}"
+        four_days_ago_text_surface = font.render(four_days_ago_text, True, (255, 255, 255))
+        self._WIN.blit(four_days_ago_text_surface, ((1600 - four_days_ago_text_surface.get_width()) / 2, 600))
 
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
@@ -606,7 +663,9 @@ class Stats_and_Performance_Screen(Screen):
 
     def remove_UI_elements(self):
         self.__GO_BACK_BUTTON.hide()
+        self.__TITLE_LABEL.hide()
     
     def show_UI_elements(self):
         self.show_stats()
         self.__GO_BACK_BUTTON.show()
+        self.__TITLE_LABEL.show()
