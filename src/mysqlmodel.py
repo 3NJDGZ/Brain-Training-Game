@@ -30,6 +30,7 @@ class PlayerDataManager(MySQLDatabaseModel):
         self.__player_id = None
         self.__exercise_settings = None
         self.__username_available = False
+        self.__CPS = 0
 
         with open('src/setting save files/default_settings.txt') as file:
             self.__exercise_settings = json.load(file)
@@ -129,20 +130,22 @@ class PlayerDataManager(MySQLDatabaseModel):
     def check_if_username_is_available(self, username):
         mycursor = self._DBC.get_cursor()
         mycursor.execute(
-            f"""
+            """
             SELECT Username
-            FROM Player
+            FROM Player;
             """
         )
 
         records = mycursor.fetchall()
+        print(records)
+
+        self.__username_available = True
 
         for db_username in records:
             if db_username[0] == username:
-                self.__username = False
-                break
-            else:
-                self.__username_available = True
+                self.__username_available = False
+        
+        mycursor.close()
 
     def get_username_available(self):
         return self.__username_available
@@ -193,6 +196,7 @@ class PlayerDataManager(MySQLDatabaseModel):
             print(record)
         
         self._DBC.db.commit()
+        mycursor.close()
 
     
     def register_weights_onto_DB(self, weights):
@@ -242,6 +246,7 @@ class PlayerDataManager(MySQLDatabaseModel):
             print(x)
         
         self._DBC.db.commit()
+        mycursor.close()
         
     def retrieve_player_id(self):
         mycursor = self._DBC.get_cursor()
@@ -258,6 +263,7 @@ class PlayerDataManager(MySQLDatabaseModel):
             current_player_id = record[0]
             break
         
+        mycursor.close()
         return current_player_id
 
     def check_user_login(self, username, password):
@@ -287,6 +293,7 @@ class PlayerDataManager(MySQLDatabaseModel):
                 except argon2.exceptions.VerifyMismatchError:
                     print("password do not match")
 
+        mycursor.close()
         return valid_details
 
     def record_points_from_exercises_on_DB(self, points: int, CognitiveAreaID: int):
@@ -299,8 +306,9 @@ class PlayerDataManager(MySQLDatabaseModel):
         WHERE CognitiveAreaID = {CognitiveAreaID}
         AND PlayerID = {self.__player_id};
         """)
-
+        
         self._DBC.db.commit()
+        mycursor.close()
 
     def extract_corresponding_weights(self):
         mycursor = self._DBC.get_cursor()
@@ -314,8 +322,27 @@ class PlayerDataManager(MySQLDatabaseModel):
         records = mycursor.fetchall()
         for record in records:
             weight_values.append(record[0])
+        mycursor.close()
         return weight_values
     
+    def get_CPS(self):
+        mycursor = self._DBC.get_cursor()
+        mycursor.execute(f"""
+        SELECT CPS
+        FROM CPS
+        WHERE PlayerID = {self.__player_id}
+        """) 
+        record = mycursor.fetchone()
+
+        if record is not None:
+            self.__CPS = record[0]     
+
+            mycursor.close()
+            return self.__CPS
+        else:
+            mycursor.close()
+            return 0
+
     def calculate_CPS(self):
         weight_values = []
         score_values = []
@@ -361,6 +388,7 @@ class PlayerDataManager(MySQLDatabaseModel):
             SELECT *
             FROM CPS
             WHERE DateCalculated = CURDATE()
+            AND PlayerID = {self.__player_id}
             """)
             dates = mycursor.fetchall()
             temp_dates = []
@@ -376,3 +404,5 @@ class PlayerDataManager(MySQLDatabaseModel):
 
         else:
             print("You need to have scores in each cognitive area! (that is not 0)")
+        self._DBC.db.commit()
+        mycursor.close()

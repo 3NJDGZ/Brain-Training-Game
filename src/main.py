@@ -24,19 +24,22 @@ class Game:
         self.__main_menu_screen = Main_Menu_Screen("MAIN MENU")
         self.__maze_screen = None
         self.__settings_screen = Settings_Screen("Settings")
+        self.__stats_and_performance_screen = Stats_and_Performance_Screen("Stats and Performance")
 
         self.__create_maze_screen = False
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
-        self.screens = [self.__intro_screen, 
-                        self.__register_screen, 
-                        self.__login_screen, 
-                        self.__registration_confirmation_screen, 
-                        self.__login_confirmation_screen, 
-                        self.__skill_selection_screen, 
-                        self.__main_menu_screen, 
-                        self.__maze_screen, 
-                        self.__settings_screen]
+        self.screens = [self.__intro_screen, #0
+                        self.__register_screen, #1
+                        self.__login_screen, #2
+                        self.__registration_confirmation_screen, #3
+                        self.__login_confirmation_screen, #4
+                        self.__skill_selection_screen, #5
+                        self.__main_menu_screen, #6
+                        self.__maze_screen, #7
+                        self.__settings_screen, #8
+                        self.__stats_and_performance_screen #9
+                        ]
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
 
@@ -87,12 +90,10 @@ class Game:
             self.check_if_screen_is_registration_confirmation()
             self.check_if_screen_is_login_confirmation()
             # GAMEPLAY Screens
-
             self.check_if_screen_is_main_menu()
-
             self.check_if_screen_is_maze_screen()
-
             self.check_if_screen_is_settings_screen()
+            self.check_if_screen_is_stats_and_performance_screen()
 
             # Draw UI of corresponding screen
             self.draw_UI(self.__current_screen)
@@ -188,6 +189,8 @@ class Game:
             elif button_pressed == "SETTINGS":
                 self.__current_screen.remove_UI_elements()
                 self.__current_pos += 2
+            elif button_pressed == "STATS":
+                self.__current_pos += 3
     
     def check_if_screen_is_maze_screen(self):
         if not isinstance(self.__current_screen, Maze_Screen) and self.__maze_screen is not None:
@@ -208,6 +211,15 @@ class Game:
             if button_pressed == "BUTTON":
                 self.__current_screen.remove_UI_elements()
                 self.__current_pos -= 2
+    
+    def check_if_screen_is_stats_and_performance_screen(self):
+        if not isinstance(self.__current_screen, Stats_and_Performance_Screen):
+            self.__stats_and_performance_screen.remove_UI_elements()
+        else:
+            self.__current_screen.show_UI_elements()
+            button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
+            if button_pressed == "BUTTON":
+                self.__current_pos -= 3
 
     def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos

@@ -166,7 +166,6 @@ class Register_Screen(Get_User_Info_Screen):
                     if len(self.get_password()) >= 5:
                         PDM.check_if_username_is_available(self.get_username())
                         if PDM.get_username_available():
-                        # if True:
                             self.register(self.get_username(), self.get_password())
                             ui_finished = "TEXT_ENTRY"
                             return ui_finished
@@ -389,24 +388,24 @@ class Maze_Screen(Screen):
         self.LINE_COLOUR = LINE_COLOUR
         self.__min_exercise_cells = 3
         self.__max_exercise_cells = 5
-
-        # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100; lower the value, the more complex and larger the maze will be
-        self.__maze = Maze(STARTING_TILE_SIZE, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
-        self.__player = Player(60, 60, 50, 50, 100)
+        self.starting_tile_size = STARTING_TILE_SIZE
 
         self.__time_limit = 60
         self.__spacebar_down = False
         self.__current_time = pygame.time.get_ticks()
         self.__spacebar_down_time = 0
         self.__game_over = False
+
+        self.__maze = Maze(self.starting_tile_size, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
+        self.__player = Player(60, 60, 50, 50, 100)
         
         self.__maze_level = 1
 
         self.__return_to_main_menu = False
-        
-        PDM.calculate_CPS()
+        PDM.calculate_CPS() 
 
     def setup_maze_level_with_player(self):
+
         font = pygame.font.Font(None, 50)
         if self.__spacebar_down and not self.__game_over:
             self.__maze.setup_maze()
@@ -428,12 +427,12 @@ class Maze_Screen(Screen):
             if not self.__maze.check_if_all_exercise_cells_are_complete() and self.check_collision_with_exit_cell():
                 self.__maze_level += 1
                 self.__min_exercise_cells += 2
-                self.__max_exercise_cells += 3
+                self.__max_exercise_cells += 2
                 if self.__maze_level >= 2: # phase 1 of mazes
                     self.__maze = Maze(100, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
                     self.__spacebar_down_time = 0
                     self.__spacebar_down = False
-                    self.__time_limit = 60
+                    self.__time_limit = 90
 
                     # change player size 
                     self.__player = Player(60, 60, 50, 50, 100)
@@ -442,7 +441,7 @@ class Maze_Screen(Screen):
                     self.__maze = Maze(50, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 5, 8)
                     self.__spacebar_down_time = 0
                     self.__spacebar_down = False
-                    self.__time_limit = 90
+                    self.__time_limit = 120
 
                     # change player size 
                     self.__player = Player(30, 30, 25, 25, 50)
@@ -450,7 +449,7 @@ class Maze_Screen(Screen):
                 if self.__maze_level >= 9: # phase 3 of mazes
                     self.__spacebar_down_time = 0
                     self.__spacebar_down = False
-                    self.__time_limit = 120
+                    self.__time_limit = 150
                     self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 9, 12)
                     self.__player = Player(15, 15, 12.5, 12.5, 25)
         elif self.__game_over:
@@ -583,3 +582,31 @@ class Settings_Screen(Screen):
         self.__AIMING_LABEL.show()
         self.__SCHULTE_TABLE_LABEL.show()
     
+class Stats_and_Performance_Screen(Screen):
+    def __init__(self, Title: str):
+        super().__init__(Title)
+
+        # UI
+        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
+
+    def show_stats(self):
+        font = pygame.font.Font(None, 50)
+        cps_text = f"CPS (Cognitive Performance Score): {PDM.get_CPS()}"
+        cps_text_surface = font.render(cps_text, True, (255, 255, 255))
+        self._WIN.blit(cps_text_surface, ((1600 - cps_text_surface.get_width()) / 2, (900 - cps_text_surface.get_height()) / 2))
+
+    def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
+
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
+                ui_finished = "BUTTON"
+                return ui_finished
+            self._MANAGER.process_events(event)
+
+    def remove_UI_elements(self):
+        self.__GO_BACK_BUTTON.hide()
+    
+    def show_UI_elements(self):
+        self.show_stats()
+        self.__GO_BACK_BUTTON.show()
