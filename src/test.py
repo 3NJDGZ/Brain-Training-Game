@@ -1,46 +1,30 @@
-# import json
+import pygame
 
-# default_settings = { # These will be the default settigns, the settings are not customised
-#             'Memory Matrix': {
-#                 'Difficulty': 'Medium',
-#                 'Parameters': [
-#                     [5, 10], # First Trail
-#                     [13, 18], # Second Trail
-#                     [20, 26] # Third Trail
-#                 ]
-#             },
-#             'Schulte Table': {
-#                 'Difficulty': 'Easy',
-#                 'Grid Dimension': 4
-#             },
-#             'Aiming': {
-#                 'Difficulty': 'Medium',
-#                 'Parameters': [
-#                     [10, 50] # time limit in seconds followed by the amount of points awarded per target 
-#                 ]
-#             }
-#         }
+# Initialize Pygame
+pygame.init()
 
-# with open('src/setting save files/default_settings.txt', 'w') as file:
-#     json.dump(default_settings, file)
+# Set up display
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Leaderboard")
 
-# with open('src/setting save files/default_settings.txt') as file:
-#     settings = json.load(file)
-#     for entry in settings.items():
-#         print(entry)
+font = pygame.font.Font(None, 36)
+scores = [("Player1", 100), ("Player2", 75), ("Player3", 50)]  # Example scores
 
-# asdf = {
-#     'test': 'asdf'
-# }
-# asdf['new'] = {'difficulty': 'sus'}
-# print(asdf)
+def display_scores():
+    screen.fill((0, 0, 0))
+    for idx, (name, score) in enumerate(scores):
+        text = font.render(f"{idx+1}. {name}: {score}", True, (255, 255, 255))
+        screen.blit(text, (50, 50 + idx * 50))
+    pygame.display.flip()
 
-import os
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-def find(name, path):
-    for root, dirs, files in os.walk(path):
-        if name in files:
-            return 'sius'
-            
+    display_scores()
+    pygame.display.flip()
+    pygame.time.delay(100)  # Add a small delay to control frame rate
 
-print(find('equa_settings.txt', 'src/setting save files'))
+pygame.quit()

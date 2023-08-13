@@ -1,1 +1,1 @@
-{"Memory Matrix": {"Difficulty": "Easy", "Parameters": [[3, 6], [10, 14], [19, 22]]}, "Aiming": {"Difficulty": "Hard (5s, +100pts)", "Parameters": [[5, 100]]}, "Schulte Table": {"Difficulty": "Easy (4*4)", "Grid Dimension": 4, "Colour": false}}
+{"Memory Matrix": {"Difficulty": "Easy", "Parameters": [[3, 6], [10, 14], [19, 22]]}, "Aiming": {"Difficulty": "Hard (5s, +100pts)", "Parameters": [[5, 100]]}, "Schulte Table": {"Difficulty": "Easy (4*4 + colour)", "Grid Dimension": 4, "Colour": true}}

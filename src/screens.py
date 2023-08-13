@@ -351,6 +351,7 @@ class Main_Menu_Screen(Screen):
         self.__SETTINGS_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 400), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#settings_button"), text="SETTINGS")
         self.__TUTORIAL_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 500), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#tutorial_button"), text="TUTORIAL")
         self.__STATS_AND_PERFORMANCE_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((575, 600), (450, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#stats_and_performance_button"), text="STATS & PERFORMANCE")
+        self.__LEADERBOARD_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((650, 700), (300, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#leaderboard_button"), text="LEADERBOARD")
     
     def show_UI_elements(self):
         self.__TITLE_LABEL.show()
@@ -358,6 +359,7 @@ class Main_Menu_Screen(Screen):
         self.__SETTINGS_BUTTON.show()
         self.__TUTORIAL_BUTTON.show()
         self.__STATS_AND_PERFORMANCE_BUTTON.show()
+        self.__LEADERBOARD_BUTTON.show()
     
     def remove_UI_elements(self):
         self.__TITLE_LABEL.hide()
@@ -365,6 +367,7 @@ class Main_Menu_Screen(Screen):
         self.__SETTINGS_BUTTON.hide()
         self.__TUTORIAL_BUTTON.hide()
         self.__STATS_AND_PERFORMANCE_BUTTON.hide()
+        self.__LEADERBOARD_BUTTON.hide()
 
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
@@ -378,6 +381,8 @@ class Main_Menu_Screen(Screen):
                 ui_finished = "TUTORIAL"
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#stats_and_performance_button":
                 ui_finished = "STATS"
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#leaderboard_button":
+                ui_finished = "LEADERBOARD"
             
             self._MANAGER.process_events(event)
         return ui_finished
@@ -669,3 +674,91 @@ class Stats_and_Performance_Screen(Screen):
         self.show_stats()
         self.__GO_BACK_BUTTON.show()
         self.__TITLE_LABEL.show()
+
+class Leaderboard_Screen(Screen):
+    def __init__(self, Title: str):
+        super().__init__(Title)
+
+        # UI
+        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
+    
+    def show_leaderboard(self):
+        top_5 = PDM.retrieve_top_5_players()
+        if len(top_5) == 5:
+            first_place = top_5[0]
+            second_place = top_5[1]
+            third_place = top_5[2]
+            fourth_place = top_5[3]
+            fifth_place = top_5[4]
+        elif len(top_5) == 4:
+            first_place = top_5[0]
+            second_place = top_5[1]
+            third_place = top_5[2]
+            fourth_place = top_5[3]
+            fifth_place = ['TBD', 'NA']
+        elif len(top_5) == 3:
+            first_place = top_5[0]
+            second_place = top_5[1]
+            third_place = top_5[2]
+            fourth_place = ['TBD', 'NA']
+            fifth_place = ['TBD', 'NA']
+        elif len(top_5) == 2:
+            first_place = top_5[0]
+            second_place = top_5[1]
+            third_place = ['TBD', 'NA']
+            fourth_place = ['TBD', 'NA']
+            fifth_place = ['TBD', 'NA']
+        elif len(top_5) == 1:
+            first_place = top_5[0]
+            second_place = ['TBD', 'NA']
+            third_place = ['TBD', 'NA']
+            fourth_place = ['TBD', 'NA']
+            fifth_place = ['TBD', 'NA']
+        else:
+            first_place = ['TBD', 'NA']
+            second_place = ['TBD', 'NA']
+            third_place = ['TBD', 'NA']
+            fourth_place = ['TBD', 'NA']
+            fifth_place = ['TBD', 'NA']
+        
+        font = pygame.font.Font(None, 50)
+
+        first_place_text = f"1. {first_place[0]}, CPS: {first_place[1]}"
+        first_place_text_surface = font.render(first_place_text, True, (255, 255, 255))
+        self._WIN.blit(first_place_text_surface, ((1600 - first_place_text_surface.get_width()) / 2, 200))
+
+        second_place_text = f"2. {second_place[0]}, CPS: {second_place[1]}"
+        second_place_text_surface = font.render(second_place_text, True, (255, 255, 255))
+        self._WIN.blit(second_place_text_surface, ((1600 - second_place_text_surface.get_width()) / 2, 300))
+
+        third_place_text = f"3. {third_place[0]}, CPS: {third_place[1]}"
+        third_place_text_surface = font.render(third_place_text, True, (255, 255, 255))
+        self._WIN.blit(third_place_text_surface, ((1600 - third_place_text_surface.get_width()) / 2, 400))
+
+        fourth_place_text = f"4. {fourth_place[0]}, CPS: {fourth_place[1]}"
+        fourth_place_text_surface = font.render(fourth_place_text, True, (255, 255, 255))
+        self._WIN.blit(fourth_place_text_surface, ((1600 - fourth_place_text_surface.get_width()) / 2, 500))
+        
+        fifth_place_text = f"5. {fifth_place[0]}, CPS: {fifth_place[1]}"
+        fifth_place_text_surface = font.render(fifth_place_text, True, (255, 255, 255))
+        self._WIN.blit(fifth_place_text_surface, ((1600 - fifth_place_text_surface.get_width()) / 2, 600))
+
+
+
+    def show_UI_elements(self):
+        self.show_leaderboard()
+        self.__GO_BACK_BUTTON.show()
+    
+    def remove_UI_elements(self):
+        self.__GO_BACK_BUTTON.hide()
+    
+    def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
+
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
+                ui_finished = "BUTTON"
+                return ui_finished
+            self._MANAGER.process_events(event)
+
+    

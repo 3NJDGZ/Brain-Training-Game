@@ -25,6 +25,7 @@ class Game:
         self.__maze_screen = None
         self.__settings_screen = Settings_Screen("Settings")
         self.__stats_and_performance_screen = Stats_and_Performance_Screen("Stats and Performance")
+        self.__leaderboard_screen = Leaderboard_Screen("LEADERBOARD")
 
         self.__create_maze_screen = False
 
@@ -38,7 +39,8 @@ class Game:
                         self.__main_menu_screen, #6
                         self.__maze_screen, #7
                         self.__settings_screen, #8
-                        self.__stats_and_performance_screen #9
+                        self.__stats_and_performance_screen, #9
+                        self.__leaderboard_screen #10
                         ]
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
@@ -69,13 +71,6 @@ class Game:
                 self.__current_screen._get_MANAGER().process_events(event)
             
             # print(f"Current State: {self.get_state()}")
-
-            # This code here is used to create an instance of the maze screen, as soon as we get the user's login
-            # player_id = PDM.get_player_id()
-            # if player_id is not None:
-            #     if not self.__create_maze_screen:
-            #         self.screens[7] =  Maze_Screen("MAZE SCREEN TEST", 100, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
-            #         self.__create_maze_screen = True
                     
             self.__current_screen = self.screens[self.__current_pos]
             self.__current_screen.show_UI_elements()
@@ -94,6 +89,7 @@ class Game:
             self.check_if_screen_is_maze_screen()
             self.check_if_screen_is_settings_screen()
             self.check_if_screen_is_stats_and_performance_screen()
+            self.check_if_screen_is_leaderboard()
 
             # Draw UI of corresponding screen
             self.draw_UI(self.__current_screen)
@@ -191,6 +187,8 @@ class Game:
                 self.__current_pos += 2
             elif button_pressed == "STATS":
                 self.__current_pos += 3
+            elif button_pressed == "LEADERBOARD":
+                self.__current_pos += 4
     
     def check_if_screen_is_maze_screen(self):
         if not isinstance(self.__current_screen, Maze_Screen) and self.__maze_screen is not None:
@@ -220,6 +218,15 @@ class Game:
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
             if button_pressed == "BUTTON":
                 self.__current_pos -= 3
+    
+    def check_if_screen_is_leaderboard(self):
+        if not isinstance(self.__current_screen, Leaderboard_Screen):
+            self.__leaderboard_screen.remove_UI_elements()
+        else:
+            self.__current_screen.show_UI_elements()
+            button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
+            if button_pressed == "BUTTON":
+                self.__current_pos -= 4
 
     def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos

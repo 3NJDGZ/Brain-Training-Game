@@ -30,8 +30,6 @@ class PlayerDataManager(MySQLDatabaseModel):
         self.__player_id = None
         self.__exercise_settings = None
         self.__username_available = False
-        self.__CPS = []
-        self.__get_CPS = False
 
         with open('src/setting save files/default_settings.txt') as file:
             self.__exercise_settings = json.load(file)
@@ -198,7 +196,6 @@ class PlayerDataManager(MySQLDatabaseModel):
         
         self._DBC.db.commit()
         mycursor.close()
-
     
     def register_weights_onto_DB(self, weights):
         mycursor = self._DBC.get_cursor()
@@ -327,24 +324,23 @@ class PlayerDataManager(MySQLDatabaseModel):
         return weight_values
     
     def get_CPS(self):
-        if not self.__get_CPS:
-            mycursor = self._DBC.get_cursor()
-            mycursor.execute(f"""
-            SELECT CPS 
-            FROM CPS
-            WHERE PlayerID = {self.__player_id}
-            AND DateCalculated BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE();
-            """)
+        cps_values = []
+        mycursor = self._DBC.get_cursor()
+        mycursor.execute(f"""
+        SELECT CPS 
+        FROM CPS
+        WHERE PlayerID = {self.__player_id}
+        AND DateCalculated BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE()
+        LIMIT 5;
+        """)
 
-            cps_values_last_5_days = mycursor.fetchall()
-            for cps_value in cps_values_last_5_days:
-                self.__CPS.append(cps_value[0])
-            
-            mycursor.close()
-            self.__get_CPS = True
-        return self.__CPS
+        cps_values_last_5_days = mycursor.fetchall()
+        for cps_value in cps_values_last_5_days:
+            cps_values.append(cps_value[0])
         
-
+        mycursor.close()
+        return cps_values
+        
     def calculate_CPS(self):
         weight_values = []
         score_values = []
@@ -408,3 +404,24 @@ class PlayerDataManager(MySQLDatabaseModel):
             print("You need to have scores in each cognitive area! (that is not 0)")
         self._DBC.db.commit()
         mycursor.close()
+
+    def retrieve_top_5_players(self):
+        top_5 = []
+        mycursor = self._DBC.get_cursor()
+
+        mycursor.execute(f"""
+        SELECT Username, CPS
+        FROM Player, CPS
+        WHERE CPS.PlayerID = Player.PlayerID
+        AND CPS.DateCalculated = CURDATE()
+        ORDER BY CPS DESC
+        LIMIT 5
+        """)
+
+        records = mycursor.fetchall()
+
+        for record in records:
+            top_5.append(record)
+
+        mycursor.close()
+        return top_5
