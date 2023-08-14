@@ -48,6 +48,13 @@ class CognitiveExercise(ABC):
         self._PDM = PDM
         self._WIDTH = 1280
         self._HEIGHT = 720
+        self._already_added_time = False
+    
+    def get_already_added_time(self):
+        return self._already_added_time
+
+    def set_already_added_time(self, value_to_be_set: bool):
+        self._already_added_time = value_to_be_set
 
     @abstractmethod
     def calculate_points(self):

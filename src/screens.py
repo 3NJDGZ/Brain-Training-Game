@@ -399,6 +399,7 @@ class Maze_Screen(Screen):
         self.__spacebar_down = False
         self.__current_time = pygame.time.get_ticks()
         self.__spacebar_down_time = 0
+        self.__time_added = 0
         self.__game_over = False
 
         self.__maze = Maze(self.starting_tile_size, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
@@ -410,7 +411,6 @@ class Maze_Screen(Screen):
         PDM.calculate_CPS() 
 
     def setup_maze_level_with_player(self):
-
         font = pygame.font.Font(None, 50)
         if self.__spacebar_down and not self.__game_over:
             self.__maze.setup_maze()
@@ -418,9 +418,15 @@ class Maze_Screen(Screen):
 
             self.check_collision_with_exercise_cell()
 
+            # checks if the current exercise cell is finished, if it is then add 15s to the timer. bool value required to avoid continuously adding extra time
+            if self.check_if_exercise_cell_is_finished() and not self.get_current_cell().get_exercise().get_already_added_time():
+                self.__time_added += 15
+                self.get_current_cell().get_exercise().set_already_added_time(True)
+                
+
             self.__current_time = pygame.time.get_ticks()
             elapsed_time = (self.__current_time - self.__spacebar_down_time) // 1000
-            time_left = self.__time_limit - elapsed_time
+            time_left = (self.__time_limit - elapsed_time) + self.__time_added
 
             # text
             time_text = f"Time Left: {time_left}s"
@@ -457,6 +463,7 @@ class Maze_Screen(Screen):
                     self.__time_limit = 150
                     self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 9, 12)
                     self.__player = Player(15, 15, 12.5, 12.5, 25)
+
         elif self.__game_over:
             pygame.draw.rect(self._WIN, (0, 0, 0), pygame.Rect(0, 0, self._WIDTH, self._HEIGHT))
             game_over_text = "GAME OVER!"
@@ -482,6 +489,9 @@ class Maze_Screen(Screen):
     def get_return_to_main_menu(self):
         return self.__return_to_main_menu
 
+    def get_current_cell(self):
+        return self.__player.get_current_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
+
     def check_collision_with_exit_cell(self):
         return self.__player.check_collision_with_exit_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
@@ -490,6 +500,9 @@ class Maze_Screen(Screen):
     
     def check_type_of_exercise_cell(self):
         return self.__player.check_type_of_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
+    
+    def check_if_exercise_cell_is_finished(self):
+        return self.__player.check_if_exercise_cell_is_complete(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
     def player_input(self, event):
         if event.type == pygame.KEYDOWN:

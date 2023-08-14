@@ -68,10 +68,19 @@ class Player(pygame.sprite.Sprite):
         cols_number = index - (cols * row_number)
         return row_number, cols_number
     
+    def get_current_cell(self, rects, cols, grid_of_cells):
+        row_number, cols_number = self.calculate_row_cols(rects, cols)
+        return grid_of_cells[row_number][cols_number]
+        
     def check_type_of_exercise_cell(self, rects, cols, grid_of_cells):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
         if grid_of_cells[row_number][cols_number].get_exercise_present():
             return grid_of_cells[row_number][cols_number].get_exercise()
+    
+    def check_if_exercise_cell_is_complete(self, rects, cols, grid_of_cells):
+        row_number, cols_number = self.calculate_row_cols(rects, cols)
+        if grid_of_cells[row_number][cols_number].get_exercise_present():
+            return grid_of_cells[row_number][cols_number].get_exercise().get_completely_finished()
 
     def check_collision_with_exercise_cell(self, rects, cols, grid_of_cells, WIN):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
