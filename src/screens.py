@@ -407,6 +407,8 @@ class Maze_Screen(Screen):
         
         self.__maze_level = 1
 
+        self.__use_hints = False
+
         self.__return_to_main_menu = False
         PDM.calculate_CPS() 
 
@@ -422,6 +424,11 @@ class Maze_Screen(Screen):
             if self.check_if_exercise_cell_is_finished() and not self.get_current_cell().get_exercise().get_already_added_time():
                 self.__time_added += 15
                 self.get_current_cell().get_exercise().set_already_added_time(True)
+            
+            if self.__use_hints:
+                current_cell = self.get_current_cell()
+                self.__maze.find_exit_dfs(current_cell)
+                self.__use_hints = False
                 
 
             self.__current_time = pygame.time.get_ticks()
@@ -511,6 +518,8 @@ class Maze_Screen(Screen):
                 self.__spacebar_down_time = pygame.time.get_ticks()
             elif event.key == pygame.K_SPACE and self.__game_over:
                 self.__return_to_main_menu = True
+            elif event.key == pygame.K_h and not self.__use_hints:
+                self.__use_hints = True
         
         if self.__spacebar_down:
             self.__player.player_input(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), event)

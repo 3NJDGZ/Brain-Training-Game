@@ -1,5 +1,6 @@
 import pygame
 import random
+import queue
 from exercises import Aiming, SchulteTable, MemoryMatrix, ChalkboardChallenge, CognitiveExercise
 # Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
@@ -36,6 +37,37 @@ class Stack:
     def peek(self):
         return self.items[self.stackpointer]
 
+# Queue Implementation for BFS
+class Queue:
+    def __init__(self, size: int):
+        self.rp = -1
+        self.fp = 0
+        self.size = size
+        self.items = [None] * self.size
+
+    def is_full(self):
+        return self.rp == len(self.items)-1
+    
+    def is_empty(self):
+        return self.fp > self.rp
+    
+    def enqueue(self, item):
+        if not self.is_full():
+            self.rp += 1
+            self.items[self.rp] = item
+    
+    def dequeue(self):
+        if not self.is_empty():
+            self.fp += 1
+            return self.items[self.fp - 1]
+    
+    def get_items(self):
+        return self.items
+
+    def print_data(self):
+        for data in self.items:
+            print(data)
+
 class Cell:
     def __init__(self, x: int, y: int, WIN, STARTING_TILE_SIZE: int, grid_of_cells, cols: int, rows: int, LINE_COLOUR):
         # Setup attributes for Cell(s)
@@ -59,6 +91,13 @@ class Cell:
                       "bottom": True,
                       "left": True}
         self.__visited = False
+        self.__visited_dfs = False
+    
+    def set_visited_dfs(self, value_to_be_set: bool):
+        self.__visited_dfs = value_to_be_set
+    
+    def get_visited_dfs(self):
+        return self.__visited_dfs
 
     def get_exercise(self):
         return self.__exercise
@@ -99,8 +138,8 @@ class Cell:
         
     def get_row_column_positioning(self):
         return [self.__x // self.STARTING_TILE_SIZE, self.__y // self.STARTING_TILE_SIZE]
-            
-    def check_adjacent_cells(self):
+
+    def check_adjacent_cells(self, shuffle: bool):
 
         # get current cell positioning
         adjacent_cells = []
@@ -119,13 +158,18 @@ class Cell:
             adjacent_cells.append(self.grid_of_cells[current_row + 1][current_column])
         
         # shuffle the 'adjacent_shells' list in order to keep the 'randomness' of the recursive DFS
-        random.shuffle(adjacent_cells)
+        if shuffle:
+            random.shuffle(adjacent_cells)
         return adjacent_cells
 
     def draw_cell(self):
+
         if self.__visited:
             pygame.draw.rect(self.WIN, (255, 255, 255), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
         
+        if self.__visited_dfs:
+            pygame.draw.rect(self.WIN, (255, 203, 59), (self.__x, self.__y, self.STARTING_TILE_SIZE, self.STARTING_TILE_SIZE))
+
         if self.__exit:  # Checks if the cell is the Exit cell; if it is then make it red 
             pygame.draw.rect(self.WIN, (255, 0, 0), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
         
@@ -134,6 +178,7 @@ class Cell:
 
         if self.__exercise_present: # Checks if the cell is an exercise cell; if it is make it blue
             pygame.draw.rect(self.WIN, (0, 0, 255), (self.__x+5, self.__y+5, self.STARTING_TILE_SIZE-10, self.STARTING_TILE_SIZE-10))
+        
 
         # Draws cells depending on what walls are currently active (if they are set to 'True' within the cell's corresponding 'walls' dictionary)
         if self.__walls['top']:
@@ -184,6 +229,8 @@ class Maze():
         self.__PDM = PDM
         self.WIN = WIN
         self.__exercise_cells = []
+        self.__exit_cell = None
+        self.__call_dfs = False
 
         # Setup for recursive DFS for maze generation, cells are in a grid
         for a in range(self.__rows):
@@ -195,6 +242,7 @@ class Maze():
         # Exit cell
         random_exit_cell = self.__grid_of_cells[random.randint(self.__rows // 1.5, self.__rows - 1)][random.randint(self.__cols // 1.5, self.__cols - 1)]
         random_exit_cell.set_exit_value(True)
+        self.__exit_cell = random_exit_cell
 
         # Generating Exercise(s) Cells; only visualising them as blue cells; functionality has not yet been implemented.
         for x in range(random.randint(min_exercise_cells, max_exercise_cells)):
@@ -213,6 +261,9 @@ class Maze():
         self.__STACK = Stack(len(self.__grid_of_cells) * self.__cols)
         self.__initial_cell = self.__grid_of_cells[0][0]
         self.__STACK.push(self.__initial_cell)
+
+        # setup for finding exit
+        self.__find_exit_stack = Stack(len(self.__grid_of_cells) * self.__cols)
 
         # get rects for each cell to check for collisions with walls
         for row in self.__grid_of_cells:
@@ -238,7 +289,9 @@ class Maze():
 
     # sets up the actual maze itself and then draws it onto the screen
     def setup_maze(self):
-        self.dfs()
+        if not self.__call_dfs:
+            self.maze_generation_dfs()
+            self.__call_dfs = True
         self.draw_cells_on_screen()
 
     def draw_cells_on_screen(self):
@@ -246,23 +299,74 @@ class Maze():
             for cell in row:
                 cell.draw_cell()
         
-    def dfs(self):
+    def maze_generation_dfs(self):
         # Recursive Implementation of DFS (Depth First Search Graph Traversal Algorithm)
         current_cell = self.__STACK.peek()
         if current_cell is not None:
             current_cell.set_visited(True)
 
             self.__visited_cells.append(self.__STACK.peek())
-            adjacent_cells = current_cell.check_adjacent_cells()
+            adjacent_cells = current_cell.check_adjacent_cells(True)
             
             for connected_cell in adjacent_cells:
                 if connected_cell not in self.__visited_cells:
                     if connected_cell is not None:
                         self.__STACK.push(connected_cell)
                         self.remove_walls(current_cell, connected_cell)
-                        self.dfs()
+                        self.maze_generation_dfs()
             self.__STACK.pop()
     
+    # hints option
+    def find_exit_dfs(self, Player_Current_Cell: Cell):
+        self.__find_exit_stack.push(Player_Current_Cell)
+        visited_cells = set()
+        while not self.__find_exit_stack.is_empty():
+            current_cell = self.__find_exit_stack.pop()
+            current_cell.set_visited_dfs(True)
+            print(f"Walls Current Cell: {current_cell.get_walls()}, Position: {current_cell.get_row_column_positioning()}")
+
+            if current_cell is self.__exit_cell:
+                print('arrived at exit')
+                break
+
+            visited_cells.add(current_cell)
+
+            adjacent_cells = current_cell.check_adjacent_cells(False)
+            print(f"Length of Adjacent Cells Array: {len(adjacent_cells)}")
+            valid_cells = []
+            
+            # Checking the validity of the adjacent cells, if they can be travsersed to
+            for cell_to_be_checked in adjacent_cells:
+                current_cell_walls = current_cell.get_walls()
+                cell_to_be_checked_walls = cell_to_be_checked.get_walls()
+
+                current_cell_position = current_cell.get_row_column_positioning()
+                cell_to_be_checked_position = cell_to_be_checked.get_row_column_positioning()
+
+                if current_cell_walls['right'] == False and cell_to_be_checked_walls['left'] == False: # checking adjacent cell to the right of current cell
+                    if current_cell_position[0] == (cell_to_be_checked_position[0] - 1): # line here is used to validate that the adjcent cell that is being currently looked at is the correct one
+                        if not cell_to_be_checked.get_visited_dfs():
+                            valid_cells.append(cell_to_be_checked)
+                if current_cell_walls['left'] == False and cell_to_be_checked_walls['right'] == False: # checking adjacent cell to the left of the current cell
+                    if current_cell_position[0] == (cell_to_be_checked_position[0] + 1): # line here is used to validate that the adjcent cell that is being currently looked at is the correct one
+                        if not cell_to_be_checked.get_visited_dfs():
+                            valid_cells.append(cell_to_be_checked)
+                if current_cell_walls['top'] == False and cell_to_be_checked_walls['bottom'] == False: # checking adjacent cell to the top of the current cell
+                    if current_cell_position[1] == (cell_to_be_checked_position[1] + 1): # line here is used to validate that the adjcent cell that is being currently looked at is the correct one
+                        if not cell_to_be_checked.get_visited_dfs():
+                            valid_cells.append(cell_to_be_checked)
+                if current_cell_walls['bottom'] == False and cell_to_be_checked_walls['top'] == False: # checking adjacent cell to the bottom of the current cell
+                    if current_cell_position[1] == (cell_to_be_checked_position[1] - 1): # line here is used to validate that the adjcent cell that is being currently looked at is the correct one
+                        if not cell_to_be_checked.get_visited_dfs():
+                            valid_cells.append(cell_to_be_checked)
+
+            print(f"Length of Valid Cells Array: {len(valid_cells)}")
+
+            for cell in valid_cells:
+                print(f"Walls: {cell.get_walls()}, Position: {cell.get_row_column_positioning()}")
+                if cell not in visited_cells:
+                    self.__find_exit_stack.push(cell)
+                                    
     def remove_walls(self, current_cell: Cell, next_cell: Cell):
         current_cell_column_row_positioning = current_cell.get_row_column_positioning()
         next_cell_column_row_positioning = next_cell.get_row_column_positioning()
