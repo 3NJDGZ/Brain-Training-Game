@@ -407,6 +407,8 @@ class Maze_Screen(Screen):
         
         self.__maze_level = 1
 
+        self.__amounts_of_hints = 1
+
         self.__use_hints = False
 
         self.__return_to_main_menu = False
@@ -425,11 +427,16 @@ class Maze_Screen(Screen):
                 self.__time_added += 15
                 self.get_current_cell().get_exercise().set_already_added_time(True)
             
+            # Checks if the player wants to use a hint
             if self.__use_hints:
-                current_cell = self.get_current_cell()
-                self.__maze.find_exit_dfs(current_cell)
-                self.__use_hints = False
-                
+                if self.__amounts_of_hints > 0:
+                    current_cell = self.get_current_cell()
+                    self.__maze.find_exit_dfs(current_cell)
+                    self.__use_hints = False
+                    self.__amounts_of_hints -= 1
+                else:
+                    print("Ran out of hints!")
+                    
 
             self.__current_time = pygame.time.get_ticks()
             elapsed_time = (self.__current_time - self.__spacebar_down_time) // 1000
@@ -438,7 +445,11 @@ class Maze_Screen(Screen):
             # text
             time_text = f"Time Left: {time_left}s"
             time_text_surface = font.render(time_text, True, (255, 114, 48))
-            self._WIN.blit(time_text_surface, (20, 850))
+            self._WIN.blit(time_text_surface, (20, 860))
+            hints_text = f"Hints: {self.__amounts_of_hints}"
+            hints_text_surface = font.render(hints_text, True, (255, 114, 48))
+            self._WIN.blit(hints_text_surface, (20, 820))
+
             if time_left <= 0:
                 self.__game_over = True
 
