@@ -869,5 +869,4 @@ class QuestionAnswerExercise(CognitiveExercise):
             self._completely_finished = True
         
         self.__MANAGER.process_events(event)
-
 # End of code
