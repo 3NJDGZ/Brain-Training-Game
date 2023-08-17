@@ -48,8 +48,13 @@ class CognitiveExercise(ABC):
         self._PDM = PDM
         self._WIDTH = 1280
         self._HEIGHT = 720
+        self._points_earned = 0
+        self._completely_finished = False
         self._already_added_time = False
     
+    def get_completely_finished(self):
+        return self._completely_finished
+
     def get_already_added_time(self):
         return self._already_added_time
 
@@ -80,24 +85,18 @@ class ChalkboardChallenge(CognitiveExercise):
         self.__number_of_equations_to_do = 5
         self.__amount_of_correct_answers = 0
         self.__amount_of_incorrect_answers = 0
-        self.__points_earned = 0
         self.__record_points = False
         self.lower_threshold = 0
         self.higher_threshold = 10
 
-        self.__completely_finished = False
-
         self.generate_equation()
         self.generate_equation()
-    
-    def get_completely_finished(self):
-        return self.__completely_finished
 
     def calculate_points(self):
         self.__amount_of_incorrect_answers = 5 - self.__amount_of_correct_answers
-        self.__points_earned = (self.__amount_of_correct_answers * 200) + (self.__amount_of_incorrect_answers * -200)
-        print(self.__points_earned) 
-        return self.__points_earned
+        self._points_earned = (self.__amount_of_correct_answers * 200) + (self.__amount_of_incorrect_answers * -200)
+        print(self._points_earned) 
+        return self._points_earned
     
     def record_points_on_DB(self, points):
         self._PDM.record_points_from_exercises_on_DB(points, self._CognitiveAreaID)
@@ -162,7 +161,7 @@ class ChalkboardChallenge(CognitiveExercise):
                 points = self.calculate_points()
                 self.record_points_on_DB(points)
                 self.__record_points = True
-                self.__completely_finished = True
+                self._completely_finished = True
         
     def generate_equation(self):
         operands = []
@@ -230,9 +229,7 @@ class MemoryMatrix(CognitiveExercise):
     def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
         super().__init__(CognitiveAreaID, PDM)
         # Necessary Attributes
-        self.__points_earned = 0
         self.__trail_active = False
-        self.__completely_finished = False
         self.__record_points = False
 
         # Load settings
@@ -255,9 +252,6 @@ class MemoryMatrix(CognitiveExercise):
         self.__mouse_position = 0
         self.__mouse_x = 0
         self.__mouse_y = 0
-
-    def get_completely_finished(self):
-        return self.__completely_finished
 
     def find_mouse_pos(self): # https://www.youtube.com/watch?v=OYw9D75d7Lw
         self.__mouse_position = pygame.mouse.get_pos()
@@ -291,7 +285,7 @@ class MemoryMatrix(CognitiveExercise):
                         selected_cell.set_incorrect(True)
                         selected_cell.set_selected_by_user(True)
                         print("You have selected a wrong cell!")
-                        self.__points_earned -= 50
+                        self._points_earned -= 50
                     
                 if self.__current_pattern.get_number_of_errors() == 3:
                     self.go_to_next_trail()
@@ -302,7 +296,7 @@ class MemoryMatrix(CognitiveExercise):
                 
                 if self.__current_pattern.get_abstracted_pattern() == self.__current_pattern.get_user_selected_grid_of_cells():
                     print("You got this trail fully correct!")
-                    self.__points_earned += 100
+                    self._points_earned += 100
                     self.go_to_next_trail()
     
     def go_to_next_trail(self):
@@ -316,10 +310,10 @@ class MemoryMatrix(CognitiveExercise):
             self.__trail_active = False
         else:
             print("No more trails!")
-            self.__completely_finished = True
+            self._completely_finished = True
 
     def calculate_points(self):
-        self.__points_earned += 20
+        self._points_earned += 20
     
     def record_points_on_DB(self, points):
         self._PDM.record_points_from_exercises_on_DB(points, self._CognitiveAreaID)
@@ -327,13 +321,13 @@ class MemoryMatrix(CognitiveExercise):
     def draw_exercise_on_screen(self, WIN):
         # font
         font = pygame.font.Font(None, 50) 
-        if self.__completely_finished:
+        if self._completely_finished:
             pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-            final_score_text = f"Final Score: {self.__points_earned}"
+            final_score_text = f"Final Score: {self._points_earned}"
             final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
             WIN.blit(final_score_text_surface, ((1600 - final_score_text_surface.get_width()) / 2, (900 - final_score_text_surface.get_height()) / 2))
             if not self.__record_points:
-                self.record_points_on_DB(self.__points_earned)
+                self.record_points_on_DB(self._points_earned)
                 self.__record_points = True
         else:
             # Drawing
@@ -344,7 +338,7 @@ class MemoryMatrix(CognitiveExercise):
             difficulty_text = f"Difficulty: {self._PDM.get_settings('Memory Matrix')['Difficulty']}"
             difficulty_text_surface = font.render(difficulty_text, True, (255, 255, 255))
             WIN.blit(difficulty_text_surface, (170, 105))
-            score_text = f"Score: {self.__points_earned}"
+            score_text = f"Score: {self._points_earned}"
             score_text_surface = font.render(score_text, True, (255, 255, 255))
             WIN.blit(score_text_surface, (500, 105))
             trail_number_text = f"Trail: {self.__current_pos + 1}"
@@ -552,21 +546,15 @@ class SchulteTable(CognitiveExercise):
         self.__space_bar_down = False
         self.__record_points = False
 
-        self.__points_earned = 0
-
         self.__space_bar_time = 0
-        self.__completely_finished = False
-    
-    def get_completely_finished(self):
-        return self.__completely_finished
     
     def calculate_points(self):
         max_points = 50 * (self.grid_dimension**2)
         print(max_points)
         seconds_to_complete = (pygame.time.get_ticks() - self.__space_bar_time) // 1000
         print(f"Seconds to complete: {seconds_to_complete}")
-        self.__points_earned = max_points - (25 * seconds_to_complete)
-        print(self.__points_earned)
+        self._points_earned = max_points - (25 * seconds_to_complete)
+        print(self._points_earned)
 
     def record_points_on_DB(self, points):
         self._PDM.record_points_from_exercises_on_DB(points, 2)
@@ -593,11 +581,11 @@ class SchulteTable(CognitiveExercise):
 
             if self.__completely_finished:
                 pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-                final_score_text = f"Final Score: {self.__points_earned}"
+                final_score_text = f"Final Score: {self._points_earned}"
                 final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
                 WIN.blit(final_score_text_surface, ((1600 - final_score_text_surface.get_width()) / 2, (900 - final_score_text_surface.get_height()) / 2))
                 if not self.__record_points:
-                    self.record_points_on_DB(self.__points_earned)
+                    self.record_points_on_DB(self._points_earned)
                     self.__record_points = True
 
         else:
@@ -613,13 +601,13 @@ class SchulteTable(CognitiveExercise):
             grid_of_cells = self.__table_grid.get_grid_of_cells()
             current_number = grid_of_cells[row_pos][col_pos].get_number()
             if self.__next_number_to_find == self.grid_dimension**2:
-                self.__completely_finished = True
+                self._completely_finished = True
                 self.calculate_points()
             elif current_number == self.__next_number_to_find:
                 print("Correct!")
                 self.__next_number_to_find += 1
             else:
-                self.__points_earned -= 50
+                self._points_earned -= 50
                 print("Incorrect!")
         else:
             print("Mouse click is out of range!")
@@ -710,9 +698,7 @@ class Aiming(CognitiveExercise):
         super().__init__(CognitiveAreaID, PDM)
         self.__space_bar_down = False
         self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
-        self.__points_earned = 0
         self.__record_points = False
-        self.__completely_finished = False
 
         # Load Settings
         settings = PDM.get_settings('Aiming')
@@ -729,9 +715,6 @@ class Aiming(CognitiveExercise):
         self.__mouse_x = self.__mouse_pos[0]
         self.__mouse_y = self.__mouse_pos[1]
     
-    def get_completely_finished(self):
-        return self.__completely_finished
-    
     def update_mouse_pos(self):
         self.__mouse_pos = pygame.mouse.get_pos()
         self.__mouse_x = self.__mouse_pos[0]
@@ -744,10 +727,10 @@ class Aiming(CognitiveExercise):
             return False
 
     def calculate_points(self):
-        self.__points_earned += self.__points_increase
+        self._points_earned += self.__points_increase
     
     def record_points_on_DB(self, points):
-        self._PDM.record_points_from_exercises_on_DB(self.__points_earned, 3)
+        self._PDM.record_points_from_exercises_on_DB(self._points_earned, 3)
     
     def draw_exercise_on_screen(self, WIN):
         font = pygame.font.Font(None, 50)
@@ -767,19 +750,19 @@ class Aiming(CognitiveExercise):
             time_left_text = f"TIME LEFT: {time_left}"
             time_left_text_surface = font.render(time_left_text, True, (255, 255, 255))
             WIN.blit(time_left_text_surface, (170, 150))
-            points_text = f"TOTAL POINTS: {self.__points_earned}"
+            points_text = f"TOTAL POINTS: {self._points_earned}"
             points_text_surface = font.render(points_text, True, (255, 255, 255))
             WIN.blit(points_text_surface, (170, 195))
 
             if time_left == 0:
-                self.__completely_finished = True
+                self._completely_finished = True
             if self.__completely_finished:
                 pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-                final_score_text = f"FINAL SCORE: {self.__points_earned}"
+                final_score_text = f"FINAL SCORE: {self._points_earned}"
                 final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
                 WIN.blit(final_score_text_surface, ((1600 - final_score_text_surface.get_width()) / 2, (900 - final_score_text_surface.get_height()) / 2))
                 if not self.__record_points:
-                    self.record_points_on_DB(self.__points_earned)
+                    self.record_points_on_DB(self._points_earned)
                     self.__record_points = True
 
 
@@ -806,7 +789,7 @@ class Aiming(CognitiveExercise):
                         self.__target = Target(random.randint(200, 1080), random.randint(300, 500))
                         self.calculate_points()
                     else:
-                        self.__points_earned -= 50
+                        self._points_earned -= 50
                         print("Did not click on a target!")
             
 class Target():
@@ -822,3 +805,33 @@ class Target():
     def draw_target(self, WIN):
         WIN.blit(self.image, self.__rect)
 # End of Aiming Code
+
+# Amanda's and Ephen Question Recall Code (Cognitive Area: Memory 1)
+class QuestionAnswerExercise(CognitiveExercise):
+    def __init__(self, CognitiveAreaID: int, PDM: PlayerDataManager):
+        super().__init__(CognitiveAreaID, PDM)
+        self.__question_answer = PDM.get_question_answer_from_settings()
+        self.__question = self.__question_answer[0]
+        self.__answer = self.__question_answer[1]
+        print(self.__question)
+        print(self.__answer)
+
+    def calculate_points(self):
+        return super().calculate_points()
+    
+    def record_points_on_DB(self, points):
+        return super().record_points_on_DB(points)
+    
+    def draw_exercise_on_screen(self, WIN):
+         font = pygame.font.Font(None, 36)
+         pygame.draw.rect(WIN, (255, 97, 237), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+         
+         # Text
+         question_text = self.__question
+         question_text_surface = font.render(question_text, True, (255, 255, 255))
+         WIN.blit(question_text_surface, ((1600 - question_text_surface.get_width()) / 2, (900 - question_text_surface.get_height()) / 2))
+
+    
+    def user_input(self, event):
+        return super().user_input(event)
+# End of code

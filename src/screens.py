@@ -89,8 +89,8 @@ class Get_User_Info_Screen(Screen):
         super(Get_User_Info_Screen, self).__init__(Title)
 
         # UI
-        self._USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((600, ((self._HEIGHT/2)-70)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#username_text_entry"))
-        self._PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((600, ((self._HEIGHT/2)+30)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#password_text_entry"))
+        self._USERNAME_INPUT = pygame_gui.elements.UITextEntryLine(placeholder_text='Type Username Here',relative_rect=pygame.Rect((600, ((self._HEIGHT/2)-70)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#username_text_entry"))
+        self._PASSWORD_INPUT = pygame_gui.elements.UITextEntryLine(placeholder_text='Type Password Here',relative_rect=pygame.Rect((600, ((self._HEIGHT/2)+30)), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#password_text_entry"))
         self._GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
         self._TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((625, 250), (350, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text=Title)
         self._ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 600), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#error_label"), text=error_msg)
@@ -548,6 +548,8 @@ class Maze_Screen(Screen):
 class Settings_Screen(Screen):
     def __init__(self, Title: str):
         super(Settings_Screen, self).__init__(Title)
+        self.__question = ''
+        self.__answer = ''
 
         # UI 
         self.__DROP_DOWN_MENU_MM = pygame_gui.elements.UIDropDownMenu(['Easy', 'Medium', 'Hard'], 'Easy',relative_rect=pygame.Rect((162.5, 175), (225, 50)), manager=self._MANAGER, object_id=ObjectID(class_id="@drop_down_menus",object_id="#drop_down_menu_memory_matrix"))
@@ -561,6 +563,14 @@ class Settings_Screen(Screen):
 
         self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
         self.__SAVE_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1385, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#save_button"), text="SAVE")
+
+        self.__QUESTION_EXERCISE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((682.5, 350), (235, 45)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#question_exercise_label"), text="QUESTION RECALL")
+        self.__QUESTION_INPUT = pygame_gui.elements.UITextEntryLine(placeholder_text='Type Question Here', relative_rect=pygame.Rect((600, 400), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#question_text_entry"))
+        self.__ANSWER_INPUT = pygame_gui.elements.UITextEntryLine(placeholder_text='Type Corresponding Answer Here',relative_rect=pygame.Rect((600, 450), (400, 50)), manager = self._MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#answer_text_entry"))
+
+        self.__NONE_QUESTION_ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300, 650), (1000, 45)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#question_error_label"), text="YOU NEED TO INPUT BOTH A QUESTION AND AN ANSWER BEFORE SAVING")
+        self.__SETTINGS_SAVED_SUCCESSFULLY_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 650), (500, 45)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#settings_saved_label"), text="SETTINGS SAVED SUCCESSFULLY!")
+
         # print(self.__DROP_DOWN_MENU.selected_option)
 
         self.memory_matrix_difficulties = {
@@ -588,16 +598,30 @@ class Settings_Screen(Screen):
                 ui_finished = "BUTTON"
                 return ui_finished
             if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#save_button":
-                self.change_settings()
+                if self.__answer == '' or self.__question == '':
+                    self.show_question_ERROR()
+                    self.hide_settings_saved()
+                else:
+                    self.change_settings()
+                    self.show_settings_saved()
+                    self.hide_question_error()
+                    print('saved settings!')
             if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED and event.ui_object_id == "#drop_down_menu_memory_matrix":
                 print(self.__DROP_DOWN_MENU_MM.selected_option)
+
+            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#question_text_entry":
+                self.__question = event.text
+            
+            if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#answer_text_entry":
+                self.__answer = event.text
+            
             self._MANAGER.process_events(event)
     
     def change_settings(self):
         difficulty_mm = self.__DROP_DOWN_MENU_MM.selected_option
         difficulty_a = self.__DROP_DOWN_MENU_A.selected_option
         difficulty_st = self.__DROP_DOWN_MENU_ST.selected_option
-        PDM.change_settings_according_to_user(difficulty_mm, difficulty_a, difficulty_st)
+        PDM.change_settings_according_to_user(difficulty_mm, difficulty_a, difficulty_st, self.__question, self.__answer)
 
 
     def remove_UI_elements(self):
@@ -609,7 +633,24 @@ class Settings_Screen(Screen):
         self.__MEMORY_MATRIX_LABEL.hide()
         self.__AIMING_LABEL.hide()
         self.__SCHULTE_TABLE_LABEL.hide()
+        self.__QUESTION_INPUT.hide()
+        self.__ANSWER_INPUT.hide()
+        self.__QUESTION_EXERCISE_LABEL.hide()
+        self.hide_settings_saved()
+        self.hide_question_error()
     
+    def show_question_ERROR(self):
+        self.__NONE_QUESTION_ERROR_LABEL.show()
+
+    def hide_question_error(self):
+        self.__NONE_QUESTION_ERROR_LABEL.hide()
+    
+    def show_settings_saved(self):
+        self.__SETTINGS_SAVED_SUCCESSFULLY_LABEL.show()
+
+    def hide_settings_saved(self):
+        self.__SETTINGS_SAVED_SUCCESSFULLY_LABEL.hide()
+
     def show_UI_elements(self):
         self.__DROP_DOWN_MENU_MM.show()
         self.__DROP_DOWN_MENU_A.show()
@@ -619,6 +660,9 @@ class Settings_Screen(Screen):
         self.__MEMORY_MATRIX_LABEL.show()
         self.__AIMING_LABEL.show()
         self.__SCHULTE_TABLE_LABEL.show()
+        self.__QUESTION_INPUT.show()
+        self.__ANSWER_INPUT.show()
+        self.__QUESTION_EXERCISE_LABEL.show()
     
 class Stats_and_Performance_Screen(Screen):
     def __init__(self, Title: str):

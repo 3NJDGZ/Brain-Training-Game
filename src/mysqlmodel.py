@@ -34,7 +34,10 @@ class PlayerDataManager(MySQLDatabaseModel):
         with open('src/setting save files/default_settings.txt') as file:
             self.__exercise_settings = json.load(file)
         
-    def change_settings_according_to_user(self, difficulty_mm, difficulty_a, difficulty_st):
+    def get_question_answer_from_settings(self):
+        return self.__exercise_settings['Question Recall']['Question'], self.__exercise_settings['Question Recall']['Answer']
+
+    def change_settings_according_to_user(self, difficulty_mm, difficulty_a, difficulty_st, question, answer):
         changed_settings = {} # https://www.w3schools.com/python/gloss_python_dictionary_add_item.asp
 
         # Change Difficulty of MM
@@ -88,6 +91,12 @@ class PlayerDataManager(MySQLDatabaseModel):
             changed_settings['Schulte Table'] = {'Difficulty': f'{difficulty_st}',
                                                  'Grid Dimension': 4,
                                                  'Colour': True}
+        
+        # Add Question + Answer to Settings
+        changed_settings['Question Recall'] = {'Question': question,
+                                               'Answer': answer}
+
+
         with open(f'src/setting save files/{self.__username}_settings.txt', 'w') as file:
             json.dump(changed_settings, file)
         

@@ -1,7 +1,7 @@
 import pygame
 import random
 import queue
-from exercises import Aiming, SchulteTable, MemoryMatrix, ChalkboardChallenge, CognitiveExercise
+from exercises import QuestionAnswerExercise, Aiming, SchulteTable, MemoryMatrix, ChalkboardChallenge, CognitiveExercise
 # Stack implementation necessary to facilitate the functionality of the randomised recursive DFS used for maze generation
 class Stack:
     def __init__(self, maxsize):
@@ -203,7 +203,7 @@ class Cell:
             cognitive_areas = ["Memory", "Attention", "Speed", "Problem Solving"]
             selected_cognitive_area = random.choices(cognitive_areas, weight_values, k=1)[0]
             
-            Memory_Exercises = [MemoryMatrix(1, PDM)]
+            Memory_Exercises = [MemoryMatrix(1, PDM), QuestionAnswerExercise(1, PDM)]
             Attention_Exercises = [SchulteTable(2, PDM)]
             Speed_Exercises = [Aiming(3, PDM)]
             ProblemSolving_Exercises = [ChalkboardChallenge(4, PDM)]
