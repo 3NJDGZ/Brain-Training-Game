@@ -848,4 +848,51 @@ class Leaderboard_Screen(Screen):
                 return ui_finished
             self._MANAGER.process_events(event)
 
+class Tutorial_Screen(Screen):
+    def __init__(self, Title: str):
+        super().__init__(Title)
+
+        # UI
+        self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
+
+    def show_UI_elements(self):
+        self.__GO_BACK_BUTTON.show()
+
+        font = pygame.font.Font(None, 36)
+        mm_text = "Memory Matrix (Memory): Remember the pattern of highlighted cells. Remember them, pick them, get points."
+        mm_text_surface = font.render(mm_text, True, (255, 255, 255))
+        self._WIN.blit(mm_text_surface, ((1600 - mm_text_surface.get_width()) / 2, 200))
+
+        cc_text = "Chalkboard Challenge (Problem Solving): See the equations, pick which one is larger, get points."
+        cc_text_surface = font.render(cc_text, True, (255, 255, 255))
+        self._WIN.blit(cc_text_surface, ((1600 - cc_text_surface.get_width()) / 2, 250))
+
+        st_text = "Schulte Table (Attention): See the numbers, pick them in order, get points."
+        st_text_surface = font.render(st_text, True, (255, 255, 255))
+        self._WIN.blit(st_text_surface, ((1600 - st_text_surface.get_width()) / 2, 300))
+
+        a_text = "Aiming (Speed): Find the targets, select them, get points."
+        a_text_surface = font.render(a_text, True, (255, 255, 255))
+        self._WIN.blit(a_text_surface, ((1600 - a_text_surface.get_width()) / 2, 350))
+
+        q_text = "Question Recall (Memory): Create a Question, recall and answer it correctly, get points."
+        q_text_surface = font.render(q_text, True, (255, 255, 255))
+        self._WIN.blit(q_text_surface, ((1600 - q_text_surface.get_width()) / 2, 400))
+
+        big_font = pygame.font.Font(None, 40)
+        aim_of_the_game_text = "Aim: Endlessly navigate through mazes whilst also completing cognitive exercises under a time constraint."
+        aim_of_the_game_text_surface = big_font.render(aim_of_the_game_text, True, (255, 255, 255))
+        self._WIN.blit(aim_of_the_game_text_surface, ((1600 - aim_of_the_game_text_surface.get_width()) / 2, 500))
+
+    def remove_UI_elements(self):
+        self.__GO_BACK_BUTTON.hide()
+
+    def check_for_user_interaction_with_UI(self):
+        ui_finished = ""
+
+        for event in pygame.event.get():
+            if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_object_id == "#go_back_button":
+                ui_finished = "BUTTON"
+                return ui_finished
+            self._MANAGER.process_events(event)
     

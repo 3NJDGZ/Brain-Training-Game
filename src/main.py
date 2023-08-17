@@ -26,6 +26,7 @@ class Game:
         self.__settings_screen = Settings_Screen("Settings")
         self.__stats_and_performance_screen = Stats_and_Performance_Screen("Stats and Performance")
         self.__leaderboard_screen = Leaderboard_Screen("LEADERBOARD")
+        self.__tutorial_screen = Tutorial_Screen("TUTORIAL")
 
         self.__create_maze_screen = False
 
@@ -40,7 +41,8 @@ class Game:
                         self.__maze_screen, #7
                         self.__settings_screen, #8
                         self.__stats_and_performance_screen, #9
-                        self.__leaderboard_screen #10
+                        self.__leaderboard_screen, #10
+                        self.__tutorial_screen #11
                         ]
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
@@ -101,7 +103,8 @@ class Game:
             self.check_if_screen_is_maze_screen()
             self.check_if_screen_is_settings_screen()
             self.check_if_screen_is_stats_and_performance_screen()
-            self.check_if_screen_is_leaderboard()
+            self.check_if_screen_is_leaderboard_screen()
+            self.check_if_screen_is_tutorial_screen()
 
             # Draw UI of corresponding screen
             self.draw_UI(self.__current_screen)
@@ -201,6 +204,8 @@ class Game:
                 self.__current_pos += 3
             elif button_pressed == "LEADERBOARD":
                 self.__current_pos += 4
+            elif button_pressed == "TUTORIAL":
+                self.__current_pos += 5
     
     def check_if_screen_is_maze_screen(self):
         if not isinstance(self.__current_screen, Maze_Screen) and self.__maze_screen is not None:
@@ -231,7 +236,7 @@ class Game:
             if button_pressed == "BUTTON":
                 self.__current_pos -= 3
     
-    def check_if_screen_is_leaderboard(self):
+    def check_if_screen_is_leaderboard_screen(self):
         if not isinstance(self.__current_screen, Leaderboard_Screen):
             self.__leaderboard_screen.remove_UI_elements()
         else:
@@ -239,6 +244,15 @@ class Game:
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
             if button_pressed == "BUTTON":
                 self.__current_pos -= 4
+    
+    def check_if_screen_is_tutorial_screen(self):
+        if not isinstance(self.__current_screen, Tutorial_Screen):
+            self.__tutorial_screen.remove_UI_elements()
+        else:
+            self.__current_screen.show_UI_elements()
+            button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
+            if button_pressed == "BUTTON":
+                self.__current_pos -= 5
 
     def check_screen_state(self): # Used for checking the 'state' of the system 
         return self.__current_pos
