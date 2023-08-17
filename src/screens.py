@@ -407,9 +407,10 @@ class Maze_Screen(Screen):
         
         self.__maze_level = 1
 
-        self.__amounts_of_hints = 1
+        self.__amounts_of_hints = 3
 
         self.__use_hints = False
+        self.__already_used_hints_for_current_level = False
 
         self.__return_to_main_menu = False
         PDM.calculate_CPS() 
@@ -428,12 +429,13 @@ class Maze_Screen(Screen):
                 self.get_current_cell().get_exercise().set_already_added_time(True)
             
             # Checks if the player wants to use a hint
-            if self.__use_hints:
+            if self.__use_hints and not self.__already_used_hints_for_current_level:
                 if self.__amounts_of_hints > 0:
                     current_cell = self.get_current_cell()
                     self.__maze.find_exit_dfs(current_cell)
                     self.__use_hints = False
                     self.__amounts_of_hints -= 1
+                    self.__already_used_hints_for_current_level = True
                 else:
                     print("Ran out of hints!")
                     
@@ -462,15 +464,21 @@ class Maze_Screen(Screen):
                     self.__spacebar_down_time = 0
                     self.__spacebar_down = False
                     self.__time_limit = 90
+                    self.__time_added = 0
+                    self.__already_used_hints_for_current_level = False
+                    self.__use_hints = False
 
                     # change player size 
                     self.__player = Player(60, 60, 50, 50, 100)
 
                 if self.__maze_level >= 5: # phase 2 of mazes
-                    self.__maze = Maze(50, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 5, 8)
+                    self.__maze = Maze(50, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
                     self.__spacebar_down_time = 0
                     self.__spacebar_down = False
                     self.__time_limit = 120
+                    self.__time_added = 0
+                    self.__already_used_hints_for_current_level = False
+                    self.__use_hints = False
 
                     # change player size 
                     self.__player = Player(30, 30, 25, 25, 50)
@@ -479,8 +487,11 @@ class Maze_Screen(Screen):
                     self.__spacebar_down_time = 0
                     self.__spacebar_down = False
                     self.__time_limit = 150
-                    self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, 9, 12)
+                    self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
                     self.__player = Player(15, 15, 12.5, 12.5, 25)
+                    self.__time_added = 0
+                    self.__already_used_hints_for_current_level = False
+                    self.__use_hints = False
 
         elif self.__game_over:
             pygame.draw.rect(self._WIN, (0, 0, 0), pygame.Rect(0, 0, self._WIDTH, self._HEIGHT))

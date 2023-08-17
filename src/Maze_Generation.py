@@ -319,19 +319,16 @@ class Maze():
     def find_exit_dfs(self, Player_Current_Cell: Cell):
         self.__find_exit_stack.push(Player_Current_Cell)
         visited_cells = set()
+        PathToExit = {} # create a dictionary for the path to the exit in reverse
         while not self.__find_exit_stack.is_empty():
             current_cell = self.__find_exit_stack.pop()
-            current_cell.set_visited_dfs(True)
-            print(f"Walls Current Cell: {current_cell.get_walls()}, Position: {current_cell.get_row_column_positioning()}")
 
             if current_cell is self.__exit_cell:
-                print('arrived at exit')
                 break
 
             visited_cells.add(current_cell)
 
             adjacent_cells = current_cell.check_adjacent_cells(False)
-            print(f"Length of Adjacent Cells Array: {len(adjacent_cells)}")
             valid_cells = []
             
             # Checking the validity of the adjacent cells, if they can be travsersed to
@@ -359,12 +356,19 @@ class Maze():
                         if not cell_to_be_checked.get_visited_dfs():
                             valid_cells.append(cell_to_be_checked)
 
-            print(f"Length of Valid Cells Array: {len(valid_cells)}")
-
             for cell in valid_cells:
-                print(f"Walls: {cell.get_walls()}, Position: {cell.get_row_column_positioning()}")
                 if cell not in visited_cells:
                     self.__find_exit_stack.push(cell)
+                    PathToExit[cell] = current_cell
+        
+        ForwardPath = {} # https://www.youtube.com/watch?v=sTRK9mQgYuc&t=1214s makes the forward path by reversing PathToExit
+        cell = self.__exit_cell
+        while cell != Player_Current_Cell:
+            ForwardPath[PathToExit[cell]] = cell
+            cell = PathToExit[cell]
+        
+        for cell in ForwardPath.values(): # goes to each value within the dictionary and makes it visible to the player
+            cell.set_visited_dfs(True)
                                     
     def remove_walls(self, current_cell: Cell, next_cell: Cell):
         current_cell_column_row_positioning = current_cell.get_row_column_positioning()

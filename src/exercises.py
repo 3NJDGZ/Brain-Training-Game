@@ -265,7 +265,7 @@ class MemoryMatrix(CognitiveExercise):
         return cell_column_positioning, cell_row_positioining
     
     def user_selection_cells(self):
-        if not self.__completely_finished:
+        if not self._completely_finished:
             if self.__mouse_x >= 400 and self.__mouse_y >= 150 and self.__mouse_x <= 1200 and self.__mouse_y <= 750:
                 col_pos, row_pos = self.find_cell_position()
                 selected_cell = self.__current_pattern.get_grid_of_cells()[row_pos][col_pos]
@@ -579,7 +579,7 @@ class SchulteTable(CognitiveExercise):
             WIN.blit(difficulty_text_surface, (170, 105))
 
 
-            if self.__completely_finished:
+            if self._completely_finished:
                 pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
                 final_score_text = f"Final Score: {self._points_earned}"
                 final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
@@ -624,11 +624,11 @@ class SchulteTable(CognitiveExercise):
 
     def user_input(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and not self.__space_bar_down and not self.__completely_finished:
+            if event.key == pygame.K_SPACE and not self.__space_bar_down and not self._completely_finished:
                 self.__space_bar_down = True
                 self.__space_bar_time = pygame.time.get_ticks()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and self.__space_bar_down and not self.__completely_finished:
+            if event.button == 1 and self.__space_bar_down and not self._completely_finished:
                 self.update_mouse_coordinates()
                 self.select_cells()
 
@@ -756,7 +756,7 @@ class Aiming(CognitiveExercise):
 
             if time_left == 0:
                 self._completely_finished = True
-            if self.__completely_finished:
+            if self._completely_finished:
                 pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
                 final_score_text = f"FINAL SCORE: {self._points_earned}"
                 final_score_text_surface = font.render(final_score_text, True, (255, 255, 255))
@@ -782,7 +782,7 @@ class Aiming(CognitiveExercise):
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and self.__space_bar_down:
-                if not self.__completely_finished:
+                if not self._completely_finished:
                     self.update_mouse_pos()
                     if self.check_if_player_clicks_on_target():
                         print("Clicked on a target!")
