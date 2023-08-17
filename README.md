@@ -13,7 +13,7 @@ Project (Source Code) for NEA A Level Computer Science.
 
 ### Pygame Handling
 - Maze Generation: https://www.youtube.com/watch?v=Ez7U6jU0q5k&t=91s (used a slightly different algo + implementation)
-- Maze Path Solver via Iterative version of DFS: https://www.geeksforgeeks.org/iterative-depth-first-traversal/ (pseudocode used)
+- Maze Path Solver via Iterative version of DFS: https://www.geeksforgeeks.org/iterative-depth-first-traversal/ (pseudocode used) + https://www.youtube.com/watch?v=sTRK9mQgYuc&t=1214s (highlighting the actual main path to the exit)
 - Player Class in pygame: https://opensource.com/article/17/12/game-python-add-a-player
 - Overall Pygame Basic Tutorial: https://www.youtube.com/watch?v=AY9MnQ4x3zk&t=1s 
 - Also Used a previous project that was made via the pygame video above: https://github.com/3NJDGZ/Ninja-Runner-Game/tree/main
