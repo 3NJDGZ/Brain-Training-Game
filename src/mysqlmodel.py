@@ -4,6 +4,7 @@ import json
 import argon2
 import os
 from abc import ABC
+import datetime
 
 class MySQLDatabaseConnection: # A class that represents a connection to the DB.
     def __init__(self): # Makes a DB connection as an attribute, returns nothing.
@@ -336,7 +337,7 @@ class PlayerDataManager(MySQLDatabaseModel):
         cps_values = []
         mycursor = self._DBC.get_cursor()
         mycursor.execute(f"""
-        SELECT CPS 
+        SELECT CPS, DateCalculated 
         FROM CPS
         WHERE PlayerID = {self.__player_id}
         AND DateCalculated BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE()
@@ -345,7 +346,8 @@ class PlayerDataManager(MySQLDatabaseModel):
 
         cps_values_last_5_days = mycursor.fetchall()
         for cps_value in cps_values_last_5_days:
-            cps_values.append(cps_value[0])
+            formatted_date = cps_value[1].strftime("%Y-%m-%d")
+            cps_values.append([str(cps_value[0]), formatted_date])
         
         mycursor.close()
         return cps_values

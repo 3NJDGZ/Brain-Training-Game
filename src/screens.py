@@ -674,65 +674,64 @@ class Stats_and_Performance_Screen(Screen):
 
     def show_stats(self):
         cps_values = PDM.get_CPS()
-        print(len(cps_values))
         if len(cps_values) == 5:
-            value_today = cps_values[0]
-            value_yesterday = cps_values[1]
-            value_two_days_ago = cps_values[2]
-            value_three_days_ago = cps_values[3]
-            value_four_days_ago = cps_values[4]
+            cps_value_1 = cps_values[0]
+            cps_value_2 = cps_values[1]
+            cps_value_3 = cps_values[2]
+            cps_value_4 = cps_values[3]
+            cps_value_5 = cps_values[4]
         elif len(cps_values) == 4:
-            value_today = cps_values[0]
-            value_yesterday = cps_values[1]
-            value_two_days_ago = cps_values[2]
-            value_three_days_ago = cps_values[3]
-            value_four_days_ago = 0
+            cps_value_1 = cps_values[0]
+            cps_value_2 = cps_values[1]
+            cps_value_3 = cps_values[2]
+            cps_value_4 = cps_values[3]
+            cps_value_5 = ['NA', 'NA']
         elif len(cps_values) == 3:
-            value_today = cps_values[0]
-            value_yesterday = cps_values[1]
-            value_two_days_ago = cps_values[2]
-            value_three_days_ago = 0
-            value_four_days_ago = 0
+            cps_value_1 = cps_values[0]
+            cps_value_2 = cps_values[1]
+            cps_value_3 = cps_values[2]
+            cps_value_4 = ['NA', 'NA']
+            cps_value_5 = ['NA', 'NA']
         elif len(cps_values) == 2:
-            value_today = cps_values[0]
-            value_yesterday = cps_values[1]
-            value_two_days_ago = 0
-            value_three_days_ago = 0
-            value_four_days_ago = 0
+            cps_value_1 = cps_values[0]
+            cps_value_2 = cps_values[1]
+            cps_value_3 = ['NA', 'NA']
+            cps_value_4 = ['NA', 'NA']
+            cps_value_5 = ['NA', 'NA']
         elif len(cps_values) == 1:
-            value_today = cps_values[0]
-            value_yesterday = 0
-            value_two_days_ago = 0
-            value_three_days_ago = 0
-            value_four_days_ago = 0
+            cps_value_1 = cps_values[0]
+            cps_value_2 = ['NA', 'NA']
+            cps_value_3 = ['NA', 'NA']
+            cps_value_4 = ['NA', 'NA']
+            cps_value_5 = ['NA', 'NA']
         else:
-            value_today = 0
-            value_yesterday = 0
-            value_two_days_ago = 0
-            value_three_days_ago = 0
-            value_four_days_ago = 0
+            cps_value_1 = ['NA', 'NA']
+            cps_value_2 = ['NA', 'NA']
+            cps_value_3 = ['NA', 'NA']
+            cps_value_4 = ['NA', 'NA']
+            cps_value_5 = ['NA', 'NA']
 
         font = pygame.font.Font(None, 50)
 
-        today_cps_text = f"Today CPS: {value_today}"
-        today_cps_text_surface = font.render(today_cps_text, True, (255, 255, 255))
-        self._WIN.blit(today_cps_text_surface, ((1600 - today_cps_text_surface.get_width()) / 2, 200))
+        cps_value_1_text = f"CPS: {cps_value_1[0]}, Date Calculated: {cps_value_1[1]}"
+        cps_value_1_surface = font.render(cps_value_1_text, True, (255, 255, 255))
+        self._WIN.blit(cps_value_1_surface, ((1600 - cps_value_1_surface.get_width()) / 2, 200))
 
-        yesterday_cps_text = f"Yesterday CPS: {value_yesterday}"
-        yesterday_cps_text_surface = font.render(yesterday_cps_text, True, (255, 255, 255))
-        self._WIN.blit(yesterday_cps_text_surface, ((1600 - yesterday_cps_text_surface.get_width()) / 2, 300))
+        cps_value_2_text =  f"CPS: {cps_value_2[0]}, Date Calculated: {cps_value_2[1]}"
+        cps_value_2_surface = font.render(cps_value_2_text, True, (255, 255, 255))
+        self._WIN.blit(cps_value_2_surface, ((1600 - cps_value_2_surface.get_width()) / 2, 300))
 
-        two_days_ago_text = f"Two Days Ago CPS: {value_two_days_ago}"
-        two_days_ago_text_surface = font.render(two_days_ago_text, True, (255, 255, 255))
-        self._WIN.blit(two_days_ago_text_surface, ((1600 - two_days_ago_text_surface.get_width()) / 2, 400))
+        cps_value_3_text =  f"CPS: {cps_value_3[0]}, Date Calculated: {cps_value_3[1]}"
+        cps_value_3_surface = font.render(cps_value_3_text, True, (255, 255, 255))
+        self._WIN.blit(cps_value_3_surface, ((1600 - cps_value_3_surface.get_width()) / 2, 400))
 
-        three_days_ago_text = f"Three Days Ago CPS: {value_three_days_ago}"
-        three_days_ago_text_surface = font.render(three_days_ago_text, True, (255, 255, 255))
-        self._WIN.blit(three_days_ago_text_surface, ((1600 - three_days_ago_text_surface.get_width()) / 2, 500))
+        cps_value_4_text =  f"CPS: {cps_value_4[0]}, Date Calculated: {cps_value_4[1]}"
+        cps_value_4_surface = font.render(cps_value_4_text, True, (255, 255, 255))
+        self._WIN.blit(cps_value_4_surface, ((1600 - cps_value_4_surface.get_width()) / 2, 500))
 
-        four_days_ago_text = f"Four Days Ago CPS: {value_four_days_ago}"
-        four_days_ago_text_surface = font.render(four_days_ago_text, True, (255, 255, 255))
-        self._WIN.blit(four_days_ago_text_surface, ((1600 - four_days_ago_text_surface.get_width()) / 2, 600))
+        cps_value_5_text =  f"CPS: {cps_value_5[0]}, Date Calculated: {cps_value_5[1]}"
+        cps_value_5_surface = font.render(cps_value_5_text, True, (255, 255, 255))
+        self._WIN.blit(cps_value_5_surface, ((1600 - cps_value_5_surface.get_width()) / 2, 600))
 
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
