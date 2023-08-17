@@ -5,7 +5,7 @@ import pygame
 
 # custom modules (player + maze)
 from player import Player
-from maze_generation import Maze
+from Maze_Generation import Maze
 
 # data handling
 from mysqlmodel import MySQLDatabaseConnection, PlayerDataManager

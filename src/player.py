@@ -1,6 +1,6 @@
 import pygame
 from exercises import *
-from maze_generation import * 
+from Maze_Generation import * 
 
 pygame.init()
 
