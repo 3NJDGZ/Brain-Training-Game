@@ -12,7 +12,7 @@ class Game:
     def __init__(self):
         # Base attributes (used for boilerplate-ish code)
         self.__CLOCK = pygame.time.Clock()
-        self.__UI_REFRESH_RATE = self.__CLOCK.tick(60)/1000
+        self.__UI_REFRESH_RATE = 0.06
 
         # Screens
         self.__intro_screen = Intro_Screen("Intro!")
@@ -45,6 +45,8 @@ class Game:
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
 
+        self.__disable_player_movement_for_question_exercise = False
+
     def get_state(self):
         return self.__current_pos
 
@@ -58,7 +60,9 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if isinstance(self.__current_screen, Maze_Screen):
-                    self.__current_screen.player_input(event)
+                    # Player Input for all the exercises
+                    if not self.__disable_player_movement_for_question_exercise:
+                        self.__current_screen.player_input(event)
                     if isinstance(self.__current_screen.check_type_of_exercise_cell(), ChalkboardChallenge):
                         self.__current_screen.check_type_of_exercise_cell().user_input(event)
                     elif isinstance(self.__current_screen.check_type_of_exercise_cell(), MemoryMatrix):
@@ -67,6 +71,14 @@ class Game:
                         self.__current_screen.check_type_of_exercise_cell().user_input(event)
                     elif isinstance(self.__current_screen.check_type_of_exercise_cell(), Aiming):
                         self.__current_screen.check_type_of_exercise_cell().user_input(event)
+                    elif isinstance(self.__current_screen.check_type_of_exercise_cell(), QuestionAnswerExercise):
+                        self.__current_screen.check_type_of_exercise_cell().user_input(event)
+
+                        # Disables player input for the game so that they can type their answers within the text entry box
+                        if not self.__current_screen.check_type_of_exercise_cell().get_completely_finished():
+                            self.__disable_player_movement_for_question_exercise = True
+                        else:
+                            self.__disable_player_movement_for_question_exercise = False
                 
                 self.__current_screen._get_MANAGER().process_events(event)
             

@@ -813,25 +813,61 @@ class QuestionAnswerExercise(CognitiveExercise):
         self.__question_answer = PDM.get_question_answer_from_settings()
         self.__question = self.__question_answer[0]
         self.__answer = self.__question_answer[1]
-        print(self.__question)
-        print(self.__answer)
+        self.__user_answer = ''
+        self.__correct = False
+        self.__record_points = False
+        
+        # UI
+        self.__MANAGER = pygame_gui.UIManager((1600, 900), 'Theme/theme.json')
+        self.__ANSWER_INPUT = pygame_gui.elements.UITextEntryLine(placeholder_text='Type Answer Here',relative_rect=pygame.Rect((600, 500), (400, 50)), manager = self.__MANAGER, object_id=ObjectID(class_id="@text_entry_lines",object_id="#answer_text_entry"))
 
     def calculate_points(self):
         return super().calculate_points()
     
     def record_points_on_DB(self, points):
-        return super().record_points_on_DB(points)
+        self._PDM.record_points_from_exercises_on_DB(points, self._CognitiveAreaID)
     
     def draw_exercise_on_screen(self, WIN):
-         font = pygame.font.Font(None, 36)
-         pygame.draw.rect(WIN, (255, 97, 237), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
-         
-         # Text
-         question_text = self.__question
-         question_text_surface = font.render(question_text, True, (255, 255, 255))
-         WIN.blit(question_text_surface, ((1600 - question_text_surface.get_width()) / 2, (900 - question_text_surface.get_height()) / 2))
+        font = pygame.font.Font(None, 36)
+        if not self._completely_finished:
+            self.__ANSWER_INPUT.show()
+            pygame.draw.rect(WIN, (255, 97, 237), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+            
+            self.__MANAGER.update(0.06)
 
+            # Text
+            question_text = self.__question
+            question_text_surface = font.render(question_text, True, (255, 255, 255))
+            WIN.blit(question_text_surface, ((1600 - question_text_surface.get_width()) / 2, (900 - question_text_surface.get_height()) / 2))
+            self.__MANAGER.draw_ui(WIN)
+        else:
+            pygame.draw.rect(WIN, (0, 0, 0), pygame.Rect(160, 90, self._WIDTH, self._HEIGHT))
+            if self.__correct:
+                text = "Correct! +200pts."
+                self._points_earned += 200
+            else:
+                text = "Incorrect! -100pts."
+                self._points_earned -= 100
+            
+            if not self.__record_points:
+                self.record_points_on_DB(self._points_earned)
+                self.__record_points = True
+            text_surface = font.render(text, True, (255, 255, 255))
+            WIN.blit(text_surface, ((1600 - text_surface.get_width()) / 2, (900 - text_surface.get_height()) / 2))
+            self.__ANSWER_INPUT.hide()
+            
     
     def user_input(self, event):
-        return super().user_input(event)
+        if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED and event.ui_object_id == "#answer_text_entry":
+            self.__user_answer = event.text
+        
+        elif event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED and event.ui_object_id == "#answer_text_entry":
+            if self.__user_answer == self.__answer:
+                self.__correct = True
+            else:
+                print("Incorrect!")
+            self._completely_finished = True
+        
+        self.__MANAGER.process_events(event)
+
 # End of code
