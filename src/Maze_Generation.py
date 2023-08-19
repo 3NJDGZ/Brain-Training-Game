@@ -36,37 +36,6 @@ class Stack:
     def peek(self):
         return self.items[self.stackpointer]
 
-# Queue Implementation for BFS
-class Queue:
-    def __init__(self, size: int):
-        self.rp = -1
-        self.fp = 0
-        self.size = size
-        self.items = [None] * self.size
-
-    def is_full(self):
-        return self.rp == len(self.items)-1
-    
-    def is_empty(self):
-        return self.fp > self.rp
-    
-    def enqueue(self, item):
-        if not self.is_full():
-            self.rp += 1
-            self.items[self.rp] = item
-    
-    def dequeue(self):
-        if not self.is_empty():
-            self.fp += 1
-            return self.items[self.fp - 1]
-    
-    def get_items(self):
-        return self.items
-
-    def print_data(self):
-        for data in self.items:
-            print(data)
-
 class Cell:
     def __init__(self, x: int, y: int, WIN, STARTING_TILE_SIZE: int, grid_of_cells, cols: int, rows: int, LINE_COLOUR):
         # Setup attributes for Cell(s)
