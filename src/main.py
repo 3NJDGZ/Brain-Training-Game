@@ -153,6 +153,7 @@ class Game:
             self.__login_screen.remove_UI_elements()
         else:
             # Current screen will now be login_screen so reveal UI elements
+            self.__current_screen.show_UI_elements()
             ui_finished = self.__current_screen.check_for_user_interaction_with_UI()
             if ui_finished == "TEXT_ENTRY":
                 self.__current_screen.remove_UI_elements()
@@ -165,6 +166,7 @@ class Game:
         if isinstance(self.__current_screen, Intro_Screen):
             # Check which button is pressed by user
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
+            self.__current_screen.show_UI_elements()
             # Functionality not yet implemented for the login button
             if button_pressed == "Login":
                 self.__current_screen.remove_UI_elements()
