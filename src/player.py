@@ -70,7 +70,7 @@ class Player(pygame.sprite.Sprite):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
         return grid_of_cells[row_number][cols_number]
         
-    def check_type_of_exercise_cell(self, rects, cols, grid_of_cells):
+    def get_exercise_cell(self, rects, cols, grid_of_cells):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
         if grid_of_cells[row_number][cols_number].get_exercise_present():
             return grid_of_cells[row_number][cols_number].get_exercise()

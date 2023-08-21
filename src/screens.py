@@ -528,7 +528,7 @@ class Maze_Screen(Screen):
         self.__player.draw_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
     
     def check_type_of_exercise_cell(self):
-        return self.__player.check_type_of_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
+        return self.__player.get_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
     def check_if_exercise_cell_is_finished(self):
         return self.__player.check_if_exercise_cell_is_complete(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
