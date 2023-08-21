@@ -44,13 +44,17 @@ class Player(pygame.sprite.Sprite):
     def get_index(self, rects): # Returns the index value of the rect that has collided with the player, aka the current cell.
         index = self.get_rect().collidelist(rects)
         return index
-
-    def check_current_cell(self, rects, cols, grid_of_cells):
-        # Checks the current cell that the player is in and the walls present for that current cell.
-        # Also calculates the corresponding position in the two dimensional array 'grid_of_cells' from the 1 dimensional array 'rects'.
+    
+    def calculate_row_cols(self, rects, cols):
         index = self.get_index(rects)
         row_number = index // cols
         cols_number = index - (cols * row_number)
+        return row_number, cols_number
+    
+    def get_current_cell_walls(self, rects, cols, grid_of_cells):
+        # Checks the current cell that the player is in and the walls present for that current cell.
+        # Also calculates the corresponding position in the two dimensional array 'grid_of_cells' from the 1 dimensional array 'rects'.
+        row_number, cols_number = self.calculate_row_cols(rects, cols)
         # if (self.get_rect().left >= rects[index].left and self.get_rect().right <= rects[index].right and self.get_rect().top >= rects[index].top and self.get_rect().bottom <= rects[index].bottom):
         #     print(f'player is inside cell at {grid_of_cells[row_number][cols_number].get_row_column_positioning()}')
         #     print(f"Walls of current_cell: {grid_of_cells[row_number][cols_number].get_walls()}")
@@ -61,12 +65,6 @@ class Player(pygame.sprite.Sprite):
 
         walls = grid_of_cells[row_number][cols_number].get_walls()
         return walls  
-    
-    def calculate_row_cols(self, rects, cols):
-        index = self.get_index(rects)
-        row_number = index // cols
-        cols_number = index - (cols * row_number)
-        return row_number, cols_number
     
     def get_current_cell(self, rects, cols, grid_of_cells):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
@@ -82,12 +80,11 @@ class Player(pygame.sprite.Sprite):
         if grid_of_cells[row_number][cols_number].get_exercise_present():
             return grid_of_cells[row_number][cols_number].get_exercise().get_completely_finished()
 
-    def check_collision_with_exercise_cell(self, rects, cols, grid_of_cells, WIN):
+    def draw_exercise_cell(self, rects, cols, grid_of_cells, WIN):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
 
         if grid_of_cells[row_number][cols_number].get_exercise_present():
             grid_of_cells[row_number][cols_number].get_exercise().draw_exercise_on_screen(WIN)
-            return grid_of_cells[row_number][cols_number].get_exercise()
 
     def check_collision_with_exit_cell(self, rects, cols, grid_of_cells):
         row_number, cols_number = self.calculate_row_cols(rects, cols)
@@ -98,7 +95,7 @@ class Player(pygame.sprite.Sprite):
             return False
 
     def player_input(self, rects, cols, grid_of_cells, event): # gets player input for movement
-        walls = self.check_current_cell(rects, cols, grid_of_cells)
+        walls = self.get_current_cell_walls(rects, cols, grid_of_cells)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w and not walls['top']: # Movement Up

@@ -421,7 +421,7 @@ class Maze_Screen(Screen):
             self.__maze.setup_maze()
             self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
 
-            self.check_collision_with_exercise_cell()
+            self.draw_exercise_cell()
 
             # checks if the current exercise cell is finished, if it is then add 15s to the timer. bool value required to avoid continuously adding extra time
             if self.check_if_exercise_cell_is_finished() and not self.get_current_cell().get_exercise().get_already_added_time():
@@ -524,8 +524,8 @@ class Maze_Screen(Screen):
     def check_collision_with_exit_cell(self):
         return self.__player.check_collision_with_exit_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
-    def check_collision_with_exercise_cell(self):
-        self.__player.check_collision_with_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
+    def draw_exercise_cell(self):
+        self.__player.draw_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
     
     def check_type_of_exercise_cell(self):
         return self.__player.check_type_of_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
