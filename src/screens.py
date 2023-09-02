@@ -39,7 +39,6 @@ class Screen(ABC): # An abstract base class to represent a Screen in a Pygame GU
         self._WIN.fill((self._screen_colour))
     
     # Abstract methods that are required for every sub-class of 'Screen'
-    
     @abstractmethod
     def show_UI_elements(self):
         pass
@@ -54,7 +53,6 @@ class Screen(ABC): # An abstract base class to represent a Screen in a Pygame GU
 
 class Intro_Screen(Screen):
     def __init__(self, Title: str):
-    
         super(Intro_Screen, self).__init__(Title)
 
         # UI
@@ -272,7 +270,6 @@ class Skill_Selection_Screen(Screen):
         self.__ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 775), (500, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels", object_id="#error_label"), text="EACH SLIDER MUST BE > 0")
 
     # Get values from each Horiztonal Slider
-    
     def get_value_from_slider(self):
         memory_value = self.__HORIZONTAL_SLIDER_OPTION_ONE_MEMORY.get_current_value()
         attention_value = self.__HORIZONTAL_SLIDER_OPTION_TWO_ATTENTION.get_current_value()
@@ -280,8 +277,6 @@ class Skill_Selection_Screen(Screen):
         problem_solving_value = self.__HORIZONTAL_SLIDER_OPTION_FOUR_PROBLEM_SOLVING.get_current_value()
         array_of_values = [memory_value, attention_value, speed_value, problem_solving_value] # in order of the cognitive areas entity within the database
         return array_of_values
-
-
 
     def check_for_user_interaction_with_UI(self):
         for event in pygame.event.get():
@@ -298,9 +293,12 @@ class Skill_Selection_Screen(Screen):
     
     # simple algorithm used to calculate weight values for the player 
     def calculate_weighted_values_for_player(self, memory_value: int, attention_value: int, speed_value: int, problem_solving_value: int):
+        # checks if values are valid (each score value is above 0)
         if memory_value == 0 or attention_value == 0 or speed_value == 0 or problem_solving_value == 0:
             return None
         else:
+            
+            # calculate each weight value
             total_value = speed_value + attention_value + memory_value + problem_solving_value
             
             weight_speed_value = speed_value / total_value
@@ -390,45 +388,60 @@ class Main_Menu_Screen(Screen):
 class Maze_Screen(Screen):
     def __init__(self, Title: str, STARTING_TILE_SIZE: int, LINE_COLOUR: tuple):
         super(Maze_Screen, self).__init__(Title)
+
+        # Size + Colour of the cells 
         self.LINE_COLOUR = LINE_COLOUR
-        self.__min_exercise_cells = 3
-        self.__max_exercise_cells = 5
         self.starting_tile_size = STARTING_TILE_SIZE
 
+        # Initial parameters dictating the range of exercise cells to be loaded into the level
+        self.__min_exercise_cells = 3
+        self.__max_exercise_cells = 5
+        
+        # attributes for time
         self.__time_limit = 60
         self.__spacebar_down = False
         self.__current_time = pygame.time.get_ticks()
         self.__spacebar_down_time = 0
         self.__time_added = 0
+
+        # checking if the game has ended (the player has run out of time to clear the level)
         self.__game_over = False
 
+        # Creating the Maze and Player objects within the Maze Screen Object
         self.__maze = Maze(self.starting_tile_size, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
         self.__player = Player(60, 60, 50, 50, 100)
         
-        self.__maze_level = 1
+        # Initial Level
+        self.__maze_level = 10
 
+        # Amount of hints allowed for the Player 
         self.__amounts_of_hints = 3
-
+        
+        # Attributes to detect whether or not the User has used a hint already, and to stop them from spamming it for the same level, if they have already used it for that specified level
         self.__use_hints = False
         self.__already_used_hints_for_current_level = False
 
+        # Boolean value to check whether the application should return back to the Main Menu
         self.__return_to_main_menu = False
+
+        # Calculate Player CPS upon instantiation of Maze Screen as the application now knows the User's PlayerID
         PDM.calculate_CPS() 
 
-    def setup_maze_level_with_player(self):
-        font = pygame.font.Font(None, 50)
+    def maze_level_game_loop(self):
+        font = pygame.font.Font(None, 50) # Declaring Font for text surfaces to be shown to the User
         if self.__spacebar_down and not self.__game_over:
-            self.__maze.setup_maze()
-            self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect())
 
-            self.draw_exercise_cell()
+            # Sets up the actual Maze itself and draw it onto the Screen
+            self.__maze.setup_maze()
+            self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect()) # Draws the sprite of the Player onto the Maze
+            self.draw_exercise_cell() # Draws the exercise cell if the Player has collided with an exercise Cell (calls the Player's draw_exercise_cell() method)
 
             # checks if the current exercise cell is finished, if it is then add 15s to the timer. bool value required to avoid continuously adding extra time
             if self.check_if_exercise_cell_is_finished() and not self.get_current_cell().get_exercise().get_already_added_time():
                 self.__time_added += 15
                 self.get_current_cell().get_exercise().set_already_added_time(True)
             
-            # Checks if the player wants to use a hint
+            # Checks if the player wants to use a hint, also avoids from the Player from using another hint again on the same level
             if self.__use_hints and not self.__already_used_hints_for_current_level:
                 if self.__amounts_of_hints > 0:
                     current_cell = self.get_current_cell()
@@ -439,12 +452,12 @@ class Maze_Screen(Screen):
                 else:
                     print("Ran out of hints!")
                     
-
+            # Calculating the Time to be displayed to the User
             self.__current_time = pygame.time.get_ticks()
             elapsed_time = (self.__current_time - self.__spacebar_down_time) // 1000
             time_left = (self.__time_limit - elapsed_time) + self.__time_added
 
-            # text
+            # Text Surfaces to be drawn on to the Screen (amount of hints, and the time left to clear the level)
             time_text = f"Time Left: {time_left}s"
             time_text_surface = font.render(time_text, True, (255, 114, 48))
             self._WIN.blit(time_text_surface, (20, 860))
@@ -452,48 +465,46 @@ class Maze_Screen(Screen):
             hints_text_surface = font.render(hints_text, True, (255, 114, 48))
             self._WIN.blit(hints_text_surface, (20, 820))
 
+            # Checking base case if the User has no more time left to clear the Level
             if time_left <= 0:
                 self.__game_over = True
 
+            # Checking if the User has completed all exercise cells, and is at the exit cell.
+            # If that evaluates to True then it will move them onto the next level
             if not self.__maze.check_if_all_exercise_cells_are_complete() and self.check_collision_with_exit_cell():
+
+                # Increment Maze level
                 self.__maze_level += 1
+
+                # Increase the range of possible exercise cells to be loaded into the level therefore overall difficulty increases
                 self.__min_exercise_cells += 2
                 self.__max_exercise_cells += 2
-                if self.__maze_level >= 2: # phase 1 of mazes
-                    self.__maze = Maze(100, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
-                    self.__spacebar_down_time = 0
-                    self.__spacebar_down = False
-                    self.__time_limit = 90
-                    self.__time_added = 0
-                    self.__already_used_hints_for_current_level = False
-                    self.__use_hints = False
 
-                    # change player size 
+                if self.__maze_level >= 2: # phase 1 of mazes
+                    self.reset_values_for_new_level(90) # reset values for new level and change time allocated to clear the level
+
+                    # change player size + create new Maze
                     self.__player = Player(60, 60, 50, 50, 100)
+                    self.__maze = Maze(100, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
 
                 if self.__maze_level >= 5: # phase 2 of mazes
-                    self.__maze = Maze(50, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
-                    self.__spacebar_down_time = 0
-                    self.__spacebar_down = False
-                    self.__time_limit = 120
-                    self.__time_added = 0
-                    self.__already_used_hints_for_current_level = False
-                    self.__use_hints = False
+                    self.reset_values_for_new_level(120) # reset values for new level and change time allocated to clear the level
 
-                    # change player size 
+                    # change player size + Create new Maze
                     self.__player = Player(30, 30, 25, 25, 50)
+                    self.__maze = Maze(50, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
 
                 if self.__maze_level >= 9: # phase 3 of mazes
-                    self.__spacebar_down_time = 0
-                    self.__spacebar_down = False
-                    self.__time_limit = 150
-                    self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
-                    self.__player = Player(15, 15, 12.5, 12.5, 25)
-                    self.__time_added = 0
-                    self.__already_used_hints_for_current_level = False
-                    self.__use_hints = False
+                    self.reset_values_for_new_level(150) # reset values for new level and change time allocated to clear the level
 
+                    # change player size + Create new Maze
+                    self.__player = Player(15, 15, 12.5, 12.5, 25)
+                    self.__maze = Maze(25, self.LINE_COLOUR, self._WIDTH, self._HEIGHT, self._WIN, PDM, self.__min_exercise_cells, self.__max_exercise_cells)
+
+        # Checking if the game has ended
         elif self.__game_over:
+
+            # Draw black screen with corrsponding text
             pygame.draw.rect(self._WIN, (0, 0, 0), pygame.Rect(0, 0, self._WIDTH, self._HEIGHT))
             game_over_text = "GAME OVER!"
             game_over_text_surface = font.render(game_over_text, True, (255, 255, 255))
@@ -504,7 +515,9 @@ class Maze_Screen(Screen):
             return_to_main_menu_text = "PRESS 'SPACE' TO RETURN TO MAIN MENU"
             return_to_main_menu_text_surface = font.render(return_to_main_menu_text, True, (255, 255, 255))
             self._WIN.blit(return_to_main_menu_text_surface, ((1600 - return_to_main_menu_text_surface.get_width()) / 2, 490))
+
         else:
+            # Draws the screen showing current maze level before the actual maze
             pygame.draw.rect(self._WIN, (0, 0, 0), pygame.Rect(0, 0, self._WIDTH, self._HEIGHT))
 
             # text
@@ -514,6 +527,14 @@ class Maze_Screen(Screen):
             level_text = f"Maze Level: {self.__maze_level}"
             level_text_surface = font.render(level_text, True, (255, 255, 255))
             self._WIN.blit(level_text_surface, ((1600 - level_text_surface.get_width()) / 2, 600))
+
+    def reset_values_for_new_level(self, new_time_limit_for_level: int):
+        self.__spacebar_down_time = new_time_limit_for_level
+        self.__spacebar_down = False
+        self.__time_limit = 90
+        self.__time_added = 0
+        self.__already_used_hints_for_current_level = False
+        self.__use_hints = False
 
     def get_return_to_main_menu(self):
         return self.__return_to_main_menu
@@ -546,7 +567,6 @@ class Maze_Screen(Screen):
         if self.__spacebar_down:
             self.__player.player_input(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), event)
     
-    # UI will need to be added; this UI will actually be separate 
     def show_UI_elements(self):
         return super().show_UI_elements()
 
@@ -559,6 +579,8 @@ class Maze_Screen(Screen):
 class Settings_Screen(Screen):
     def __init__(self, Title: str):
         super(Settings_Screen, self).__init__(Title)
+
+        # Temporary Storage for Question + Answer for Question Recall Exercise
         self.__question = ''
         self.__answer = ''
 
@@ -581,25 +603,6 @@ class Settings_Screen(Screen):
 
         self.__NONE_QUESTION_ERROR_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300, 650), (1000, 45)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#question_error_label"), text="YOU NEED TO INPUT BOTH A QUESTION AND AN ANSWER BEFORE SAVING")
         self.__SETTINGS_SAVED_SUCCESSFULLY_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550, 650), (500, 45)), manager=self._MANAGER, object_id=ObjectID(class_id="@subtitle_labels",object_id="#settings_saved_label"), text="SETTINGS SAVED SUCCESSFULLY!")
-
-        # print(self.__DROP_DOWN_MENU.selected_option)
-
-        self.memory_matrix_difficulties = {
-            'Easy': [[3, 6], [10, 14], [19, 28]],
-            'Medium': [[5, 10], [13, 18], [20, 26]],
-            'Hard': [[7, 13], [16, 20], [26, 30]]
-        }
-
-        self.aiming_difficulties = {
-            'Easy': [15, 25],
-            'Medium': [10, 50],
-            'Hard': [5, 100]
-        }
-
-        self.schulte_table_difficulties = {
-            'Easy': 4,
-            'Hard': 5
-        }
     
     def check_for_user_interaction_with_UI(self):
         ui_finished = ""
@@ -629,6 +632,7 @@ class Settings_Screen(Screen):
             self._MANAGER.process_events(event)
     
     def change_settings(self):
+        # Retrieve selected options from each drop down menu and use them as parameters for the method 'change_settings_according_to_user()'
         difficulty_mm = self.__DROP_DOWN_MENU_MM.selected_option
         difficulty_a = self.__DROP_DOWN_MENU_A.selected_option
         difficulty_st = self.__DROP_DOWN_MENU_ST.selected_option
@@ -684,7 +688,10 @@ class Stats_and_Performance_Screen(Screen):
         self.__TITLE_LABEL = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((400, 100), (800, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@title_labels",object_id="#title_label"), text="CPS (COGNITIVE PERFORMANCE SCORE)")
 
     def show_stats(self):
+        # retireve cps values array
         cps_values = PDM.get_CPS()
+
+        # depending on the length of the array above, record them into appropiate variables to be displayed to the user
         if len(cps_values) == 5:
             cps_value_1 = cps_values[0]
             cps_value_2 = cps_values[1]
@@ -722,8 +729,9 @@ class Stats_and_Performance_Screen(Screen):
             cps_value_4 = ['NA', 'NA']
             cps_value_5 = ['NA', 'NA']
 
-        font = pygame.font.Font(None, 50)
+        font = pygame.font.Font(None, 50) # declare the font for text surfaces
 
+        # create the text surfaces and display them onto the screen
         cps_value_1_text = f"CPS: {cps_value_1[0]}, Date Calculated: {cps_value_1[1]}"
         cps_value_1_surface = font.render(cps_value_1_text, True, (255, 255, 255))
         self._WIN.blit(cps_value_1_surface, ((1600 - cps_value_1_surface.get_width()) / 2, 200))
@@ -770,6 +778,7 @@ class Leaderboard_Screen(Screen):
         self.__GO_BACK_BUTTON = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, 15), (200, 75)), manager=self._MANAGER, object_id=ObjectID(class_id="@buttons",object_id="#go_back_button"), text="GO BACK")
     
     def show_leaderboard(self):
+        # same principle as the method in the 'Stats and Performance Screen' object
         top_5 = PDM.retrieve_top_5_players()
         if len(top_5) == 5:
             first_place = top_5[0]

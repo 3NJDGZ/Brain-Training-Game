@@ -8,6 +8,7 @@ sys.setrecursionlimit(10**6)
 
 pygame.init()
 
+# Game object encapsulating all of the required objects to facilitate the actual application itself
 class Game:
     def __init__(self):
         # Base attributes (used for boilerplate-ish code)
@@ -28,6 +29,7 @@ class Game:
         self.__leaderboard_screen = Leaderboard_Screen("LEADERBOARD")
         self.__tutorial_screen = Tutorial_Screen("TUTORIAL")
 
+        # Maze screen will be dynamically created when the User presses the 'PLAY' button when they are on the 'MAIN MENU SCREEN'
         self.__create_maze_screen = False
 
         # Array of screens which will be used to specify the current screen to the user as the current index positioning.
@@ -47,11 +49,14 @@ class Game:
         self.__current_pos = 0 # acts as the index positioning for the screens; also can be seen as the current 'state' that the entire 'system' (application) is in
         self.__current_screen = self.screens[self.__current_pos] # sets state to that of the first screen
 
+        # Required to disable player movement when the current exercise is Question Recall therefore they can use all keys on keyboard
         self.__disable_player_movement_for_question_exercise = False
 
+    # Use to check the current state of the index positioning of the current screen (can also be thought as the current state of the FSM/Mealy Machine)
     def get_state(self):
         return self.__current_pos
 
+    # Main Game Loop
     def play(self):
         running = True
         while running: 
@@ -91,6 +96,7 @@ class Game:
             self.__current_screen._fill_with_colour()
             
             # Checking what type of screen should be displayed
+            
             # USER ON-BOARDING Screens
             self.check_if_screen_is_intro()
             self.check_if_screen_is_register()
@@ -98,6 +104,7 @@ class Game:
             self.check_if_screen_is_skill_screens()
             self.check_if_screen_is_registration_confirmation()
             self.check_if_screen_is_login_confirmation()
+
             # GAMEPLAY Screens
             self.check_if_screen_is_main_menu()
             self.check_if_screen_is_maze_screen()
@@ -154,6 +161,7 @@ class Game:
         else:
             # Current screen will now be login_screen so reveal UI elements
             self.__current_screen.show_UI_elements()
+            # Check UI interaction by user
             ui_finished = self.__current_screen.check_for_user_interaction_with_UI()
             if ui_finished == "TEXT_ENTRY":
                 self.__current_screen.remove_UI_elements()
@@ -181,6 +189,8 @@ class Game:
             self.__skill_selection_screen.remove_UI_elements()
         else:
             self.__current_screen.show_UI_elements()
+
+            # Change screen to Login Screen when user has selected their skills
             confirmed = self.__current_screen.check_for_user_interaction_with_UI()
             if confirmed:
                 self.__current_pos -= 2
@@ -190,14 +200,21 @@ class Game:
             self.__main_menu_screen.remove_UI_elements()
         else:
             self.__current_screen.show_UI_elements()
+            # Checking UI interaction from user
             button_pressed = self.__current_screen.check_for_user_interaction_with_UI()
             if button_pressed == "PLAY":
                 self.__current_screen.remove_UI_elements()
                 self.__current_pos += 1
+
+                # Creates the Maze Screen if the application knows the Player ID of the current user, as when they click 'Play', the application then calculates the CPS 
+                # Assuming they have valid scores
                 player_id = PDM.get_player_id()
                 if player_id is not None:
                     if not self.__create_maze_screen:
+                        # create a new maze screen effectively overwriting the old maze screen (if the player decides to play again); this preserves the main game loop of the 'Maze Screen'
                         self.screens[7] =  Maze_Screen("MAZE SCREEN TEST", 100, (132, 87, 255)) # The common factors of 1600 and 900 are: 1, 2, 4, 5, 10, 20, 25, 50, 100
+
+                        # variable here used is to stop creating so many maze screens at once
                         self.__create_maze_screen = True
             elif button_pressed == "SETTINGS":
                 self.__current_screen.remove_UI_elements()
@@ -215,7 +232,9 @@ class Game:
         else:
             if isinstance(self.__current_screen, Maze_Screen):
                 self.__create_maze_screen = False
-                self.__current_screen.setup_maze_level_with_player()
+
+                # Start the maze level game loop
+                self.__current_screen.maze_level_game_loop()
                 if self.__current_screen.get_return_to_main_menu():
                     self.__current_pos -= 1
     
