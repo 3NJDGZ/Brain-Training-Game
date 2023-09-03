@@ -412,7 +412,7 @@ class Maze_Screen(Screen):
         self.__player = Player(60, 60, 50, 50, 100)
         
         # Initial Level
-        self.__maze_level = 10
+        self.__maze_level = 1
 
         # Amount of hints allowed for the Player 
         self.__amounts_of_hints = 3
