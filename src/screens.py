@@ -434,7 +434,7 @@ class Maze_Screen(Screen):
             # Sets up the actual Maze itself and draw it onto the Screen
             self.__maze.setup_maze()
             self._WIN.blit(self.__player.get_player_image(), self.__player.get_rect()) # Draws the sprite of the Player onto the Maze
-            self.draw_exercise_cell() # Draws the exercise cell if the Player has collided with an exercise Cell (calls the Player's draw_exercise_cell() method)
+            self.check_and_then_draw_exercise_cell() # Draws the exercise cell if the Player has collided with an exercise Cell (calls the Player's draw_exercise_cell() method)
 
             # checks if the current exercise cell is finished, if it is then add 15s to the timer. bool value required to avoid continuously adding extra time
             if self.check_if_exercise_cell_is_finished() and not self.get_current_cell().get_exercise().get_already_added_time():
@@ -545,8 +545,8 @@ class Maze_Screen(Screen):
     def check_collision_with_exit_cell(self):
         return self.__player.check_collision_with_exit_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
     
-    def draw_exercise_cell(self):
-        self.__player.draw_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
+    def check_and_then_draw_exercise_cell(self):
+        self.__player.check_and_then_draw_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells(), self._WIN)
     
     def check_type_of_exercise_cell(self):
         return self.__player.get_exercise_cell(self.__maze.get_rects(), self.__maze.get_cols(), self.__maze.get_grid_of_cells())
