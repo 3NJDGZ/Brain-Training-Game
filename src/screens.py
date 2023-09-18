@@ -394,8 +394,8 @@ class Maze_Screen(Screen):
         self.starting_tile_size = STARTING_TILE_SIZE
 
         # Initial parameters dictating the range of exercise cells to be loaded into the level
-        self.__min_exercise_cells = 3
-        self.__max_exercise_cells = 5
+        self.__min_exercise_cells = 1
+        self.__max_exercise_cells = 2
         
         # attributes for time
         self.__time_limit = 60
@@ -477,8 +477,8 @@ class Maze_Screen(Screen):
                 self.__maze_level += 1
 
                 # Increase the range of possible exercise cells to be loaded into the level therefore overall difficulty increases
-                self.__min_exercise_cells += 2
-                self.__max_exercise_cells += 2
+                self.__min_exercise_cells += 1
+                self.__max_exercise_cells += 1
 
                 if self.__maze_level >= 2: # phase 1 of mazes
                     self.reset_values_for_new_level(90) # reset values for new level and change time allocated to clear the level

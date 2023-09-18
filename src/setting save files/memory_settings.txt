@@ -1,0 +1,1 @@
+{"Memory Matrix": {"Difficulty": "Hard", "Parameters": [[7, 13], [16, 20], [26, 30]]}, "Aiming": {"Difficulty": "Easy (15s, +25pts)", "Parameters": [[15, 25]]}, "Schulte Table": {"Difficulty": "Easy (4*4)", "Grid Dimension": 4, "Colour": false}, "Question Recall": {"Question": "asdfasdf", "Answer": "asdfasdf"}}

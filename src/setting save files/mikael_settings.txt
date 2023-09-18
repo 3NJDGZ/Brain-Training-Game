@@ -1,1 +1,0 @@
-{"Memory Matrix": {"Difficulty": "Medium", "Parameters": [[5, 10], [13, 18], [20, 26]]}, "Aiming": {"Difficulty": "Hard (5s, +100pts)", "Parameters": [[5, 100]]}, "Schulte Table": {"Difficulty": "Easy (4*4)", "Grid Dimension": 4, "Colour": false}, "Question Recall": {"Question": "is miguel gay?", "Answer": "yes"}}
